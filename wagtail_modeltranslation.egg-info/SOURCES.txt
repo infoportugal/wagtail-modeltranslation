@@ -1,0 +1,14 @@
+MANIFEST.in
+README.rst
+setup.py
+wagtail_modeltranslation/__init__.py
+wagtail_modeltranslation/admin.py
+wagtail_modeltranslation/models.py
+wagtail_modeltranslation/tests.py
+wagtail_modeltranslation/translation.py
+wagtail_modeltranslation/views.py
+wagtail_modeltranslation.egg-info/PKG-INFO
+wagtail_modeltranslation.egg-info/SOURCES.txt
+wagtail_modeltranslation.egg-info/dependency_links.txt
+wagtail_modeltranslation.egg-info/requires.txt
+wagtail_modeltranslation.egg-info/top_level.txt
