@@ -10,19 +10,20 @@ Simple app containing a mixin model that integrates modeltranslation
         INSTALLED_APPS = (
             ...
             'wagtail_modeltranslation',
-            **YOUR APPS**
+            ...
         )
 
 2. Use TranslationMixin to integrate django-modeltranslation with Wagtail admin:
 
         from wagtail_modeltranslation.models import TranslationMixin
+
         class FooModel(Page, TranslationMixin):
             foo = models.CharField()
         FooModel.panels = [...]
 
-3. Visit django-modeltranslation for documentation - http://django-modeltranslation.readthedocs.org/en/latest/
+3. Visit django-modeltranslation for documentation: http://django-modeltranslation.readthedocs.org/en/latest/
 
-## Release Notes:
+## Release Notes
 
 ### v0.0.3
 
