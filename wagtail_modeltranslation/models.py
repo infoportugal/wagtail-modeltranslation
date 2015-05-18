@@ -1,7 +1,14 @@
 # coding: utf-8
 
+import copy
+
 from django.conf import settings
-from wagtail.wagtailadmin.edit_handlers import FieldPanel, MultiFieldPanel
+
+from wagtail.wagtailadmin.edit_handlers import FieldPanel,\
+                                               MultiFieldPanel, FieldRowPanel
+from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
+                                             PAGE_EDIT_HANDLERS
+
 from modeltranslation.translator import translator, NotRegistered
 
 
@@ -9,84 +16,175 @@ from modeltranslation.translator import translator, NotRegistered
 # TRANSLATION MIXIN
 ####################################
 class TranslationMixin(object):
+    _translation_options = None
+    _required_base_fields = None
+    _defined_tabs = None
+    _wgform_class = None
 
     def __init__(self, *args, **kwargs):
         super(TranslationMixin, self).__init__(*args, **kwargs)
 
-        self.translation_options = translator.get_options_for_model(
+        # CONSTRUCT TEMPOARY EDIT HANDLER
+        edit_handler_class = get_page_edit_handler(self.__class__)
+        self._wgform_class = edit_handler_class.get_form_class(self.__class__)
+
+        self._translation_options = translator.get_options_for_model(
             self.__class__)
+        self._required_base_fields = edit_handler_class._required_fields
 
-        self.patch_translation_panels()
+        self._fetch_defined_tabs()
 
-    def patch_translation_panels(self):
-        if hasattr(self, 'panels'):
-            # TODO !!!!
-            tabs = ()
-        else:
-            tabs = ()
+        for tab_name, tab in self._defined_tabs:
+            patched_tab = []
 
-            if hasattr(self, 'content_panels'):
-                tabs += (('content_panels', list(self.content_panels)),)
-            if hasattr(self, 'promote_panels'):
-                tabs += (('promote_panels', list(self.promote_panels)),)
-
-        for tab_name, tab in tabs:
-            translated_tab = []
             for panel in tab:
-                ####################################
-                # FIELDPANEL
-                ####################################
-                if panel.__class__.__name__ == 'FieldPanel':
-                    for item in self.patch_translation_field(panel):
-                        translated_tab.append(item)
-                ####################################
-                # MULTIFIELDPANEL
-                ####################################
-                elif panel.__class__.__name__ == 'MultiFieldPanel':
-                    translated_children = []
-                    for child_panel in panel.children:
-                        for item in self.patch_translation_field(child_panel):
-                            translated_children.append(item)
-                    translated_tab.append(
-                        MultiFieldPanel(
-                            translated_children,
-                            classname=panel.classname,
-                            heading=panel.heading))
-                ####################################
-                # INLINEPANEL
-                ####################################
-                elif panel.__class__.__name__ == 'InlinePanel':
-                    self.patch_translation_inlinepanels(panel)
-                    translated_tab.append(panel)
-                ####################################
-                # OTHERS
-                ####################################
-                else:
-                    translated_tab.append(panel)
+                trtab = self._patch_panel(panel)
+                if trtab:
+                    for x in trtab:
+                        patched_tab.append(x)
 
-            setattr(self.__class__, tab_name, translated_tab)
+            setattr(self.__class__, tab_name, patched_tab)
 
-    def patch_translation_field(self, fieldpanel, translation_fields=None):
-        translated_fields = []
-        tr_fields = translation_fields if translation_fields else self.translation_options.fields
+        # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
+        # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
+        del PAGE_EDIT_HANDLERS[self.__class__]
 
-        translated_fields.append(fieldpanel)  # default language or untranslated field
+    def _fetch_defined_tabs(self):
+        """
+        Fetch tabs defined by user in models.py
+        """
+        tabs = ()
+
+        # If user has defined panels dict on models.py
+        if hasattr(self, 'panels'):
+            # TEST !!!
+            tabs = self.panels
+        # Check for common tabs
+        else:
+            if hasattr(self, 'content_panels'):
+                tabs += (('content_panels',
+                          copy.deepcopy(self.content_panels)),)
+                self.content_panels = None
+            if hasattr(self, 'promote_panels'):
+                tabs += (('promote_panels',
+                          copy.deepcopy(self.promote_panels)),)
+                self.promote_panels = None
+            if hasattr(self, 'settings_panels'):
+                tabs += (('settings_panels',
+                          copy.deepcopy(self.settings_panels)),)
+                self.promote_panels = None
+
+        self._defined_tabs = tabs
+
+    def _patch_panel(self, panel, inline_tr_options=None):
+        """
+        Generic panel patching function
+        """
+        trpanels = None
+
+        if panel.__class__.__name__ == 'FieldPanel':
+            trpanels = self._patch_fieldpanel(panel, inline_tr_options)
+        elif panel.__class__.__name__ == 'MultiFieldPanel':
+            trpanels = [self._patch_multifieldpanel(panel, inline_tr_options)]
+        elif panel.__class__.__name__ == 'InlinePanel':
+            self._patch_inlinepanel(panel)
+            trpanels = [panel]
+        else:
+            trpanels = [panel]
+
+        return trpanels
+
+    def _is_orig_required(self, field_name, formset=None):
+        """
+        check if original field is required
+        """
+        required = False
+
+        if not formset:
+            for fname, f in self._wgform_class.base_fields.items():
+                if fname == field_name:
+                    if f.required:
+                        required = True
+                    break
+
+        return required
+
+    def _patch_fieldpanel(self, fieldpanel, inline_tr_options=None):
+        """
+        Patch FieldPanels and return one per available language
+        """
+        tr_fields = []
+        if inline_tr_options:
+            tr_fields = inline_tr_options
+        else:
+            tr_fields = self._translation_options.fields
+
+        translated_fieldpanels = []
         if fieldpanel.field_name in tr_fields:
+            # original field, HIDDEN
+            translated_fieldpanels.append(
+                FieldPanel(
+                    fieldpanel.field_name,
+                    classname='visuallyhidden'))
+
             for lang in settings.LANGUAGES:
-                if lang[0] != settings.LANGUAGE_CODE:  # other languages
-                        translated_field_name = "%s_%s" % (
-                            fieldpanel.field_name, lang[0])
-                        translated_fields.append(
-                            FieldPanel(
-                                translated_field_name,
-                                classname=fieldpanel.classname))
+                classes = fieldpanel.classname
 
-        return translated_fields
+                if self._is_orig_required(fieldpanel.field_name) and\
+                   (lang[0] == settings.LANGUAGE_CODE):
+                    classes += ' required'
+                translated_field_name = "%s_%s" % (
+                        fieldpanel.field_name, lang[0])
+                translated_fieldpanels.append(
+                    FieldPanel(
+                        translated_field_name,
+                        classname=classes))
+        else:
+            return [fieldpanel]
 
-    def patch_translation_inlinepanels(self, panel):
+        return translated_fieldpanels
+
+    def _patch_multifieldpanel(self, mfpanel, inline_tr_options=None):
+        """
+        Patch MultiFieldPanel
+        """
+        patched_fields = []
+
+        for panel in mfpanel.children:
+            if panel.__class__.__name__ == 'FieldPanel':
+                for item in self._patch_fieldpanel(panel, inline_tr_options):
+                    patched_fields.append(item)
+            elif panel.__class__.__name__ == 'FieldRowPanel':
+                patched_fields.append(
+                    self._patch_fieldrowpanel(panel, inline_tr_options))
+            else:
+                patched_fields.append(panel)
+
+        return MultiFieldPanel(
+            patched_fields,
+            classname=mfpanel.classname,
+            heading=mfpanel.heading)
+
+    def _patch_fieldrowpanel(self, frpanel, inline_tr_options=None):
+        """
+        Patch FieldRowPanel
+        """
+        patched_fields = []
+
+        for panel in frpanel.children:
+            if panel.__class__.__name__ == 'FieldPanel':
+                for item in self._patch_fieldpanel(panel, inline_tr_options):
+                    patched_fields.append(item)
+            else:
+                patched_fields.append(panel)
+
+        return FieldRowPanel(
+            patched_fields,
+            classname=frpanel.classname)
+
+    def _patch_inlinepanel(self, panel):
         inline_panels = getattr(
             self.__class__, panel.relation_name).related.model.panels
-
         try:
             inline_model_tr_fields = translator.get_options_for_model(
                 getattr(
@@ -96,24 +194,7 @@ class TranslationMixin(object):
 
         translated_inline = []
         for inlinepanel in inline_panels:
-            if inlinepanel.__class__.__name__ == 'FieldPanel':
-                for item in self.patch_translation_field(
-                        inlinepanel,
-                        translation_fields=inline_model_tr_fields):
-                    translated_inline.append(item)
-            elif inlinepanel.__class__.__name__ == 'MultiFieldPanel':
-                translated_children = []
-                for child_panel in inlinepanel.children:
-                    for item in self.patch_translation_field(
-                            child_panel,
-                            translation_fields=inline_model_tr_fields):
-                        translated_children.append(item)
-                translated_inline.append(
-                    MultiFieldPanel(
-                        translated_children,
-                        classname=inlinepanel.classname,
-                        heading=inlinepanel.heading))
-            else:
-                translated_inline.append(inlinepanel)
+            for item in self._patch_panel(inlinepanel, inline_model_tr_fields):
+                translated_inline.append(item)
 
         getattr(self.__class__, panel.relation_name).related.model.panels = translated_inline

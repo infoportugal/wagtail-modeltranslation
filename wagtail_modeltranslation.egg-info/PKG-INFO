@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: wagtail-modeltranslation
-Version: 0.0.2
+Version: 0.0.3
 Summary: Integration of django-modeltranslation with Wagtail CMS
 Home-page: UNKNOWN
 Author: Rui Martins
@@ -30,8 +30,13 @@ Description: # WAGTAIL MODELTRANSLATION ADAPTATION
         
         3. Visit django-modeltranslation for documentation - http://django-modeltranslation.readthedocs.org/en/latest/
         
-        
         ## Release Notes:
+        
+        ### v0.0.3
+        
+        - New methods;
+        - Now supports required fields;
+        - Fixed issue related to browser location;
         
         ### v0.0.2
         

@@ -22,8 +22,13 @@ Simple app containing a mixin model that integrates modeltranslation
 
 3. Visit django-modeltranslation for documentation - http://django-modeltranslation.readthedocs.org/en/latest/
 
-
 ## Release Notes:
+
+### v0.0.3
+
+- New methods;
+- Now supports required fields;
+- Fixed issue related to browser location;
 
 ### v0.0.2
 
