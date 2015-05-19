@@ -13,7 +13,7 @@ Simple app containing a mixin model that integrates modeltranslation
             ...
         )
 
-2. Use TranslationMixin to integrate django-modeltranslation with Wagtail admin:
+2. Use TranslationMixin in order to integrate django-modeltranslation with Wagtail admin:
 
         from wagtail_modeltranslation.models import TranslationMixin
 
@@ -29,10 +29,8 @@ Simple app containing a mixin model that integrates modeltranslation
 
 - New methods;
 - Now supports required fields;
-- Fixed issue related to browser location;
+- Fixed issue related to browser locale;
 
 ### v0.0.2
-
-**Features**:
 
 - Prepopulated fields now works for translated fields (title and slug)
