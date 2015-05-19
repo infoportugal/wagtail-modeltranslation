@@ -1,5 +1,4 @@
 MANIFEST.in
-README.rst
 setup.py
 wagtail_modeltranslation/__init__.py
 wagtail_modeltranslation/admin.py
