@@ -11,6 +11,7 @@ class PageTR(TranslationOptions):
         'title',
         'slug',
         'seo_title',
-        'search_description',)
+        'search_description',
+        'url_path',)
 
 translator.register(Page, PageTR)

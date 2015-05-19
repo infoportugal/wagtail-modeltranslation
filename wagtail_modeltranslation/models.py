@@ -198,3 +198,24 @@ class TranslationMixin(object):
                 translated_inline.append(item)
 
         getattr(self.__class__, panel.relation_name).related.model.panels = translated_inline
+
+    def set_url_path(self, parent):
+        """
+        This method override populates url_path for each specified language.
+        This way we can get different urls for each language, defined
+        by page slug.
+        """
+
+        for lang in settings.LANGUAGES:
+            if parent:
+                tr_slug = getattr(self, 'slug_'+lang[0])
+                if not tr_slug:
+                    tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE)
+
+                setattr(self, 'url_path_'+lang[0], tr_slug + '/')
+            else:
+                # a page without a parent is the tree root,
+                # which always has a url_path of '/'
+                setattr(self, 'url_path_'+lang[0], '/')
+
+        return self.url_path
