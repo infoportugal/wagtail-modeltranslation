@@ -51,7 +51,8 @@ class TranslationMixin(object):
 
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
-        del PAGE_EDIT_HANDLERS[self.__class__]
+        if self.__class__ in PAGE_EDIT_HANDLERS:
+            del PAGE_EDIT_HANDLERS[self.__class__]
 
     def _fetch_defined_tabs(self):
         """

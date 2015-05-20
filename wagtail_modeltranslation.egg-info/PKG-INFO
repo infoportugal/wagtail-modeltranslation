@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: wagtail-modeltranslation
-Version: 0.0.7
+Version: 0.0.8
 Summary: Integration of django-modeltranslation with Wagtail CMS
 Home-page: https://github.com/infoportugal/wagtail-modeltranslation
 Author: Rui Martins
@@ -10,6 +10,8 @@ Description: # Wagtail modeltranslation
         
         Simple app containing a mixin model that integrates modeltranslation
         (https://github.com/deschler/django-modeltranslation) into wagtail panels system.
+        
+        ![alt tag](https://github.com/infoportugal/wagtail-modeltranslation/blob/master/screenshot.png?raw=true)
         
         ## Quick start
         
@@ -52,6 +54,10 @@ Description: # Wagtail modeltranslation
                 </li>
         
         ## Release Notes
+        
+        ## v0.0.8
+        
+        - Fixed issue related to deleting a non existing key on PAGE_EDIT_HANDLER dict
         
         ## v0.0.7
         

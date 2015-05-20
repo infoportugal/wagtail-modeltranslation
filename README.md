@@ -47,6 +47,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.0.8
+
+- Fixed issue related to deleting a non existing key on PAGE_EDIT_HANDLER dict
+
 ## v0.0.7
 
 - Fixed set_url_path() translatable model method
