@@ -3,7 +3,6 @@ $(document).ready(function() {
         $('#id_title_'+lang_code).on('focus', function() {
             $('#id_slug_'+lang_code).data('previous-val', $('#id_slug_'+lang_code).val());
             $(this).data('previous-val', $(this).val());
-            console.log('focus');
         });
 
         $('#id_title_'+lang_code).on('keyup keydown keypress blur', function() {
