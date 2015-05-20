@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.0.4',
+    version='0.0.5',
     packages=['wagtail_modeltranslation'],
     include_package_data=True,
     license='BSD License',
@@ -32,5 +32,5 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
         'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
     ],
-    install_requires=['django-modeltranslation==0.9', 'wagtail']
+    install_requires=['django-modeltranslation==0.9.1', 'wagtail']
 )

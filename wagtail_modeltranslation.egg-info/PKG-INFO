@@ -1,6 +1,6 @@
 Metadata-Version: 1.1
 Name: wagtail-modeltranslation
-Version: 0.0.4
+Version: 0.0.5
 Summary: Integration of django-modeltranslation with Wagtail CMS
 Home-page: UNKNOWN
 Author: Rui Martins
@@ -52,6 +52,11 @@ Description: # Wagtail modeltranslation
                 </li>
         
         ## Release Notes
+        
+        ### v0.0.5
+        
+        - Now using django-modeltranslation 0.9.1;
+        - Fixed problem related to slug field fallbacks;
         
         ### v0.0.4
         

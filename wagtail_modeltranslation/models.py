@@ -3,11 +3,15 @@
 import copy
 
 from django.conf import settings
+from django.http import Http404
+from django.db.models import Q
 
+from wagtail.wagtailcore.models import Page
 from wagtail.wagtailadmin.edit_handlers import FieldPanel,\
                                                MultiFieldPanel, FieldRowPanel
 from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
                                              PAGE_EDIT_HANDLERS
+from wagtail.wagtailcore.url_routing import RouteResult
 
 from modeltranslation.translator import translator, NotRegistered
 
@@ -219,3 +223,31 @@ class TranslationMixin(object):
                 setattr(self, 'url_path_'+lang[0], '/')
 
         return self.url_path
+
+    def route(self, request, path_components):
+        """
+        Rewrite route method in order to handle languages fallbacks
+        """
+        if path_components:
+            # request is for a child of this page
+            child_slug = path_components[0]
+            remaining_components = path_components[1:]
+
+            try:
+                q = Q()
+                for lang in settings.LANGUAGES:
+                    tr_field_name = 'slug_%s' % (lang[0])
+                    condition = {tr_field_name: child_slug}
+                    q |= Q(**condition)
+                subpage = self.get_children().get(q)
+            except Page.DoesNotExist:
+                raise Http404
+
+            return subpage.specific.route(request, remaining_components)
+
+        else:
+            # request is for this very page
+            if self.live:
+                return RouteResult(self)
+            else:
+                raise Http404

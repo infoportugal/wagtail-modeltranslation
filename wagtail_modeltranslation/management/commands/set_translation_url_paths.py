@@ -8,8 +8,13 @@ from wagtail.wagtailcore.models import Page
 
 class Command(NoArgsCommand):
     def set_subtree(self, root, root_path, lang=None):
+        update_fields = ['url_path_'+lang]
+
         setattr(root, 'url_path_'+lang, root_path)
-        root.save(update_fields=['url_path_'+lang])
+        if lang == settings.LANGUAGE_CODE:
+            setattr(root, 'url_path', root_path)
+            update_fields.append('url_path')
+        root.save(update_fields=update_fields)
         for child in root.get_children():
             slug = getattr(child, 'slug_'+lang)
             if not slug or slug == '':

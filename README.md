@@ -45,6 +45,11 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+### v0.0.5
+
+- Now using django-modeltranslation 0.9.1;
+- Fixed problem related to slug field fallbacks;
+
 ### v0.0.4
 
 ** IMPORTANT: ** make sure that TranslationMixin comes before Page class on model inheritance
