@@ -18,8 +18,7 @@ def translated_slugs():
 
     lang_codes = []
     for lang in settings.LANGUAGES:
-        if lang[0] != settings.LANGUAGE_CODE:
-            lang_codes.append("'%s'" % lang[0])
+        lang_codes.append("'%s'" % lang[0])
 
     js_languages = "<script>var langs=[%s];</script>" % (", ".join(lang_codes))
 

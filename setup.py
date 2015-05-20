@@ -9,13 +9,13 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.0.5',
+    version='0.0.6',
     packages=['wagtail_modeltranslation'],
     include_package_data=True,
     license='BSD License',
     description='Integration of django-modeltranslation with Wagtail CMS',
     long_description=README,
-    url='',
+    url='https://github.com/infoportugal/wagtail-modeltranslation',
     author='Rui Martins',
     author_email='rmartins16@gmail.com',
     classifiers=[

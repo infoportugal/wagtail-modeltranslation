@@ -45,6 +45,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+### v0.0.6
+
+- Fixed js issue related to auto-generating slugs
+
 ### v0.0.5
 
 - Now using django-modeltranslation 0.9.1;
