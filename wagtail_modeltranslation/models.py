@@ -216,7 +216,7 @@ class TranslationMixin(object):
                 if not tr_slug:
                     tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE)
 
-                setattr(self, 'url_path_'+lang[0], tr_slug + '/')
+                setattr(self, 'url_path_'+lang[0], parent.url_path + tr_slug + '/')
             else:
                 # a page without a parent is the tree root,
                 # which always has a url_path of '/'

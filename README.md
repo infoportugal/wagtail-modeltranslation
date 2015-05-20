@@ -45,6 +45,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.0.7
+
+- Fixed set_url_path() translatable model method
+
 ### v0.0.6
 
 - Fixed js issue related to auto-generating slugs
