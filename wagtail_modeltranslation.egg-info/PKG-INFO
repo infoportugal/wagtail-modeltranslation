@@ -57,7 +57,7 @@ Description: # Wagtail modeltranslation
         
         ## v0.0.9
         
-        - Fixed issue that causes duplicated translation fields.
+        - Fixed issue that causes duplicated translation fields, preventing auto-slug from working properly.
         
         ## v0.0.8
         

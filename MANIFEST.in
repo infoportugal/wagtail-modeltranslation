@@ -1,1 +1,3 @@
-include README.rst
+include README.md
+recursive-include wagtail_modeltranslation *
+recursive-exclude wagtail_modeltranslation *.pyc
