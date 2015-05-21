@@ -47,6 +47,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.0.9
+
+- Fixed issue that causes duplicated translation fields, preventing auto-slug from working properly.
+
 ## v0.0.8
 
 - Fixed issue related to deleting a non existing key on PAGE_EDIT_HANDLER dict
