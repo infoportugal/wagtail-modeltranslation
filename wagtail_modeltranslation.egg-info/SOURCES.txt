@@ -18,8 +18,6 @@ wagtail_modeltranslation/management/__init__.py
 wagtail_modeltranslation/management/commands/__init__.py
 wagtail_modeltranslation/management/commands/set_translation_url_paths.py
 wagtail_modeltranslation/migrations/__init__.py
-wagtail_modeltranslation/static/.DS_Store
-wagtail_modeltranslation/static/wagtail_modeltranslation/.DS_Store
 wagtail_modeltranslation/static/wagtail_modeltranslation/js/translated_slugs.js
 wagtail_modeltranslation/templatetags/__init__.py
 wagtail_modeltranslation/templatetags/modeltranslation.py

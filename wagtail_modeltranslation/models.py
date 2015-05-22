@@ -28,7 +28,7 @@ class TranslationMixin(object):
     def __init__(self, *args, **kwargs):
         super(TranslationMixin, self).__init__(*args, **kwargs)
 
-        if TranslationMixin._translated:
+        if self.__class__._translated:
             return
 
         # CONSTRUCT TEMPORARY EDIT HANDLER
@@ -60,7 +60,7 @@ class TranslationMixin(object):
         if self.__class__ in PAGE_EDIT_HANDLERS:
             del PAGE_EDIT_HANDLERS[self.__class__]
 
-        TranslationMixin._translated = True
+        self.__class__._translated = True
 
     @staticmethod
     def _fetch_defined_tabs(defined_class):
