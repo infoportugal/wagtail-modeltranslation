@@ -1,12 +1,13 @@
 Metadata-Version: 1.1
 Name: wagtail-modeltranslation
-Version: 0.1
+Version: 0.1.1
 Summary: Integration of django-modeltranslation with Wagtail CMS
 Home-page: https://github.com/infoportugal/wagtail-modeltranslation
 Author: Rui Martins
 Author-email: rmartins16@gmail.com
 License: BSD License
 Description: # Wagtail modeltranslation
+        (based on https://github.com/deschler/django-modeltranslation)
         
         Simple app containing a mixin model that integrates modeltranslation
         (https://github.com/deschler/django-modeltranslation) into wagtail panels system.
@@ -55,9 +56,13 @@ Description: # Wagtail modeltranslation
         
         ## Release Notes
         
+        ## v0.1.1
+        
+        - Fixed url_path issue caused by a browser with language different from settings.LANGUAGE_CODE
+        
         ## v0.1
         
-        - Minor release working. Lacks of full test coverage.
+        - Minor release working but lacks full test coverage.
         - Last version had required fields validation problems, now fixed.
         
         ## v0.0.9
