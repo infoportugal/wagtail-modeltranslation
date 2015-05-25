@@ -1,5 +1,5 @@
 # Wagtail modeltranslation
-(forked from https://github.com/deschler/django-modeltranslation)
+(based on https://github.com/deschler/django-modeltranslation)
 
 Simple app containing a mixin model that integrates modeltranslation
 (https://github.com/deschler/django-modeltranslation) into wagtail panels system.
