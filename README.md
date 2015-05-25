@@ -47,6 +47,11 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.1
+
+- Minor release working but lacks full test coverage.
+- Last version had required fields validation problems, now fixed.
+
 ## v0.0.9
 
 - Fixed issue that causes duplicated translation fields, preventing auto-slug from working properly.

@@ -21,7 +21,6 @@ from modeltranslation.translator import translator, NotRegistered
 ####################################
 class TranslationMixin(object):
     _translation_options = None
-    _required_base_fields = None
     _wgform_class = None
     _translated = False
 
@@ -39,7 +38,6 @@ class TranslationMixin(object):
         TranslationMixin._translation_options = translator.\
             get_options_for_model(
                 self.__class__)
-        self._required_base_fields = edit_handler_class._required_fields
 
         defined_tabs = TranslationMixin._fetch_defined_tabs(self.__class__)
 
@@ -59,6 +57,12 @@ class TranslationMixin(object):
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
         if self.__class__ in PAGE_EDIT_HANDLERS:
             del PAGE_EDIT_HANDLERS[self.__class__]
+
+        edit_handler_class = get_page_edit_handler(self.__class__)
+        form = edit_handler_class.get_form_class(self.__class__)
+        for fname, f in form.base_fields.items():
+            if fname in TranslationMixin._translation_options.fields and TranslationMixin._is_orig_required(fname):
+                f.required = False
 
         self.__class__._translated = True
 
@@ -112,6 +116,8 @@ class TranslationMixin(object):
     def _is_orig_required(cls, field_name, formset=None):
         """
         check if original field is required
+        TODO:
+        if formset is given, example for inline models.
         """
         required = False
 
@@ -137,7 +143,7 @@ class TranslationMixin(object):
 
         translated_fieldpanels = []
         if fieldpanel.field_name in tr_fields:
-            # original field, HIDDENv
+            # original field, HIDDEN
             translated_fieldpanels.append(
                 FieldPanel(
                     fieldpanel.field_name,
