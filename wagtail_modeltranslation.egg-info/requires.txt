@@ -1,2 +1,0 @@
-django-modeltranslation==0.9.1
-wagtail
