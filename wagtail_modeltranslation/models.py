@@ -27,6 +27,10 @@ class TranslationMixin(object):
     def __init__(self, *args, **kwargs):
         super(TranslationMixin, self).__init__(*args, **kwargs)
 
+        TranslationMixin._translation_options = translator.\
+            get_options_for_model(
+                self.__class__)
+
         if self.__class__._translated:
             return
 
@@ -34,10 +38,6 @@ class TranslationMixin(object):
         edit_handler_class = get_page_edit_handler(self.__class__)
         TranslationMixin._wgform_class = edit_handler_class.get_form_class(
             self.__class__)
-
-        TranslationMixin._translation_options = translator.\
-            get_options_for_model(
-                self.__class__)
 
         defined_tabs = TranslationMixin._fetch_defined_tabs(self.__class__)
 
@@ -144,10 +144,10 @@ class TranslationMixin(object):
         translated_fieldpanels = []
         if fieldpanel.field_name in tr_fields:
             # original field, HIDDEN
-            translated_fieldpanels.append(
-                FieldPanel(
-                    fieldpanel.field_name,
-                    classname='visuallyhidden'))
+            # translated_fieldpanels.append(
+            #     FieldPanel(
+            #         fieldpanel.field_name,
+            #         classname='visuallyhidden'))
 
             for lang in settings.LANGUAGES:
                 classes = fieldpanel.classname
@@ -161,6 +161,10 @@ class TranslationMixin(object):
                     FieldPanel(
                         translated_field_name,
                         classname=classes))
+
+            # delete original field from form
+            if fieldpanel.field_name in cls._wgform_class._meta.fields:
+                cls._wgform_class._meta.fields.remove(fieldpanel.field_name)
         else:
             return [fieldpanel]
 

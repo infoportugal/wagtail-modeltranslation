@@ -9,7 +9,7 @@ os.chdir(os.path.normpath(os.path.join(os.path.abspath(__file__), os.pardir)))
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.1.1',
+    version='0.1.2',
     packages=['wagtail_modeltranslation'],
     include_package_data=True,
     license='BSD License',

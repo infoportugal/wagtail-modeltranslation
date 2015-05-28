@@ -48,6 +48,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.1.2
+
+- Fixed Problem updating field with null value #6: https://github.com/infoportugal/wagtail-modeltranslation/issues/6
+
 ## v0.1.1
 
 - Fixed url_path issue caused by a browser with language different from settings.LANGUAGE_CODE
