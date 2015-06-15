@@ -48,6 +48,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.1.3
+
+- Support for translated inline panels #8: https://github.com/infoportugal/wagtail-modeltranslation/issues/8
+
 ## v0.1.2
 
 - Fixed Problem updating field with null value #6: https://github.com/infoportugal/wagtail-modeltranslation/issues/6

@@ -223,8 +223,7 @@ class TranslationMixin(object):
 
         translated_inline = []
         for inlinepanel in inline_panels:
-            for item in instance._patch_panel(
-                    inlinepanel, inline_model_tr_fields):
+            for item in cls._patch_fieldpanel(inlinepanel, inline_model_tr_fields):
                 translated_inline.append(item)
 
         getattr(instance.__class__, panel.relation_name).related.model.panels = translated_inline
