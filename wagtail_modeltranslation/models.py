@@ -11,6 +11,8 @@ from wagtail.wagtailadmin.edit_handlers import FieldPanel,\
                                                MultiFieldPanel, FieldRowPanel
 from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
                                              PAGE_EDIT_HANDLERS
+from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler,\
+                                                   SNIPPET_EDIT_HANDLERS
 from wagtail.wagtailcore.url_routing import RouteResult
 
 from modeltranslation.translator import translator, NotRegistered
@@ -35,7 +37,10 @@ class TranslationMixin(object):
             return
 
         # CONSTRUCT TEMPORARY EDIT HANDLER
-        edit_handler_class = get_page_edit_handler(self.__class__)
+        if issubclass(self.__class__, Page):
+            edit_handler_class = get_page_edit_handler(self.__class__)
+        else:
+            edit_handler_class = get_snippet_edit_handler(self.__class__)
         TranslationMixin._wgform_class = edit_handler_class.get_form_class(
             self.__class__)
 
@@ -55,10 +60,15 @@ class TranslationMixin(object):
 
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
-        if self.__class__ in PAGE_EDIT_HANDLERS:
-            del PAGE_EDIT_HANDLERS[self.__class__]
+        if issubclass(self.__class__, Page):
+            if self.__class__ in PAGE_EDIT_HANDLERS:
+                del PAGE_EDIT_HANDLERS[self.__class__]
+            edit_handler_class = get_page_edit_handler(self.__class__)
+        else:
+            if self.__class__ in SNIPPET_EDIT_HANDLERS:
+                del SNIPPET_EDIT_HANDLERS[self.__class__]
+            edit_handler_class = get_snippet_edit_handler(self.__class__)
 
-        edit_handler_class = get_page_edit_handler(self.__class__)
         form = edit_handler_class.get_form_class(self.__class__)
         for fname, f in form.base_fields.items():
             if fname in TranslationMixin._translation_options.fields and TranslationMixin._is_orig_required(fname):
@@ -76,7 +86,8 @@ class TranslationMixin(object):
         # If user has defined panels dict on models.py
         if hasattr(defined_class, 'panels'):
             # TEST !!!
-            tabs = defined_class.panels
+            tabs += (('panels',
+                      copy.deepcopy(defined_class.panels)),)
         # Check for common tabs
         else:
             if hasattr(defined_class, 'content_panels'):
