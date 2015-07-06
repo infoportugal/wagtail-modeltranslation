@@ -28,5 +28,14 @@ def change_lang(context, lang=None, *args, **kwargs):
             activate(current_language)
 
             return translated_url
+        elif match.url_name == 'wagtailsearch_search':
+            path_components = [component for component in non_prefixed_path.split('/') if component]
+
+            translated_url = '/' + lang + '/' + path_components[0] + '/'
+            if request.GET:
+                translated_url += '?'
+                for key, value in request.GET.iteritems():
+                    translated_url += key + '=' + value
+            return translated_url
 
     return ''
