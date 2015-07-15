@@ -25,6 +25,7 @@ class TranslationMixin(object):
     _translation_options = None
     _wgform_class = None
     _translated = False
+    _required_fields = []
 
     def __init__(self, *args, **kwargs):
         super(TranslationMixin, self).__init__(*args, **kwargs)
@@ -71,6 +72,10 @@ class TranslationMixin(object):
 
         form = edit_handler_class.get_form_class(self.__class__)
         for fname, f in form.base_fields.items():
+            # set field required on formset level if original field is required as well
+            if fname in self._required_fields:
+                f.required = True
+
             if fname in TranslationMixin._translation_options.fields and TranslationMixin._is_orig_required(fname):
                 f.required = False
 
@@ -154,18 +159,15 @@ class TranslationMixin(object):
 
         translated_fieldpanels = []
         if fieldpanel.field_name in tr_fields:
-            # original field, HIDDEN
-            # translated_fieldpanels.append(
-            #     FieldPanel(
-            #         fieldpanel.field_name,
-            #         classname='visuallyhidden'))
-
             for lang in settings.LANGUAGES:
                 classes = fieldpanel.classname
 
                 if cls._is_orig_required(fieldpanel.field_name) and\
                    (lang[0] == settings.LANGUAGE_CODE):
-                    classes += ' required'
+                    if ("%s_%s" % (fieldpanel.field_name, lang[0]) not in cls._required_fields):
+                        cls._required_fields.append("%s_%s" % (
+                                fieldpanel.field_name, lang[0]))
+
                 translated_field_name = "%s_%s" % (
                         fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
