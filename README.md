@@ -48,6 +48,10 @@ Simple app containing a mixin model that integrates modeltranslation
 
 ## Release Notes
 
+## v0.1.5
+
+- Fixed required fields related bug
+
 ## v0.1.4
 
 - Support for wagtailsearch and wagtailsnippets
