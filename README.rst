@@ -38,25 +38,29 @@ Features
 Quick start
 -----------
 
-1. Add "wagtail_modeltranslation" to your INSTALLED_APPS setting like this (before all apps that you pretend to translate)::
+1. Install "wagtail-modeltranslation":
+
+    pip install wagtail-modeltranslation
+
+2. Add "wagtail_modeltranslation" to your INSTALLED_APPS setting like this (before all apps that you pretend to translate)::
 
     INSTALLED_APPS = (
         ...
         'wagtail_modeltranslation',
     )
 
-2. Add "django.middleware.locale.LocaleMiddleware" to MIDDLEWARE_CLASSES on your settings.py:
+3. Add "django.middleware.locale.LocaleMiddleware" to MIDDLEWARE_CLASSES on your settings.py:
 
     MIDDLEWARE_CLASSES = (
         ...
         'django.middleware.locale.LocaleMiddleware',
     )
 
-3. Enable i18n on settings.py:
+4. Enable i18n on settings.py:
 
     USE_I18N = True
 
-4. Define available languages on settings.py:
+5. Define available languages on settings.py:
 
     LANGUAGES = (
         ('pt', u'Português'),
@@ -64,7 +68,7 @@ Quick start
         ('fr', u'Francês'),
     )
 
-5. Create translation.py inside root folder of app where model you pretend to tranlslate exists:
+6. Create translation.py inside root folder of app where model you pretend to tranlslate exists:
 
     from .models import Foo
     from wagtail_modeltranslation.translator import TranslationOptions
@@ -77,12 +81,12 @@ Quick start
             'body',
         )
 
-6. Add TranslationMixin to translatable model:
+7. Add TranslationMixin to translatable model:
 
     class FooModel(TranslationMixin, Page):
         body = StreamField(...)
 
-7. Run "./manage.py makemigrations" followed by "./manage.py migrate"
+8. Run "./manage.py makemigrations" followed by "./manage.py migrate"
 
 
 
