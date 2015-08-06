@@ -7,7 +7,7 @@ This app is based on django-modeltranslation: https://github.com/deschler/django
 It's an alternative approach for i18n support on Wagtail CMS websites.
 
 The modeltranslation application is used to translate dynamic content of
-existing Wagtail CMS models to an arbitrary number of languages without having to
+existing Wagtail models to an arbitrary number of languages, without having to
 change the original model classes. It uses a registration approach (comparable
 to Django's admin app) to add translations to existing or new projects and is 
 fully integrated into the Wagtail admin UI.
@@ -38,7 +38,7 @@ Features
 Quick start
 -----------
 
-1. Install "wagtail-modeltranslation"::
+1. Install :code:`wagtail-modeltranslation`::
 
     pip install wagtail-modeltranslation
 
@@ -81,15 +81,14 @@ Quick start
             'body',
         )
 
-7. Add TranslationMixin to translatable model::
+7. Add :code:`TranslationMixin` to your translatable model::
 
     from wagtail_modeltranslation.models import TranslationMixin
     
     class FooModel(TranslationMixin, Page):
         body = StreamField(...)
 
-8. Run `./manage.py makemigrations` followed by `./manage.py migrate`
-
+8. Run :code:`python manage.py makemigrations` followed by :code:`python manage.py migrate`
 
 
 Project Home
