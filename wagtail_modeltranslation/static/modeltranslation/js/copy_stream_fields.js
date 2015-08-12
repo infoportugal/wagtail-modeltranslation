@@ -1,4 +1,3 @@
-
 /* Creates the copy buttons in the header of each stream field */
 $(document).ready(function(){
 	//All the stream fields with all his content
@@ -25,7 +24,6 @@ $(document).ready(function(){
 		};
 	};
 
-
 	/* on click binding */
 	$('.translation-field-copy').click(function(event){
 		event.preventDefault();
@@ -42,8 +40,10 @@ function requestCopyField(originID, targetID) {
 	var serializedOriginField = $.grep(serializedForm, function(obj){return obj.name.indexOf(originID) >= 0;});
 	var jsonString = JSON.stringify(serializedOriginField);
 
-	/* AJAX request that returns the html content of originID field
-		with the id's changed to targetID */
+	/*
+	 * AJAX request that returns the html content of originID field
+	 * with the id's changed to targetID
+	 */
 	$.ajax({
 		url: 'copy_translation_content',
 		type: 'GET',
@@ -55,8 +55,8 @@ function requestCopyField(originID, targetID) {
 		var wrapperDiv = $("#"+targetID+"-count").parents('.input')[0];
 		$(wrapperDiv).html(data);
 	})
-	.fail(function() {
-		console.log("error");
+	.fail(function(error) {
+		console.log("wagtail-modeltranslation error: %s", error);
 	})
-	 
+
 }

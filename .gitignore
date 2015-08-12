@@ -27,5 +27,7 @@ pip-log.txt
 .tox
 nosetests.xml
 
+.pypirc
+
 # Sphinx
 _build
