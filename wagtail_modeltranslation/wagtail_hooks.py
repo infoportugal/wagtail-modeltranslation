@@ -98,7 +98,7 @@ def streamfields_translation_copy():
     and send a ajax request to copy the content.
     """
 
-    # includes the java script file in the html file
+    # includes the javascript file in the html file
     js_files = [
         'modeltranslation/js/copy_stream_fields.js',
     ]
@@ -108,3 +108,10 @@ def streamfields_translation_copy():
     )
 
     return js_includes
+
+
+@hooks.register('insert_editor_css')
+def modeltranslation_page_editor_css():
+    return format_html('<link rel="stylesheet" href="' \
+        + settings.STATIC_URL \
+        + 'modeltranslation/css/page_editor_modeltranslation.css" >')

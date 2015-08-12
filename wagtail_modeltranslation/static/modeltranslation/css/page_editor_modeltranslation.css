@@ -1,0 +1,12 @@
+.translation-field-copy-wrapper{
+    float: right;
+    margin-right: 20px;
+}
+.translation-field-copy-wrapper > button{
+    width: 30px;
+    height: 30px;
+    line-height: 30px;
+    text-align: center;
+    padding: 0;
+    margin-left: 10px;
+}

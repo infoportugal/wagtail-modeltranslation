@@ -1,3 +1,6 @@
+v0.2.2:
+- Added duplicate content buttons to translated StreamFieldPanels;
+
 v0.2.1:
 - Fixed missing templatetags folder on pypi package;
 

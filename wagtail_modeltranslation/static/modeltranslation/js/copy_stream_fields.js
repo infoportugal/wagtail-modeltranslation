@@ -15,11 +15,13 @@ $(document).ready(function(){
 		var fieldName = fieldInfos.split('_')[0];
 		var fieldLang = fieldInfos.split('_')[1];
 		//The cycle to create the buttons for copy each language field
+		var copyContentString = 'Copy content from';
+		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
 		for (var j = 0; j < langs.length; j++) {
 			if (fieldLang != langs[j]) {
 				var currentFieldID = fieldName + '_' + fieldLang;
 				var targetFieldID = fieldName + '_' + langs [j];
-				header.innerHTML += '<button class="translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
+				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
 			};
 		};
 	};
