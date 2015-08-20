@@ -13,5 +13,9 @@ Core Committers
 Contributors
 ------------
 
-.. _django-modeltranslation: https://github.com/deschler/django-modeltranslation
-.. _django-linguo: https://github.com/zmathew/django-linguo
+* `Django-modeltranslation`_
+* `Django-lingua`_
+
+
+.. _Django-modeltranslation: https://github.com/deschler/django-modeltranslation
+.. _Django-linguo: https://github.com/zmathew/django-linguo
