@@ -14,7 +14,7 @@ Contributors
 ------------
 
 * `Django-modeltranslation`_
-* `Django-lingua`_
+* `Django-linguo`_
 
 
 .. _Django-modeltranslation: https://github.com/deschler/django-modeltranslation
