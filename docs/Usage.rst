@@ -7,7 +7,7 @@ example from the :ref:`Registering Models` chapter again. The original ``Foo`` m
 
 .. code-block:: console
 
-    class Foo(TranslationMixin, Page):
+    class FooModel(TranslationMixin, Page):
         introduction = models.CharField(max_length=255)
         body = RichtextField(blank=True)
 
@@ -15,7 +15,7 @@ Now that it is registered with wagtail-modeltranslation, the model looks like th
 
 .. code-block:: console
 
-   class Foo(TranslationMixin, Page):
+   class FooModel(TranslationMixin, Page):
       introduction = models.CharField(max_length=255)  # original/translated field
       introduction_pt = models.CharField(null=True, blank=True, max_length=255)  # default translation field
       introduction_es = models.CharField(null=True, blank=True, max_length=255)  # translation field
@@ -33,13 +33,11 @@ The example above assumes that the default language is ``pt``, therefore the ``i
 
 .. code-block:: console
 
-    # .models
-    HomePage.content_panels = [
+    # Indicate fields to include in Wagtail admin panel(s)
+    FooModel.content_panels = [
         FieldPanel('title', classname="full title"),
         FieldPanel('introduction', classname="full"),
         FieldPanel('body', classname="full"),
-        InlinePanel(HomePage, 'carousel_items', label="Carousel items"),
-        InlinePanel(HomePage, 'related_links', label="Related links"),
         ]
 
 

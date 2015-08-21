@@ -141,20 +141,20 @@ By default, all translation fields are optional (not required). This can be chan
 ``TranslationOptions``::
 
     class NewsTranslationOptions(TranslationOptions):
-        fields = ('title', 'text',)
-        required_languages = ('en', 'de')
+        fields = ('introduction', 'body',)
+        required_languages = ('pt', 'es')
 
-It's quite self-explanatory: for German and English, all translation fields are required. For other
-languages - optional.
+It's quite self-explanatory: for Portuguese and Spanish, the ``introduction`` and ``body`` translation fields are required. For other
+languages, they are optional.
 
 A more fine-grained control is available::
 
     class NewsTranslationOptions(TranslationOptions):
-        fields = ('title', 'text',)
-        required_languages = {'de': ('title', 'text'), 'default': ('title',)}
+        fields = ('introduction', 'body',)
+        required_languages = {'pt': ('introduction', 'body'), 'default': ('introduction',)}
 
-For German, all fields (both ``title`` and ``text``) are required; for all other languages - only
-**title** is required. The **'default'** is optional.
+For Portuguese, all fields (both ``introduction`` and ``body``) are required; for all other languages, only
+``introduction`` is required. The ``default`` is optional.
 
 .. note::
     Requirement is enforced by ``blank=False``. Please remember that it will trigger validation only

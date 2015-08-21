@@ -89,7 +89,7 @@ To setup the application please follow these steps:
    When the LANGUAGES setting isn't present in ``settings/base.py`` (and neither is ``MODELTRANSLATION_LANGUAGES``), it defaults to Django's  global LANGUAGES setting instead, and there are quite a few languages in the default!
 
 
-2. Create a ``translation.py`` in your app directory and register ``TranslationOptions`` for every model you want to translate.
+2. Create a ``translation.py`` file in your app directory and register ``TranslationOptions`` for every model you want to translate.
 
 .. code-block:: console
 

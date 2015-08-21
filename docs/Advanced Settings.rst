@@ -3,7 +3,7 @@ Advanced Settings
 *****************
 
 
-Modeltranslation also has some advanced settings to customize its behaviour.
+Modeltranslation has some advanced settings to customize its behaviour.
 
 .. _settings-modeltranslation_default_language:
 
