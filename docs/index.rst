@@ -39,8 +39,9 @@ Features
 - Default Page model fields has translatable fields by default
 - StreamFields are now supported!
 
-
-Contents:
+========
+Contents
+========
 
 .. toctree::
    :maxdepth: 2
