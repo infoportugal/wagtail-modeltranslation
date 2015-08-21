@@ -105,7 +105,8 @@ To setup the application please follow these steps:
 
 3. Add ``TranslationMixin`` to your translatable model:.
 
-.. code-block::console
+.. code-block:: console
+
    # .models
    ...
    from wagtail_modeltranslation.models import TranslationMixin
