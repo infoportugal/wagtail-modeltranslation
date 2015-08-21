@@ -107,7 +107,7 @@ To setup the application please follow these steps:
 
 .. code-block:: console
 
-   # .models
+   # .models foo
    ...
    from wagtail_modeltranslation.models import TranslationMixin
 
