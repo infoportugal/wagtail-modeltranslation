@@ -13,7 +13,7 @@ Contents:
 
    Introduction
    Installation
-   Configuration
+   Advanced Settings
    Registering Models
    Usage
    Multilingual Manager

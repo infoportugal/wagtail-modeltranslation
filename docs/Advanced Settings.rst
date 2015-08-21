@@ -1,6 +1,6 @@
-*********************************
-Configuration of Modeltranslation
-*********************************
+*****************
+Advanced Settings
+*****************
 
 
 Modeltranslation also has some advanced settings to customize its behaviour.
@@ -17,7 +17,7 @@ Default: ``None``
 
 To override the default language as described in :ref:`Configuration settings<language_settings>`, you can define a language in
 ``MODELTRANSLATION_DEFAULT_LANGUAGE``. Note that the value has to be in ``settings.LANGUAGES``, otherwise an
-ImproperlyConfigured exception will be raised.
+``ImproperlyConfigured`` exception will be raised.
 
 Example::
 
@@ -75,7 +75,7 @@ the default behaviour of unlisted languages.
 
 Example::
 
-    MODELTRANSLATION_FALLBACK_LANGUAGES = {'default': ('pt', 'es'), 'fr': ('pt',)}
+    MODELTRANSLATION_FALLBACK_LANGUAGES = {'default': ('pt', 'es'), 'fr': ('es',)}
 
 .. note::
     Each language has to be in the LANGUAGES setting, otherwise an ``Improperly Configured`` exception is raised.
@@ -89,7 +89,7 @@ Prepopulate language
 
 ``MODELTRANSLATION_PREPOPULATE_LANGUAGE``
 
-Default: ``current active language``
+Default: ``the current active language``
 
 By default modeltranslation will use the current request language for prepopulating admin fields specified in the
 ``prepopulated_fields`` admin property. This is often used to automatically fill slug fields.
@@ -101,7 +101,7 @@ Example::
     MODELTRANSLATION_PREPOPULATE_LANGUAGE = 'fr'
 
 .. note::
-    The language has to be in the LANGUAGES setting, otherwise an ImproperlyConfigured exception is raised.
+    The language has to be in the ``LANGUAGES`` setting, otherwise an ``ImproperlyConfigured`` exception is raised.
 
 
 Translation files
@@ -126,7 +126,7 @@ Syntax::
 Example::
 
     MODELTRANSLATION_TRANSLATION_FILES = (
-        'foo.translation',
+        'news.translation',
         'projects.translation',
     )
 
@@ -139,7 +139,7 @@ Custom fields
 Default: ``()`` (empty tuple)
 
 
-Modeltranslation supports the fields listed in the `Matrix of supported_fields`. In most cases subclasses of the supported
+Modeltranslation supports the fields listed in the `Matrix of supported_fields`_. In most cases subclasses of the supported
 fields will work fine, too. Unsupported fields will throw an ``Improperly Configured`` exception.
 
 The list of supported fields can be extended by defining a tuple of field names in your ``settings file``.
