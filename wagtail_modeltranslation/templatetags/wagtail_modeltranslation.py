@@ -16,7 +16,7 @@ def change_lang(context, lang=None, *args, **kwargs):
     if 'request' in context and lang and current_language:
         request = context['request']
         match = resolve(request.path)
-        non_prefixed_path = re.sub(current_language+'/', '', request.path)
+        non_prefixed_path = re.sub(current_language+'/', '', request.path, count=1)
 
         # means that is an wagtail page object
         if match.url_name == 'wagtail_serve':
