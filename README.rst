@@ -97,4 +97,4 @@ https://github.com/infoportugal/wagtail-modeltranslation
 
 Documentation
 -------------
-Coming soon
+http://wagtail-modeltranslation-docs.readthedocs.org/en/latest/#
