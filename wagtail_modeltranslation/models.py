@@ -383,7 +383,6 @@ class TranslationMixin(object):
                 if not parent_url_path:
                     parent_url_path = getattr(parent, 'url_path')
 
-
                 setattr(self, 'url_path_'+lang[0], parent_url_path + tr_slug + '/')
             else:
                 # a page without a parent is the tree root,
@@ -419,3 +418,54 @@ class TranslationMixin(object):
                 return RouteResult(self)
             else:
                 raise Http404
+
+    @staticmethod
+    def get_site_root_paths():
+        """
+        Return a list of (root_path, root_url) tuples, most specific path first -
+        used to translate url_paths into actual URLs with hostnames
+
+        Same method as Site.get_site_root_paths() but without cache
+
+        TODO: remake this method with cache and think of his integration in
+        Site.get_site_root_paths()
+        """
+        result = [
+            (site.id, site.root_page.specific.url_path, site.root_url)
+            for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
+        ]
+
+        return result
+
+    def relative_url(self, current_site):
+        """
+        Return the 'most appropriate' URL for this page taking into account the site we're currently on;
+        a local URL if the site matches, or a fully qualified one otherwise.
+        Return None if the page is not routable.
+
+        Override for using TranslationMixin.get_site_root_paths() insted of
+        Site.get_site_root_paths()
+        """
+        for (id, root_path, root_url) in TranslationMixin.get_site_root_paths():
+            if self.url_path.startswith(root_path):
+                return ('' if current_site.id == id else root_url) + reverse('wagtail_serve', args=(self.url_path[len(root_path):],))
+
+
+    @property
+    def url(self):
+        """
+        Return the 'most appropriate' URL for referring to this page from the pages we serve,
+        within the Wagtail backend and actual website templates;
+        this is the local URL (starting with '/') if we're only running a single site
+        (i.e. we know that whatever the current page is being served from, this link will be on the
+        same domain), and the full URL (with domain) if not.
+        Return None if the page is not routable.
+
+        Override for using TranslationMixin.get_site_root_paths() insted of
+        Site.get_site_root_paths()
+        """
+        root_paths = TranslationMixin.get_site_root_paths()
+
+        for (id, root_path, root_url) in root_paths:
+            if self.url_path.startswith(root_path):
+                return ('' if len(root_paths) == 1 else root_url) + reverse('wagtail_serve', args=(self.url_path[len(root_path):],))
