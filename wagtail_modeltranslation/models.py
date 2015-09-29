@@ -349,8 +349,8 @@ class TranslationMixin(object):
 
     @classmethod
     def _patch_inlinepanel(cls, instance, panel):
-        inline_panels = getattr(
-            instance.__class__, panel.relation_name).related.model.panels
+        relation = getattr(instance.__class__, panel.relation_name)
+        inline_panels = getattr(relation.related.model, 'panels', [])
         try:
             inline_model_tr_fields = translator.get_options_for_model(
                 getattr(
