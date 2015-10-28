@@ -1,3 +1,8 @@
+v0.2.3:
+- Add workaround for InlinePanel AttributeError (#31);
+- Added support to widget declarations on FieldPanel;
+- Fixed missing templatetags folder on pypi package;
+
 v0.2.2:
 - Added duplicate content buttons to translated StreamFieldPanels;
 

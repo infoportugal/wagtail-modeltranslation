@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.2.2',
+    version='0.2.3',
     description='Translates Wagtail CMS models using a registration approach.',
     long_description=(
         'The modeltranslation application can be used to translate dynamic '
@@ -18,12 +18,15 @@ setup(
     maintainer='Rui Martins',
     maintainer_email='rui.martins@infoportugal.pt',
     url='https://github.com/infoportugal/wagtail-modeltranslation',
-    packages=['wagtail_modeltranslation', 'wagtail_modeltranslation.management',
-              'wagtail_modeltranslation.management.commands'],
+    packages=[
+        'wagtail_modeltranslation',
+        'wagtail_modeltranslation.management',
+        'wagtail_modeltranslation.management.commands',
+        'wagtail_modeltranslation.templatetags'],
     package_data={'wagtail_modeltranslation': ['static/modeltranslation/css/*.css',
                                        'static/modeltranslation/js/*.js']},
     requires=['django(>=1.7)', 'wagtail(>=1.0)'],
-    download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.2.2.tar.gz',
+    download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.2.3.tar.gz',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
@@ -36,6 +39,5 @@ setup(
         'Environment :: Web Environment',
         'Intended Audience :: Developers',
         'Framework :: Django',
-        'Framework :: Wagtail CMS',
         'License :: OSI Approved :: BSD License'],
     license='New BSD')

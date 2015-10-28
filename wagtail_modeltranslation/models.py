@@ -261,7 +261,8 @@ class TranslationMixin(object):
                 translated_fieldpanels.append(
                     FieldPanel(
                         translated_field_name,
-                        classname=classes))
+                        classname=classes,
+                        widget=fieldpanel.widget))
 
             # delete original field from form
             if fieldpanel.field_name in cls._wgform_class._meta.fields:

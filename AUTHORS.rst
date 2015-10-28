@@ -8,13 +8,17 @@ Core Committers
 
 * Diogo Marques
 * Rui Martins
-* Eduardo Nogueira
 
 Contributors
 ------------
 
 * `Django-modeltranslation`_
 * `Django-linguo`_
+* Alain Gelinas
+* Eduardo Nogueira
+* Karl Hobley
+* Raphael Grill
+* Tom Dyson
 
 
 .. _Django-modeltranslation: https://github.com/deschler/django-modeltranslation
