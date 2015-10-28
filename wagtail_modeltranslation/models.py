@@ -5,8 +5,9 @@ import copy
 from django.conf import settings
 from django.http import Http404
 from django.db.models import Q
+from django.core.urlresolvers import reverse
 
-from wagtail.wagtailcore.models import Page
+from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailadmin.edit_handlers import FieldPanel,\
     MultiFieldPanel, FieldRowPanel
 from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
