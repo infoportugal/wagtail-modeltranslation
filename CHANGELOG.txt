@@ -1,3 +1,6 @@
+v0.3.2:
+- Fixed route() method issue causing invalid field lookup;
+
 v0.3.1:
 - Add support to snippets, using SnippetsTranslationMixin
 

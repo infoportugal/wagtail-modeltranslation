@@ -406,17 +406,23 @@ class TranslationMixin(object):
             child_slug = path_components[0]
             remaining_components = path_components[1:]
 
-            try:
-                q = Q()
-                for lang in settings.LANGUAGES:
-                    tr_field_name = 'slug_%s' % (lang[0])
-                    condition = {tr_field_name: child_slug}
-                    q |= Q(**condition)
-                subpage = self.get_children().get(q)
-            except Page.DoesNotExist:
-                raise Http404
+            # try:
+            #     q = Q()
+            #     for lang in settings.LANGUAGES:
+            #         tr_field_name = 'slug_%s' % (lang[0])
+            #         condition = {tr_field_name: child_slug}
+            #         q |= Q(**condition)
+            #     subpage = self.get_children().get(q)
+            # except Page.DoesNotExist:
+            #     raise Http404
 
-            return subpage.specific.route(request, remaining_components)
+            # return subpage.specific.route(request, remaining_components)
+
+            subpages = self.get_children()
+            for page in subpages:
+                if page.specific.slug == child_slug:
+                    return page.specific.route(request, remaining_components)
+            raise Http404
 
         else:
             # request is for this very page
