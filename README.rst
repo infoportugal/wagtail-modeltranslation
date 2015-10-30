@@ -37,11 +37,11 @@ Features
 
 Upgrade from 0.2.x to v0.3
 ==========================
-On v0.3 we did fix migration issues. Now, Page class translated fields (like title_<lang> or url_path_<lang>) are in child classes tables.
+On v0.3 we did fix migration issues. Now, Page class translated fields (like title_<lang> or url_path_<lang>) are in child classes tables. (thanks nulopes!)
 
 In order to migrate from v0.2.x to v0.3:
 
-1. Delete wagtailcore_page modeltranslation related columns (replace field names suffix to your languages)
+1. Delete wagtailcore_page modeltranslation related columns (replace field names suffix to your languages). Example::
 
     ALTER TABLE wagtailcore_page DROP COLUMN search_description_en, DROP COLUMN search_description_es, DROP COLUMN search_description_fr, DROP COLUMN search_description_pt;
     ALTER TABLE wagtailcore_page DROP COLUMN title_en, DROP COLUMN title_es, DROP COLUMN title_fr, DROP COLUMN title_pt;
@@ -49,8 +49,7 @@ In order to migrate from v0.2.x to v0.3:
     ALTER TABLE wagtailcore_page DROP COLUMN seo_title_en, DROP COLUMN seo_title_es, DROP COLUMN seo_title_fr, DROP COLUMN seo_title_pt;
     ALTER TABLE wagtailcore_page DROP COLUMN url_path_en, DROP COLUMN url_path_es, DROP COLUMN url_path_fr, DROP COLUMN url_path_pt;
 
-2. Delete modeltranslation related migrations from wagtailcore migrations directory - virtualenv/lib/python2.7/site-packages/wagtail/wagtailcore;
-    Note: check if any of your apps migrations depends on this migration.
+2. Delete modeltranslation related migrations from wagtailcore migrations directory (virtualenv path: virtualenv/lib/python2.7/site-packages/wagtail/wagtailcore). **Important**: check if any of your apps migrations depends on this migration.
 
 3. Delete migration row on table django_migrations;
 
