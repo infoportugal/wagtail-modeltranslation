@@ -37,7 +37,7 @@ Features
 
 Upgrade from 0.2.x to v0.3
 ==========================
-On v0.3 we did fix migration issues. Now, Page class translated fields (like title_<lang> or url_path_<lang>) are in child classes tables.
+On v0.3 we did fix migration issues. Now, Page class translated fields (like title_<lang> or url_path_<lang>) are in child classes tables. (thanks nulopes!)
 
 In order to migrate from v0.2.x to v0.3:
 
