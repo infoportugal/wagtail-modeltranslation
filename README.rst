@@ -9,7 +9,7 @@ It's an alternative approach for i18n support on Wagtail CMS websites.
 The modeltranslation application is used to translate dynamic content of
 existing Wagtail models to an arbitrary number of languages, without having to
 change the original model classes. It uses a registration approach (comparable
-to Django's admin app) to add translations to existing or new projects and is 
+to Django's admin app) to add translations to existing or new projects and is
 fully integrated into the Wagtail admin UI.
 
 The advantage of a registration approach is the ability to add translations to
@@ -35,8 +35,36 @@ Features
 - StreamFields are now supported!
 
 
+Migrate from 0.2.x to v0.3
+==========================
+On v0.3 we did fix migration issues. Now, Page class translated fields (like title_<lang> or url_path_<lang>) are in child classes tables.
+
+In order to migrate from v0.2.x to v0.3:
+
+1. Delete wagtailcore_page modeltranslation related columns (replace field names suffix to your languages)
+
+    ALTER TABLE wagtailcore_page DROP COLUMN search_description_en, DROP COLUMN search_description_es, DROP COLUMN search_description_fr, DROP COLUMN search_description_pt;
+    ALTER TABLE wagtailcore_page DROP COLUMN title_en, DROP COLUMN title_es, DROP COLUMN title_fr, DROP COLUMN title_pt;
+    ALTER TABLE wagtailcore_page DROP COLUMN slug_en, DROP COLUMN slug_es, DROP COLUMN slug_fr, DROP COLUMN slug_pt;
+    ALTER TABLE wagtailcore_page DROP COLUMN seo_title_en, DROP COLUMN seo_title_es, DROP COLUMN seo_title_fr, DROP COLUMN seo_title_pt;
+    ALTER TABLE wagtailcore_page DROP COLUMN url_path_en, DROP COLUMN url_path_es, DROP COLUMN url_path_fr, DROP COLUMN url_path_pt;
+
+2. Delete modeltranslation related migrations from wagtailcore migrations directory - virtualenv/lib/python2.7/site-packages/wagtail/wagtailcore;
+    Note: check if any of your apps migrations depends on this migration.
+
+3. Delete migration row on table django_migrations;
+
+5. python manage.py makemigrations;
+
+4. python manage.py migrate;
+
+5. python manage.py update_translation_fields;
+
+6. python manage.py set_translation_url_paths;
+
+
 Quick start
------------
+===========
 
 1. Install :code:`wagtail-modeltranslation`::
 
@@ -73,8 +101,8 @@ Quick start
     from .models import Foo
     from wagtail_modeltranslation.translator import TranslationOptions
     from wagtail_modeltranslation.decorators import register
-    
-    
+
+
     @register(Foo)
     class FooTR(TranslationOptions):
         fields = (
@@ -84,7 +112,7 @@ Quick start
 7. Add :code:`TranslationMixin` to your translatable model::
 
     from wagtail_modeltranslation.models import TranslationMixin
-    
+
     class FooModel(TranslationMixin, Page):
         body = StreamField(...)
 

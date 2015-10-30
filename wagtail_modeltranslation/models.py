@@ -376,20 +376,24 @@ class TranslationMixin(object):
 
         for lang in settings.LANGUAGES:
             if parent:
-                tr_slug = getattr(self, 'slug_'+lang[0])
+                tr_slug = getattr(self, 'slug_'+lang[0]) if hasattr(self, 'slug_'+lang[0]) else getattr(self, 'slug')
+
                 if not tr_slug:
-                    tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE)
+                    tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE) if hasattr(self, 'slug_'+settings.LANGUAGE_CODE) else getattr(self, 'slug')
 
-                parent_url_path = getattr(parent, 'url_path_'+lang[0])
+                parent_url_path = getattr(parent, 'url_path_'+lang[0]) if hasattr(parent, 'url_path_'+lang[0]) else getattr(parent, 'url_path')
 
-                if not parent_url_path:
-                    parent_url_path = getattr(parent, 'url_path')
-
-                setattr(self, 'url_path_'+lang[0], parent_url_path + tr_slug + '/')
+                if hasattr(self, 'url_path_'+lang[0]):
+                    setattr(self, 'url_path_'+lang[0], parent_url_path + tr_slug + '/')
+                else:
+                    setattr(self, 'url_path', parent_url_path + tr_slug + '/')
             else:
                 # a page without a parent is the tree root,
                 # which always has a url_path of '/'
-                setattr(self, 'url_path_'+lang[0], '/')
+                if hasattr(self, 'url_path_'+lang[0]):
+                    setattr(self, 'url_path_'+lang[0], '/')
+                else:
+                    setattr(self, 'url_path', '/')
 
         return self.url_path
 

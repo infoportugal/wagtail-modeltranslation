@@ -1,3 +1,10 @@
+v0.3:
+- Fix conflicts in migrations with wagtailcore migrations. Now translated fields lives only on Page child classes tables;
+
+v0.2.4:
+- Fix missing Site class import;
+- Fix missing reverse function import;
+
 v0.2.3:
 - Add workaround for InlinePanel AttributeError (#31);
 - Added support to widget declarations on FieldPanel;

@@ -65,11 +65,21 @@ class TranslationOptions(with_metaclass(FieldsAggregationMetaClass, object)):
         """
         Create fields dicts without any translation fields.
         """
+        page_fields = ()
+
+        if model.__class__.__name__ is 'PageBase' and model.__name__ is not 'Page':
+            page_fields = (
+                'title',
+                'slug',
+                'seo_title',
+                'search_description',
+                'url_path',)
+
         self.model = model
         self.registered = False
         self.related = False
-        self.local_fields = dict((f, set()) for f in self.fields)
-        self.fields = dict((f, set()) for f in self.fields)
+        self.local_fields = dict((f, set()) for f in self.fields + page_fields)
+        self.fields = dict((f, set()) for f in self.fields + page_fields)
         self.related_fields = []
 
     def validate(self):
