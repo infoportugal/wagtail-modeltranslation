@@ -35,7 +35,7 @@ Features
 - StreamFields are now supported!
 
 
-Migrate from 0.2.x to v0.3
+Upgrade from 0.2.x to v0.3
 ==========================
 On v0.3 we did fix migration issues. Now, Page class translated fields (like title_<lang> or url_path_<lang>) are in child classes tables.
 
@@ -109,7 +109,7 @@ Quick start
             'body',
         )
 
-7. Add :code:`TranslationMixin` to your translatable model::
+7. Add :code:`TranslationMixin` to your translatable page or 'SnippetsTranslationMixin' for snippets::
 
     from wagtail_modeltranslation.models import TranslationMixin
 

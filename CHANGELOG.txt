@@ -1,3 +1,6 @@
+v0.3.1:
+- Add support to snippets, using SnippetsTranslationMixin
+
 v0.3:
 - Fix conflicts in migrations with wagtailcore migrations. Now translated fields lives only on Page child classes tables;
 

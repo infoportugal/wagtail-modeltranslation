@@ -456,7 +456,6 @@ class TranslationMixin(object):
             if self.url_path.startswith(root_path):
                 return ('' if current_site.id == id else root_url) + reverse('wagtail_serve', args=(self.url_path[len(root_path):],))
 
-
     @property
     def url(self):
         """
