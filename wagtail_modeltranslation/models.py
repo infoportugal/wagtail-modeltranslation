@@ -8,6 +8,7 @@ from django.db.models import Q
 from django.core.urlresolvers import reverse
 
 from wagtail.wagtailcore.models import Page, Site
+from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailadmin.edit_handlers import FieldPanel,\
     MultiFieldPanel, FieldRowPanel
 from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
@@ -202,6 +203,9 @@ class TranslationMixin(object):
         if panel.__class__.__name__ == 'FieldPanel':
             trpanels = TranslationMixin._patch_fieldpanel(
                 panel, inline_tr_options)
+        elif panel.__class__.__name__ == 'ImageChooserPanel':
+            trpanels = TranslationMixin._patch_imagechooser(
+                panel, inline_tr_options)
         elif panel.__class__.__name__ == 'MultiFieldPanel':
             trpanels = [TranslationMixin._patch_multifieldpanel(
                 panel, inline_tr_options)]
@@ -272,6 +276,44 @@ class TranslationMixin(object):
             return [fieldpanel]
 
         return translated_fieldpanels
+
+
+    # ImageChooserPanel
+    ####################################
+    @classmethod
+    def _patch_imagechooser(cls, imagechooser, inline_tr_options=None):
+        """
+        Patch ImageChooserPanels and return one per available language
+        """
+        tr_fields = []
+        if inline_tr_options:
+            tr_fields = inline_tr_options
+        else:
+            tr_fields = cls._translation_options.fields
+
+        translated_imagechoosers = []
+        if imagechooser.field_name in tr_fields:
+            for lang in settings.LANGUAGES:
+
+                if cls._is_orig_required(imagechooser.field_name) and\
+                   (lang[0] == settings.LANGUAGE_CODE):
+                    if ("%s_%s" % (imagechooser.field_name, lang[0]) not in cls._required_fields):
+                        cls._required_fields.append("%s_%s" % (
+                                imagechooser.field_name, lang[0]))
+
+                translated_field_name = "%s_%s" % (
+                        imagechooser.field_name, lang[0])
+                translated_imagechoosers.append(
+                    ImageChooserPanel(
+                        translated_field_name))
+
+            # delete original field from form
+            if imagechooser.field_name in cls._wgform_class._meta.fields:
+                cls._wgform_class._meta.fields.remove(imagechooser.field_name)
+        else:
+            return [imagechooser]
+
+        return translated_imagechoosers
 
     # StreamFieldPanel
     ####################################
