@@ -362,6 +362,9 @@ class TranslationMixin(object):
             if panel.__class__.__name__ == 'FieldPanel':
                 for item in cls._patch_fieldpanel(panel, inline_tr_options):
                     patched_fields.append(item)
+            elif panel.__class__.__name__ == 'ImageChooserPanel':
+                for item in cls._patch_imagechooser(panel, inline_tr_options):
+                    patched_fields.append(item)
             elif panel.__class__.__name__ == 'FieldRowPanel':
                 patched_fields.append(
                     cls._patch_fieldrowpanel(panel, inline_tr_options))
