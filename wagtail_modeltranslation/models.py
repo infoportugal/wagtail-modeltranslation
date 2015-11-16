@@ -16,6 +16,7 @@ from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler,\
     SNIPPET_EDIT_HANDLERS
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
+from .utils import build_localized_fieldname
 
 from wagtail_modeltranslation.translator import translator, NotRegistered
 
@@ -253,11 +254,11 @@ class TranslationMixin(object):
 
                 if cls._is_orig_required(fieldpanel.field_name) and\
                    (lang[0] == settings.LANGUAGE_CODE):
-                    if ("%s_%s" % (fieldpanel.field_name, lang[0]) not in cls._required_fields):
-                        cls._required_fields.append("%s_%s" % (
+                    if (build_localized_fieldname(fieldpanel.field_name, lang[0]) not in cls._required_fields):
+                        cls._required_fields.append(build_localized_fieldname(
                                 fieldpanel.field_name, lang[0]))
 
-                translated_field_name = "%s_%s" % (
+                translated_field_name = build_localized_fieldname(
                         fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
                     FieldPanel(
@@ -291,11 +292,11 @@ class TranslationMixin(object):
             for lang in settings.LANGUAGES:
                 if cls._is_orig_required(fieldpanel.field_name) and\
                    (lang[0] == settings.LANGUAGE_CODE):
-                    if ("%s_%s" % (fieldpanel.field_name, lang[0]) not in cls._required_fields):
-                        cls._required_fields.append("%s_%s" % (
+                    if (build_localized_fieldname(fieldpanel.field_name, lang[0]) not in cls._required_fields):
+                        cls._required_fields.append(build_localized_fieldname (
                                 fieldpanel.field_name, lang[0]))
 
-                translated_field_name = "%s_%s" % (
+                translated_field_name = build_localized_fieldname % (
                         fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
                     StreamFieldPanel(
@@ -626,12 +627,12 @@ class SnippetsTranslationMixin(object):
 
                 if cls._is_orig_required(fieldpanel.field_name) and\
                    (lang[0] == settings.LANGUAGE_CODE):
-                    if ("%s_%s" % (fieldpanel.field_name, lang[0])
+                    if (build_localized_fieldname(fieldpanel.field_name, lang[0])
                             not in cls._required_fields):
-                        cls._required_fields.append("%s_%s" % (
+                        cls._required_fields.append(build_localized_fieldname(
                             fieldpanel.field_name, lang[0]))
 
-                translated_field_name = "%s_%s" % (
+                translated_field_name = build_localized_fieldname(
                     fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
                     FieldPanel(
@@ -664,12 +665,12 @@ class SnippetsTranslationMixin(object):
             for lang in settings.LANGUAGES:
                 if cls._is_orig_required(fieldpanel.field_name) and\
                    (lang[0] == settings.LANGUAGE_CODE):
-                    if ("%s_%s" % (fieldpanel.field_name, lang[0])
+                    if (build_localized_fieldname(fieldpanel.field_name, lang[0])
                             not in cls._required_fields):
-                        cls._required_fields.append("%s_%s" % (
+                        cls._required_fields.append(build_localized_fieldname(
                             fieldpanel.field_name, lang[0]))
 
-                translated_field_name = "%s_%s" % (
+                translated_field_name = build_localized_fieldname % (
                     fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
                     StreamFieldPanel(
