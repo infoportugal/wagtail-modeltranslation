@@ -52,6 +52,19 @@ class Command(NoArgsCommand):
                                     field_name, db_table, obj.page_ptr_id))[0]
                             setattr(
                                 obj, def_lang_fieldname, raw.original_field)
+                        # field is a foreign key
+                        elif (field_name + '_id') in\
+                                [x.name for x in db_table_desc]:
+                            raw = model._default_manager.raw(
+                                'SELECT *, %s AS original_field FROM %s \
+                                 WHERE page_ptr_id=%d LIMIT 1' % (
+                                    field_name+'_id',
+                                    db_table,
+                                    obj.page_ptr_id))[0]
+                            setattr(
+                                obj,
+                                def_lang_fieldname+'_id',
+                                raw.original_field)
                         # original field parent class
                         else:
                             raw = Page._default_manager.raw(
