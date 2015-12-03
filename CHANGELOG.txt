@@ -1,3 +1,10 @@
+v0.3.4:
+- Fixed update_translation_fields: added support to foreign keys (#42)
+
+v0.3.3:
+- Added ImageChooserPanel compability (#34)
+- use build_localized_fieldname insetead using "%s_%s" only (#40)
+
 v0.3.2:
 - Fixed route() method issue causing invalid field lookup;
 

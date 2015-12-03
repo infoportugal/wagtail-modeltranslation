@@ -19,6 +19,8 @@ Contributors
 * Karl Hobley
 * Raphael Grill
 * Tom Dyson
+* Tiago Costa
+* Tim Tan
 
 
 .. _Django-modeltranslation: https://github.com/deschler/django-modeltranslation
