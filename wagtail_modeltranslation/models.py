@@ -338,7 +338,7 @@ class TranslationMixin(object):
                         cls._required_fields.append(build_localized_fieldname (
                                 fieldpanel.field_name, lang[0]))
 
-                translated_field_name = build_localized_fieldname % (
+                translated_field_name = build_localized_fieldname(
                         fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
                     StreamFieldPanel(
@@ -720,7 +720,7 @@ class SnippetsTranslationMixin(object):
                         cls._required_fields.append(build_localized_fieldname(
                             fieldpanel.field_name, lang[0]))
 
-                translated_field_name = build_localized_fieldname % (
+                translated_field_name = build_localized_fieldname(
                     fieldpanel.field_name, lang[0])
                 translated_fieldpanels.append(
                     StreamFieldPanel(
