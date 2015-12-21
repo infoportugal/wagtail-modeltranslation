@@ -2,6 +2,34 @@
 Change Log
 -----------------------------------
 
+v0.3.5:
+- Fixed URL property return None
+
+v0.3.4:
+- Fixed update_translation_fields: added support to foreign keys (#42)
+
+v0.3.3:
+- Added ImageChooserPanel compability (#34)
+- use build_localized_fieldname insetead using "%s_%s" only (#40)
+
+v0.3.2:
+- Fixed route() method issue causing invalid field lookup;
+
+v0.3.1:
+- Add support to snippets, using SnippetsTranslationMixin
+
+v0.3:
+- Fix conflicts in migrations with wagtailcore migrations. Now translated fields lives only on Page child classes tables;
+
+v0.2.4:
+- Fix missing Site class import;
+- Fix missing reverse function import;
+
+v0.2.3:
+- Add workaround for InlinePanel AttributeError (#31);
+- Added support to widget declarations on FieldPanel;
+- Fixed missing templatetags folder on pypi package;
+
 v0.2.2:
 - Added duplicate content buttons to translated StreamFieldPanels;
 

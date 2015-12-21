@@ -94,7 +94,7 @@ To setup the application please follow these steps:
 .. code-block:: console
 
    from .models import foo
-   from wagtail_modeltranslation.translator import TranslationOptions
+   from wagtail_modeltranslation.translation import TranslationOptions
    from wagtail_modeltranslation.decorators import register
 
    @register(foo)

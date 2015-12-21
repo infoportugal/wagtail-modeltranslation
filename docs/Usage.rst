@@ -45,7 +45,7 @@ The example above assumes that the default language is ``pt``, therefore the ``i
 
       # translation.py
       from .models import Foo
-      from wagtail_modeltranslation.translator import TranslationOptions
+      from wagtail_modeltranslation.translation import TranslationOptions
       from wagtail_modeltranslation.decorators import register
 
       @register(Foo)

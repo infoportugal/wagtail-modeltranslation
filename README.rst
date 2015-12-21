@@ -98,7 +98,7 @@ Quick start
 6. Create translation.py inside the root folder of the app where the model you want to translate exists::
 
     from .models import Foo
-    from wagtail_modeltranslation.translator import TranslationOptions
+    from wagtail_modeltranslation.translation import TranslationOptions
     from wagtail_modeltranslation.decorators import register
 
 
