@@ -4,7 +4,7 @@ from distutils.core import setup
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.3.4',
+    version='0.3.5',
     description='Translates Wagtail CMS models using a registration approach.',
     long_description=(
         'The modeltranslation application can be used to translate dynamic '
@@ -13,8 +13,8 @@ setup(
         'registration approach (comparable to Django\'s admin app) to be able '
         'to add translations to existing or new projects and is fully '
         'integrated into the Wagtail admin backend.'),
-    author='Rui Martins',
-    author_email='rui.martins@infoportugal.pt',
+    author='InfoPortugal, S.A.',
+    author_email='rsmartins@infoportugal.impresa.pt',
     maintainer='Rui Martins',
     maintainer_email='rui.martins@infoportugal.pt',
     url='https://github.com/infoportugal/wagtail-modeltranslation',

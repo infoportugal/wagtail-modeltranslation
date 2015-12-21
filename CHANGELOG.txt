@@ -1,3 +1,6 @@
+v0.3.5:
+- Fixed URL property return None
+
 v0.3.4:
 - Fixed update_translation_fields: added support to foreign keys (#42)
 
