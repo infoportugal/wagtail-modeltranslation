@@ -1,3 +1,6 @@
+v0.4:
+- Fixed issue related to set_url_path override on parent page;
+
 v0.3.6:
 - Fixed data migrations
 - Fixed move page to set url_path for all languages

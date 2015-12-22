@@ -457,6 +457,7 @@ class TranslationMixin(object):
 
         for lang in settings.LANGUAGES:
             if parent:
+                parent = parent.specific
                 tr_slug = getattr(self, 'slug_'+lang[0]) if hasattr(
                     self, 'slug_'+lang[0]) else getattr(self, 'slug')
 
