@@ -3,6 +3,7 @@ v0.3.6:
 - Fixed move page to set url_path for all languages
 - Added support for django 1.9
 - Some pep8 fixes
+- Fix #44
 
 v0.3.5:
 - Fixed URL property return None
