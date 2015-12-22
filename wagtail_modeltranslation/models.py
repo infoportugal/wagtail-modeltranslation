@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
+import logging
 import django
 import copy
 
 from django.conf import settings
 from django.http import Http404
+from django.db import transaction
 from django.db.models import Q
 from django.core.urlresolvers import reverse
 
@@ -20,6 +22,9 @@ from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
 from .utils import build_localized_fieldname
 
 from wagtail_modeltranslation.translator import translator, NotRegistered
+
+
+logger = logging.getLogger('wagtail.core')
 
 
 def autodiscover():
@@ -42,7 +47,12 @@ def autodiscover():
     else:
         from importlib import import_module
         from django.apps import apps
-        mods = [(app_config.name, app_config.module) for app_config in apps.get_app_configs()]
+        mods = [
+            (
+                app_config.name,
+                app_config.module
+            ) for app_config in apps.get_app_configs()
+        ]
 
     for (app, mod) in mods:
         # Attempt to import the app's translation module.
@@ -73,8 +83,9 @@ def autodiscover():
             if sys.argv[1] in ('runserver', 'runserver_plus'):
                 models = translator.get_registered_models()
                 names = ', '.join(m.__name__ for m in models)
-                print('wagtail_modeltranslation: Registered %d models for translation'
-                      ' (%s) [pid: %d].' % (len(models), names, os.getpid()))
+                print('wagtail_modeltranslation: Registered %d models for '
+                      'translation (%s) [pid: %d].' %
+                      (len(models), names, os.getpid()))
         except IndexError:
             pass
 
@@ -115,6 +126,11 @@ class TranslationMixin(object):
 
     def __init__(self, *args, **kwargs):
         super(TranslationMixin, self).__init__(*args, **kwargs)
+
+        # if state is not None, no need to patch all the fields
+        # this is necessary for data migrations
+        if getattr(self, '_state').db is not None:
+            return
 
         TranslationMixin._translation_options = translator.\
             get_options_for_model(
@@ -401,8 +417,8 @@ class TranslationMixin(object):
         inline_panels = getattr(relation.related.model, 'panels', [])
         try:
             inline_model_tr_fields = translator.get_options_for_model(
-                getattr(
-                    instance.__class__, panel.relation_name).related.model).fields
+                getattr(instance.__class__, panel.relation_name).related.model
+                ).fields
         except NotRegistered:
             return None
 
@@ -411,7 +427,26 @@ class TranslationMixin(object):
             for item in cls._patch_fieldpanel(inlinepanel, inline_model_tr_fields):
                 translated_inline.append(item)
 
-        getattr(instance.__class__, panel.relation_name).related.model.panels = translated_inline
+        getattr(instance.__class__, panel.relation_name).related.model.panels =\
+            translated_inline
+
+    @transaction.atomic  # only commit when all descendants are properly updated
+    def move(self, target, pos=None):
+        """
+        Extension to the treebeard 'move' method to ensure that url_path is updated too.
+        """
+        old_url_path = Page.objects.get(id=self.id).url_path
+        super(Page, self).move(target, pos=pos)
+        # treebeard's move method doesn't actually update the in-memory instance, so we need to work
+        # with a freshly loaded one now
+        # added .specific to use the most specific class so that url_paths are updated to all languages
+        new_self = Page.objects.get(id=self.id).specific
+        new_url_path = new_self.set_url_path(new_self.get_parent())
+        new_self.save()
+        new_self._update_descendant_url_paths(old_url_path, new_url_path)
+
+        # Log
+        logger.info("Page moved: \"%s\" id=%d path=%s", self.title, self.id, new_url_path)
 
     def set_url_path(self, parent):
         """
@@ -422,17 +457,15 @@ class TranslationMixin(object):
 
         for lang in settings.LANGUAGES:
             if parent:
-                tr_slug = getattr(self, 'slug_'+lang[0]) if hasattr(self, 'slug_'+lang[0]) else getattr(self, 'slug')
+                tr_slug = getattr(self, 'slug_'+lang[0]) if hasattr(
+                    self, 'slug_'+lang[0]) else getattr(self, 'slug')
 
                 if not tr_slug:
-                    tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE) if hasattr(self, 'slug_'+settings.LANGUAGE_CODE) else getattr(self, 'slug')
+                    tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE) if\
+                        hasattr(self, 'slug_'+settings.LANGUAGE_CODE) else\
+                        getattr(self, 'slug')
 
-                if parent.get_parent():
-                    parent_url_path = getattr(parent, 'url_path_'+lang[0]) if hasattr(parent, 'url_path_'+lang[0]) else getattr(parent.specific, 'url_path_'+lang[0])
-                else:
-                    # a page without a parent is the tree root
-                    # which does not have a specific class
-                    parent_url_path = getattr(parent, 'url_path')
+                parent_url_path = getattr(parent, 'url_path_'+lang[0]) if hasattr(parent, 'url_path_'+lang[0]) else getattr(parent, 'url_path')
 
                 if hasattr(self, 'url_path_'+lang[0]):
                     setattr(self, 'url_path_'+lang[0], parent_url_path + tr_slug + '/')
@@ -445,6 +478,10 @@ class TranslationMixin(object):
                     setattr(self, 'url_path_'+lang[0], '/')
                 else:
                     setattr(self, 'url_path', '/')
+
+        # update url_path for children pages
+        for child in self.get_children():
+            child.set_url_path(self.specific)
 
         return self.url_path
 

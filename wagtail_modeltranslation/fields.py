@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from django import VERSION
 from django import forms
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import fields
@@ -35,6 +36,8 @@ SUPPORTED_FIELDS = (
     # Wagtail StreamField
     StreamField
 )
+
+NEW_RELATED_API = VERSION >= (1, 9)
 
 
 class NONE:
@@ -155,7 +158,7 @@ class TranslationField(object):
         self.verbose_name = build_localized_verbose_name(translated_field.verbose_name, language)
 
         # ForeignKey support - rewrite related_name
-        if self.rel and self.related and not self.rel.is_hidden():
+        if not NEW_RELATED_API and self.rel and self.related and not self.rel.is_hidden():
             import copy
             current = self.related.get_accessor_name()
             self.rel = copy.copy(self.rel)  # Since fields cannot share the same rel object.
@@ -171,6 +174,21 @@ class TranslationField(object):
             self.rel.field = self  # Django 1.6
             if hasattr(self.rel.to._meta, '_related_objects_cache'):
                 del self.rel.to._meta._related_objects_cache
+        elif NEW_RELATED_API and self.remote_field and not self.remote_field.is_hidden():
+            import copy
+            current = self.remote_field.get_accessor_name()
+            # Since fields cannot share the same rel object:
+            self.remote_field = copy.copy(self.remote_field)
+
+            if self.remote_field.related_name is None:
+                # For implicit related_name use different query field name
+                loc_related_query_name = build_localized_fieldname(
+                    self.related_query_name(), self.language)
+                self.related_query_name = lambda: loc_related_query_name
+            self.remote_field.related_name = build_localized_fieldname(current, self.language)
+            self.remote_field.field = self  # Django 1.6
+            if hasattr(self.remote_field.to._meta, '_related_objects_cache'):
+                del self.remote_field.to._meta._related_objects_cache
 
     # Django 1.5 changed definition of __hash__ for fields to be fine with hash requirements.
     # It spoiled our machinery, since TranslationField has the same creation_counter as its
@@ -254,6 +272,12 @@ class TranslationField(object):
         if 'db_column' in kwargs:
             kwargs['db_column'] = self.db_column
         return six.text_type(self.name), path, args, kwargs
+
+    def clone(self):
+        from django.utils.module_loading import import_string
+        name, path, args, kwargs = self.deconstruct()
+        cls = import_string(path)
+        return cls(*args, **kwargs)
 
     def south_field_triple(self):
         """
