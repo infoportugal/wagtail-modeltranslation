@@ -1,3 +1,6 @@
+v0.4.1:
+- Fixed issue related to displaying wrong panels on model creation;
+
 v0.4:
 - Fixed issue related to set_url_path override on parent page;
 

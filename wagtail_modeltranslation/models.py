@@ -129,8 +129,8 @@ class TranslationMixin(object):
 
         # if state is not None, no need to patch all the fields
         # this is necessary for data migrations
-        if getattr(self, '_state').db is not None:
-            return
+        # if getattr(self, '_state').db is not None:
+        #     return
 
         TranslationMixin._translation_options = translator.\
             get_options_for_model(
