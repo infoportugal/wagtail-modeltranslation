@@ -1,5 +1,5 @@
 v0.4.2:
-- Fixed issue with stream fields.
+- Fixed issue with stream fields (#39).
 
 v0.4.1:
 - Fixed issue related to displaying wrong panels on model creation;
