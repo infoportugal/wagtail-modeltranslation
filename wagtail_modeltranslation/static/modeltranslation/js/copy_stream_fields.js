@@ -11,9 +11,10 @@ $(document).ready(function(){
 		var header = $(currentStreamField).children('h2')[0];
 		//Search for the input field so that we can get is id to know the field's name.
 		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0]
-		var fieldName = fieldInfos.split('_')[0];
-		var fieldLang = fieldInfos.split('_')[1];
+		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
+    var lastUnderscore = fieldInfos.lastIndexOf("_");
+    var fieldName = fieldInfos.substring(0, lastUnderscore);
+    var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
 		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
