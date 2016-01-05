@@ -1,3 +1,6 @@
+v0.4.3:
+- Fixed bug when editing a page and parent url path of some language is None.
+
 v0.4.2:
 - Fixed issue with stream fields (#39).
 
