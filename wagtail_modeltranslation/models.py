@@ -465,8 +465,11 @@ class TranslationMixin(object):
                     tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE) if\
                         hasattr(self, 'slug_'+settings.LANGUAGE_CODE) else\
                         getattr(self, 'slug')
-
-                parent_url_path = getattr(parent, 'url_path_'+lang[0]) if hasattr(parent, 'url_path_'+lang[0]) else getattr(parent, 'url_path')
+                        
+                if hasattr(parent, 'url_path_'+lang[0]) and getattr(parent, 'url_path_'+lang[0]) is not None:
+                    parent_url_path = getattr(parent, 'url_path_'+lang[0])
+                else:
+                    parent_url_path = getattr(parent, 'url_path')
 
                 if hasattr(self, 'url_path_'+lang[0]):
                     setattr(self, 'url_path_'+lang[0], parent_url_path + tr_slug + '/')
