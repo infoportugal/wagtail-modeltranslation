@@ -1,3 +1,6 @@
+v0.4.4:
+- Fix issue related to Django 1.9.x
+
 v0.4.3:
 - Fixed bug when editing a page and parent url path of some language is None.
 

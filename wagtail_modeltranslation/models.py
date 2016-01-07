@@ -414,11 +414,18 @@ class TranslationMixin(object):
     @classmethod
     def _patch_inlinepanel(cls, instance, panel):
         relation = getattr(instance.__class__, panel.relation_name)
-        inline_panels = getattr(relation.related.model, 'panels', [])
+
+        related_fieldname = 'related'
+
         try:
-            inline_model_tr_fields = translator.get_options_for_model(
-                getattr(instance.__class__, panel.relation_name).related.model
-                ).fields
+            inline_panels = getattr(getattr(relation, related_fieldname).model, 'panels', [])
+        except AttributeError:
+            related_fieldname = 'rel'
+            inline_panels = getattr(getattr(relation, related_fieldname).model, 'panels', [])
+
+        try:
+            model = getattr(getattr(instance.__class__, panel.relation_name), related_fieldname).model
+            inline_model_tr_fields = translator.get_options_for_model(model).fields
         except NotRegistered:
             return None
 
@@ -427,8 +434,7 @@ class TranslationMixin(object):
             for item in cls._patch_fieldpanel(inlinepanel, inline_model_tr_fields):
                 translated_inline.append(item)
 
-        getattr(instance.__class__, panel.relation_name).related.model.panels =\
-            translated_inline
+        model.panels = translated_inline
 
     @transaction.atomic  # only commit when all descendants are properly updated
     def move(self, target, pos=None):
@@ -465,7 +471,7 @@ class TranslationMixin(object):
                     tr_slug = getattr(self, 'slug_'+settings.LANGUAGE_CODE) if\
                         hasattr(self, 'slug_'+settings.LANGUAGE_CODE) else\
                         getattr(self, 'slug')
-                        
+
                 if hasattr(parent, 'url_path_'+lang[0]) and getattr(parent, 'url_path_'+lang[0]) is not None:
                     parent_url_path = getattr(parent, 'url_path_'+lang[0])
                 else:
