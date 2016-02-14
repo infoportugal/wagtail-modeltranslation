@@ -15,6 +15,12 @@ $(document).ready(function(){
     var lastUnderscore = fieldInfos.lastIndexOf("_");
     var fieldName = fieldInfos.substring(0, lastUnderscore);
     var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+    // Splitting up the field info failed to detect a language code, skip
+    // TODO: This needs a consistent way of detecting that a field is
+    // translatable
+    if (!fieldName || fieldLang.length != 2) {
+      continue;
+    }
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
 		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
