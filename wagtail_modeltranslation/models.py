@@ -13,8 +13,11 @@ from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailadmin.edit_handlers import FieldPanel,\
     MultiFieldPanel, FieldRowPanel
-from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
-    PAGE_EDIT_HANDLERS
+try:
+    from wagtail.wagtailadmin.views.pages import get_page_edit_handler,\
+        PAGE_EDIT_HANDLERS
+except ImportError:
+    pass
 from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler,\
     SNIPPET_EDIT_HANDLERS
 from wagtail.wagtailcore.url_routing import RouteResult
@@ -141,7 +144,10 @@ class TranslationMixin(object):
 
         # CONSTRUCT TEMPORARY EDIT HANDLER
         if issubclass(self.__class__, Page):
-            edit_handler_class = get_page_edit_handler(self.__class__)
+            if hasattr(self.__class__, 'get_edit_handler'):
+                edit_handler_class = self.__class__.get_edit_handler()
+            else:
+                edit_handler_class = get_page_edit_handler(self.__class__)
         else:
             edit_handler_class = get_snippet_edit_handler(self.__class__)
         TranslationMixin._wgform_class = edit_handler_class.get_form_class(
@@ -164,9 +170,12 @@ class TranslationMixin(object):
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
         if issubclass(self.__class__, Page):
-            if self.__class__ in PAGE_EDIT_HANDLERS:
-                del PAGE_EDIT_HANDLERS[self.__class__]
-            edit_handler_class = get_page_edit_handler(self.__class__)
+            if hasattr(self.__class__, 'get_edit_handler'):
+                edit_handler_class = self.__class__.get_edit_handler()
+            else:
+                if self.__class__ in PAGE_EDIT_HANDLERS:
+                    del PAGE_EDIT_HANDLERS[self.__class__]
+                edit_handler_class = get_page_edit_handler(self.__class__)
         else:
             if self.__class__ in SNIPPET_EDIT_HANDLERS:
                 del SNIPPET_EDIT_HANDLERS[self.__class__]
