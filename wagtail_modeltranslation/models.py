@@ -8,6 +8,7 @@ from django.http import Http404
 from django.db import transaction
 from django.db.models import Q
 from django.core.urlresolvers import reverse
+from django.utils import translation
 
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -183,6 +184,10 @@ class TranslationMixin(object):
                 f.required = False
 
         self.__class__._translated = True
+
+    def save(self, *args, **kwargs):
+        with translation.override(settings.LANGUAGE_CODE):
+            super(TranslationMixin, self).save(*args, **kwargs)
 
     @staticmethod
     def _fetch_defined_tabs(defined_class):
