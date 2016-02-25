@@ -25,7 +25,7 @@ from wagtail_modeltranslation.forms import TranslationModelForm
 from wagtail_modeltranslation.models import autodiscover
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
 from wagtail_modeltranslation.utils import (build_css_class, build_localized_fieldname,
-                                    auto_populate, fallbacks)
+                                            auto_populate, fallbacks)
 
 MIGRATIONS = django.VERSION >= (1, 8)
 
@@ -41,6 +41,7 @@ TEST_MODELS = 29 + (1 if MIGRATIONS else 0)
 
 class reload_override_settings(override_settings):
     """Context manager that not only override settings, but also reload modeltranslation conf."""
+
     def __enter__(self):
         super(reload_override_settings, self).__enter__()
         imp.reload(mt_settings)
@@ -107,7 +108,7 @@ class ModeltranslationTransactionTestBase(TransactionTestCase):
                 # 2. Reload MT because LANGUAGES likely changed.
                 imp.reload(mt_settings)
                 imp.reload(translator)
-                #! imp.reload(admin)
+                # ! imp.reload(admin)
 
                 # 3. Reset test models (because autodiscover have already run, those models
                 #    have translation fields, but for languages previously defined. We want
@@ -242,6 +243,7 @@ class TestAutodiscover(ModeltranslationTestBase):
 
 class ModeltranslationTest(ModeltranslationTestBase):
     """Basic tests for the modeltranslation application."""
+
     def test_registration(self):
         langs = tuple(l[0] for l in django_settings.LANGUAGES)
         self.assertEqual(langs, tuple(mt_settings.AVAILABLE_LANGUAGES))
@@ -411,7 +413,6 @@ class ModeltranslationTest(ModeltranslationTestBase):
 
         # However, by default FALLBACK_LANGUAGES is set to DEFAULT_LANGUAGE
         with default_fallback():
-
             # No change here...
             self.assertEqual(inst2.title, title_de)
 
@@ -634,7 +635,6 @@ class FallbackTests(ModeltranslationTestBase):
 
 
 class FileFieldsTest(ModeltranslationTestBase):
-
     def tearDown(self):
         if default_storage.exists('wagtail_modeltranslation_tests'):
             # With FileSystemStorage uploading files creates a new directory,
@@ -858,17 +858,17 @@ class ForeignKeyFieldsTest(ModeltranslationTestBase):
         # Explicit related_name
         testmodel_fields = get_field_names(models.TestModel)
         testmodel_methods = dir(models.TestModel)
-        self.assertIn('test_fks',    testmodel_fields)
+        self.assertIn('test_fks', testmodel_fields)
         self.assertIn('test_fks_de', testmodel_fields)
         self.assertIn('test_fks_en', testmodel_fields)
-        self.assertIn('test_fks',    testmodel_methods)
+        self.assertIn('test_fks', testmodel_methods)
         self.assertIn('test_fks_de', testmodel_methods)
         self.assertIn('test_fks_en', testmodel_methods)
         # Implicit related_name: manager descriptor name != query field name
-        self.assertIn('foreignkeymodel',    testmodel_fields)
+        self.assertIn('foreignkeymodel', testmodel_fields)
         self.assertIn('foreignkeymodel_de', testmodel_fields)
         self.assertIn('foreignkeymodel_en', testmodel_fields)
-        self.assertIn('foreignkeymodel_set',    testmodel_methods)
+        self.assertIn('foreignkeymodel_set', testmodel_methods)
         self.assertIn('foreignkeymodel_set_de', testmodel_methods)
         self.assertIn('foreignkeymodel_set_en', testmodel_methods)
 
@@ -884,10 +884,10 @@ class ForeignKeyFieldsTest(ModeltranslationTestBase):
 
         # Check the default reverse accessor:
         trans_real.activate("de")
-        self.assertIn(fk_inst_de,    test_inst.test_fks.all())
+        self.assertIn(fk_inst_de, test_inst.test_fks.all())
         self.assertNotIn(fk_inst_en, test_inst.test_fks.all())
         trans_real.activate("en")
-        self.assertIn(fk_inst_en,    test_inst.test_fks.all())
+        self.assertIn(fk_inst_en, test_inst.test_fks.all())
         self.assertNotIn(fk_inst_de, test_inst.test_fks.all())
 
         # Check implicit related_name reverse accessor:
@@ -1040,17 +1040,17 @@ class OneToOneFieldsTest(ForeignKeyFieldsTest):
         # Explicit related_name
         testmodel_fields = get_field_names(models.TestModel)
         testmodel_methods = dir(models.TestModel)
-        self.assertIn('test_o2o',    testmodel_fields)
+        self.assertIn('test_o2o', testmodel_fields)
         self.assertIn('test_o2o_de', testmodel_fields)
         self.assertIn('test_o2o_en', testmodel_fields)
-        self.assertIn('test_o2o',    testmodel_methods)
+        self.assertIn('test_o2o', testmodel_methods)
         self.assertIn('test_o2o_de', testmodel_methods)
         self.assertIn('test_o2o_en', testmodel_methods)
         # Implicit related_name
-        self.assertIn('onetoonefieldmodel',    testmodel_fields)
+        self.assertIn('onetoonefieldmodel', testmodel_fields)
         self.assertIn('onetoonefieldmodel_de', testmodel_fields)
         self.assertIn('onetoonefieldmodel_en', testmodel_fields)
-        self.assertIn('onetoonefieldmodel',    testmodel_methods)
+        self.assertIn('onetoonefieldmodel', testmodel_methods)
         self.assertIn('onetoonefieldmodel_de', testmodel_methods)
         self.assertIn('onetoonefieldmodel_en', testmodel_methods)
 
@@ -1522,6 +1522,7 @@ class ModeltranslationTestRule1(ModeltranslationTestBase):
     Rule 1: Reading the value from the original field returns the value in
     translated to the current language.
     """
+
     def _test_field(self, field_name, value_de, value_en, deactivate=True):
         field_name_de = '%s_de' % field_name
         field_name_en = '%s_en' % field_name
@@ -1584,6 +1585,7 @@ class ModeltranslationTestRule2(ModeltranslationTestBase):
     Rule 2: Assigning a value to the original field updates the value
     in the associated current language translation field.
     """
+
     def _test_field(self, field_name, value1_de, value1_en, value2, value3,
                     deactivate=True):
         field_name_de = '%s_de' % field_name
@@ -1706,6 +1708,7 @@ class ModelValidationTest(ModeltranslationTestBase):
     """
     Tests if a translation model field validates correctly.
     """
+
     def assertRaisesValidation(self, func):
         try:
             func()
@@ -1812,6 +1815,7 @@ class ModelValidationTest(ModeltranslationTestBase):
 
 class ModelInheritanceTest(ModeltranslationTestBase):
     """Tests for inheritance support in modeltranslation."""
+
     def test_abstract_inheritance(self):
         field_names_b = get_field_names(models.AbstractModelB)
         self.assertTrue('titlea' in field_names_b)
@@ -1903,6 +1907,7 @@ class ModelInheritanceFieldAggregationTest(ModeltranslationTestBase):
     Tests for inheritance support with field aggregation
     in modeltranslation.
     """
+
     def test_field_aggregation(self):
         clsb = translation.FieldInheritanceCTranslationOptions
         self.assertTrue('titlea' in clsb.fields)
@@ -2020,7 +2025,7 @@ class TestManager(ModeltranslationTestBase):
             # Still possible to use explicit language version
             self.assertEqual(1, models.ManagerTestModel.objects.filter(title_en='en').count())
             self.assertEqual(2, models.ManagerTestModel.objects.filter(
-                             title_en__contains='en').count())
+                title_en__contains='en').count())
 
             models.ManagerTestModel.objects.update(title='new')
             self.assertEqual(2, models.ManagerTestModel.objects.filter(title='new').count())
@@ -2147,7 +2152,7 @@ class TestManager(ModeltranslationTestBase):
         # Raw_values returns real database values regardless of current language
         self.assertEqual(raw_obj['title'], raw_obj2['title'])
         # Values present language-aware data, from the moment of retrieval
-        self.assertEqual(obj['title'],  'en')
+        self.assertEqual(obj['title'], 'en')
         self.assertEqual(obj2['title'], 'de')
 
         # Values_list behave similarly
@@ -2229,7 +2234,7 @@ class TestManager(ModeltranslationTestBase):
         from django.contrib.auth.models import Group, GroupManager
         from wagtail_modeltranslation.manager import MultilingualManager
         testmodel_fields = get_field_names(Group)
-        self.assertIn('name',    testmodel_fields)
+        self.assertIn('name', testmodel_fields)
         self.assertIn('name_de', testmodel_fields)
         self.assertIn('name_en', testmodel_fields)
         self.assertIn('name_en', testmodel_fields)
@@ -2539,6 +2544,7 @@ class TranslationModelFormTest(ModeltranslationTestBase):
         Can we update the current language translation with an empty value, when
         the original field is excluded from the form?
         """
+
         class Form(forms.ModelForm):
             class Meta:
                 model = models.TestModel

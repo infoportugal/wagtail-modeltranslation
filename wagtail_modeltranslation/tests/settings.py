@@ -4,7 +4,6 @@ Settings overrided for test time
 """
 from django.conf import settings
 
-
 INSTALLED_APPS = tuple(settings.INSTALLED_APPS) + (
     'wagtail_modeltranslation.tests',
 )

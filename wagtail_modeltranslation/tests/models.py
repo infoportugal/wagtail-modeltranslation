@@ -100,6 +100,7 @@ class FancyDescriptor(object):
     """
     Stupid demo descriptor, that store int in database and return string of that length on get.
     """
+
     def __init__(self, field):
         self.field = field
 
@@ -266,6 +267,7 @@ class CustomManager(models.Manager):
         sup = super(CustomManager, self)
         queryset = sup.get_queryset() if hasattr(sup, 'get_queryset') else sup.get_query_set()
         return queryset.filter(title__contains='a').exclude(description__contains='x')
+
     get_query_set = get_queryset
 
     def custom_qs(self):
@@ -292,6 +294,7 @@ class CustomQuerySet(models.query.QuerySet):
 class CustomManager2(models.Manager):
     def get_queryset(self):
         return CustomQuerySet(self.model, using=self._db)
+
     get_query_set = get_queryset
 
 

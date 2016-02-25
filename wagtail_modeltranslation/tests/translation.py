@@ -15,11 +15,15 @@ from wagtail_modeltranslation.tests.models import (
 class TestTranslationOptions(TranslationOptions):
     fields = ('title', 'text', 'url', 'email',)
     empty_values = ''
+
+
 translator.register(TestModel, TestTranslationOptions)
 
 
 class UniqueNullableTranslationOptions(TranslationOptions):
     fields = ('title',)
+
+
 translator.register(UniqueNullableModel, UniqueNullableTranslationOptions)
 
 
@@ -27,6 +31,8 @@ translator.register(UniqueNullableModel, UniqueNullableTranslationOptions)
 
 class ProxyTestTranslationOptions(TranslationOptions):
     fields = ('title', 'text', 'url', 'email',)
+
+
 translator.register(ProxyTestModel, ProxyTestTranslationOptions)
 
 
@@ -35,6 +41,8 @@ translator.register(ProxyTestModel, ProxyTestTranslationOptions)
 class FallbackModelTranslationOptions(TranslationOptions):
     fields = ('title', 'text', 'url', 'email', 'description')
     fallback_values = "fallback"
+
+
 translator.register(FallbackModel, FallbackModelTranslationOptions)
 
 
@@ -42,6 +50,8 @@ class FallbackModel2TranslationOptions(TranslationOptions):
     fields = ('title', 'text', 'url', 'email',)
     fallback_values = {'text': ugettext_lazy('Sorry, translation is not available.')}
     fallback_undefined = {'title': 'no title'}
+
+
 translator.register(FallbackModel2, FallbackModel2TranslationOptions)
 
 
@@ -49,6 +59,8 @@ translator.register(FallbackModel2, FallbackModel2TranslationOptions)
 
 class FileFieldsModelTranslationOptions(TranslationOptions):
     fields = ('title', 'file', 'file2', 'image',)
+
+
 translator.register(FileFieldsModel, FileFieldsModelTranslationOptions)
 
 
@@ -56,11 +68,15 @@ translator.register(FileFieldsModel, FileFieldsModelTranslationOptions)
 
 class ForeignKeyModelTranslationOptions(TranslationOptions):
     fields = ('title', 'test', 'optional', 'hidden', 'non',)
+
+
 translator.register(ForeignKeyModel, ForeignKeyModelTranslationOptions)
 
 
 class OneToOneFieldModelTranslationOptions(TranslationOptions):
     fields = ('title', 'test', 'optional', 'non',)
+
+
 translator.register(OneToOneFieldModel, OneToOneFieldModelTranslationOptions)
 
 
@@ -69,11 +85,15 @@ translator.register(OneToOneFieldModel, OneToOneFieldModelTranslationOptions)
 class OtherFieldsModelTranslationOptions(TranslationOptions):
     fields = ('int', 'boolean', 'nullboolean', 'csi', 'float', 'decimal',
               'ip', 'genericip', 'date', 'datetime', 'time',)
+
+
 translator.register(OtherFieldsModel, OtherFieldsModelTranslationOptions)
 
 
 class DescriptorModelTranslationOptions(TranslationOptions):
     fields = ('trans',)
+
+
 translator.register(DescriptorModel, DescriptorModelTranslationOptions)
 
 
@@ -81,16 +101,22 @@ translator.register(DescriptorModel, DescriptorModelTranslationOptions)
 
 class MultitableModelATranslationOptions(TranslationOptions):
     fields = ('titlea',)
+
+
 translator.register(MultitableModelA, MultitableModelATranslationOptions)
 
 
 class MultitableModelBTranslationOptions(TranslationOptions):
     fields = ('titleb',)
+
+
 translator.register(MultitableModelB, MultitableModelBTranslationOptions)
 
 
 class MultitableModelCTranslationOptions(TranslationOptions):
     fields = ('titlec',)
+
+
 translator.register(MultitableModelC, MultitableModelCTranslationOptions)
 
 
@@ -98,11 +124,15 @@ translator.register(MultitableModelC, MultitableModelCTranslationOptions)
 
 class AbstractModelATranslationOptions(TranslationOptions):
     fields = ('titlea',)
+
+
 translator.register(AbstractModelA, AbstractModelATranslationOptions)
 
 
 class AbstractModelBTranslationOptions(TranslationOptions):
     fields = ('titleb',)
+
+
 translator.register(AbstractModelB, AbstractModelBTranslationOptions)
 
 
@@ -137,11 +167,15 @@ translator.register(RichTextPage)
 
 class ManagerTestModelTranslationOptions(TranslationOptions):
     fields = ('title', 'visits', 'description')
+
+
 translator.register(ManagerTestModel, ManagerTestModelTranslationOptions)
 
 
 class CustomManagerTestModelTranslationOptions(TranslationOptions):
     fields = ('title',)
+
+
 translator.register([CustomManagerTestModel, CustomManager2TestModel],
                     CustomManagerTestModelTranslationOptions)
 
@@ -173,6 +207,8 @@ class FieldInheritanceETranslationOptions(FieldInheritanceCTranslationOptions,
 
 class ThirdPartyTranslationOptions(TranslationOptions):
     fields = ('name',)
+
+
 translator.register(ThirdPartyRegisteredModel, ThirdPartyTranslationOptions)
 
 
@@ -180,11 +216,15 @@ translator.register(ThirdPartyRegisteredModel, ThirdPartyTranslationOptions)
 
 class GroupFieldsetsTranslationOptions(TranslationOptions):
     fields = ('title', 'text',)
+
+
 translator.register(GroupFieldsetsModel, GroupFieldsetsTranslationOptions)
 
 
 class NameTranslationOptions(TranslationOptions):
     fields = ('firstname', 'lastname', 'slug2')
+
+
 translator.register(NameModel, NameTranslationOptions)
 
 
@@ -196,6 +236,8 @@ class RequiredTranslationOptions(TranslationOptions):
         'en': ('req_reg', 'req_en_reg',),
         'default': ('req_reg',),  # for all other languages
     }
+
+
 translator.register(RequiredModel, RequiredTranslationOptions)
 
 
@@ -210,6 +252,7 @@ class DecoratedTranslationOptions(TranslationOptions):
 
 if VERSION >= (1, 8):
     from django.contrib.auth.models import Group
+
 
     @register(Group)
     class GroupTranslationOptions(TranslationOptions):
