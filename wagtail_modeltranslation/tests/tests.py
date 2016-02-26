@@ -217,11 +217,27 @@ class TestAutodiscover(ModeltranslationTestBase):
             self.assertNotIn('name_en', fields)
             self.assertNotIn('name_de', fields)
 
+    def check_page(self):
+        from .test_app.models import TestPage
+        fields = dir(TestPage())
+        self.assertIn('name', fields)
+        self.assertIn('name_en', fields)
+        self.assertIn('name_de', fields)
+
+        # check inherited Page fields
+
+        self.assertIn('title', fields)
+        self.assertIn('title_en', fields)
+        self.assertIn('title_de', fields)
+
+
+
     def test_simple(self):
         """Check if translation is imported for installed apps."""
         autodiscover()
         self.check_news()
         self.check_other(present=False)
+        self.check_page()
 
     @reload_override_settings(
         MODELTRANSLATION_TRANSLATION_FILES=('wagtail_modeltranslation.tests.project_translation',)
