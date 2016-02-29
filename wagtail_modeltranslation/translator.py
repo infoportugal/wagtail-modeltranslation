@@ -13,7 +13,7 @@ from wagtail_modeltranslation.fields import (NONE, create_translation_field, Tra
 from wagtail_modeltranslation.manager import (MultilingualManager, MultilingualQuerysetManager,
                                       rewrite_lookup_key)
 from wagtail_modeltranslation.utils import build_localized_fieldname, parse_field
-
+from wagtail.wagtailcore.models import Page
 
 NEW_RELATED_API = VERSION >= (1, 9)
 
@@ -71,7 +71,7 @@ class TranslationOptions(with_metaclass(FieldsAggregationMetaClass, object)):
         """
         page_fields = ()
 
-        if model.__class__.__name__ is 'PageBase' and model.__name__ is not 'Page':
+        if Page in model.__bases__:
             page_fields = (
                 'title',
                 'slug',

@@ -36,7 +36,7 @@ models = translation = None
 request = None
 
 # How many models are registered for tests.
-TEST_MODELS = 29 + (1 if MIGRATIONS else 0)
+TEST_MODELS = 31 + (1 if MIGRATIONS else 0)
 
 
 class reload_override_settings(override_settings):
@@ -108,7 +108,10 @@ class ModeltranslationTransactionTestBase(TransactionTestCase):
                 # 2. Reload MT because LANGUAGES likely changed.
                 imp.reload(mt_settings)
                 imp.reload(translator)
-                # ! imp.reload(admin)
+
+                # reload the translation module to register the Page model
+                from wagtail_modeltranslation import translation as wag_trans
+                imp.reload(wag_trans)
 
                 # 3. Reset test models (because autodiscover have already run, those models
                 #    have translation fields, but for languages previously defined. We want
@@ -217,9 +220,9 @@ class TestAutodiscover(ModeltranslationTestBase):
             self.assertNotIn('name_en', fields)
             self.assertNotIn('name_de', fields)
 
-    def check_page(self):
-        from .test_app.models import TestPage
-        fields = dir(TestPage())
+    def check_wagtail_page(self):
+        from .models import TestWagtailPage
+        fields = dir(TestWagtailPage())
         self.assertIn('name', fields)
         self.assertIn('name_en', fields)
         self.assertIn('name_de', fields)
@@ -230,6 +233,10 @@ class TestAutodiscover(ModeltranslationTestBase):
         self.assertIn('title_en', fields)
         self.assertIn('title_de', fields)
 
+        self.assertIn('slug', fields)
+        self.assertIn('slug_en', fields)
+        self.assertIn('slug_de', fields)
+
 
 
     def test_simple(self):
@@ -237,7 +244,7 @@ class TestAutodiscover(ModeltranslationTestBase):
         autodiscover()
         self.check_news()
         self.check_other(present=False)
-        self.check_page()
+        self.check_wagtail_page()
 
     @reload_override_settings(
         MODELTRANSLATION_TRANSLATION_FILES=('wagtail_modeltranslation.tests.project_translation',)

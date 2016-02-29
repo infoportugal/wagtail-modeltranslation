@@ -1,7 +1,4 @@
 from django.db import models
-from wagtail.wagtailcore.models import Page
-from wagtail_modeltranslation.models import TranslationMixin, SnippetsTranslationMixin
-
 
 class News(models.Model):
     class Meta:
@@ -12,13 +9,6 @@ class News(models.Model):
 
 
 class Other(models.Model):
-    class Meta:
-        app_label = 'test_app'
-
-    name = models.CharField(max_length=50)
-
-
-class TestPage(TranslationMixin, Page):
     class Meta:
         app_label = 'test_app'
 

@@ -1,6 +1,5 @@
-from wagtail_modeltranslation.decorators import register
 from wagtail_modeltranslation.translator import translator, TranslationOptions
-from .models import News, TestPage
+from .models import News
 
 
 class NewsTranslationOptions(TranslationOptions):
@@ -8,8 +7,3 @@ class NewsTranslationOptions(TranslationOptions):
 
 
 translator.register(News, NewsTranslationOptions)
-
-
-@register(TestPage)
-class TestPageTranslationOptions(TranslationOptions):
-    fields = ('name',)

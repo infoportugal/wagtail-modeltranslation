@@ -3,6 +3,7 @@ from django.core import validators
 from django.db import models
 from django.utils import six
 from django.utils.translation import ugettext_lazy
+from wagtail.wagtailcore.models import Page as WagtailPage
 
 
 class TestModel(models.Model):
@@ -316,3 +317,9 @@ class RequiredModel(models.Model):
 
 class DecoratedModel(models.Model):
     title = models.CharField(ugettext_lazy('title'), max_length=255)
+
+
+# ######### Wagtail Core Page
+
+class TestWagtailPage(WagtailPage):
+    name = models.CharField(max_length=50)

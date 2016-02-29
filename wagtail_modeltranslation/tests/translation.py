@@ -9,7 +9,7 @@ from wagtail_modeltranslation.tests.models import (
     RichText, RichTextPage, MultitableModelA, MultitableModelB, MultitableModelC, ManagerTestModel,
     CustomManagerTestModel, CustomManager2TestModel, GroupFieldsetsModel, NameModel,
     ThirdPartyRegisteredModel, ProxyTestModel, UniqueNullableModel, OneToOneFieldModel,
-    RequiredModel, DecoratedModel)
+    RequiredModel, DecoratedModel, TestWagtailPage)
 
 
 class TestTranslationOptions(TranslationOptions):
@@ -257,3 +257,12 @@ if VERSION >= (1, 8):
     @register(Group)
     class GroupTranslationOptions(TranslationOptions):
         fields = ('name',)
+
+
+# ######### Wagtail Page
+
+@register(TestWagtailPage)
+class TestWagtailPageTranslationOptions(TranslationOptions):
+    fields = (
+        'name',
+    )
