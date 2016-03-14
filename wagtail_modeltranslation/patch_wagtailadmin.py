@@ -92,6 +92,7 @@ class WagtailTranslator(object):
             model.get_site_root_paths = _new_get_site_root_paths
             model.relative_url = _new_relative_url
             model.url = _new_url
+            _patch_clean(model)
 
         WagtailTranslator._patched_models.append(model)
 
@@ -464,3 +465,49 @@ def _new_url(self):
         if self.url_path.startswith(root_path):
             return ('' if len(root_paths) == 1 else root_url) + reverse(
                 'wagtail_serve', args=(self.url_path[len(root_path):],))
+
+
+def _validate_slugs(page):
+    """
+    Determine whether the given slug is available for use on a child page of
+    parent_page.
+    """
+    parent_page = page.get_parent()
+
+    if parent_page is None:
+        # the root page's slug can be whatever it likes...
+        return {}
+
+    allowed_sibblings = parent_page.specific.allowed_subpage_models()
+    siblings = parent_page.get_children().exclude(pk=page.pk)
+
+    errors = {}
+
+    for lang in settings.LANGUAGES:
+        current_slug = 'slug_' + lang[0]
+        query_list = []
+
+        for model in allowed_sibblings:
+            slug = getattr(page, current_slug, '') or ''
+            if len(slug) and model is not Page:
+                kwargs = {'{0}__{1}'.format(model._meta.model_name, current_slug): slug}
+                query_list.append(Q(**kwargs))
+
+        if query_list and siblings.filter(reduce(operator.or_, query_list)).exists():
+            errors[current_slug] = _(u'Slug already in use')
+
+    return errors
+
+
+def _patch_clean(model):
+    old_clean = model.clean
+
+    # Call the original clean method to avoid losing validations
+    def clean(self):
+        old_clean(self)
+        errors = _validate_slugs(self)
+
+        if errors:
+            raise ValidationError(errors)
+
+    model.clean = clean

@@ -690,6 +690,33 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
 
         self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
 
+    def test_duplicate_slug(self):
+        from wagtail.wagtailcore.models import Site
+        # Create a test Site with a root page
+        root = models.TestRootPage(title='title', depth=1, path='0001', slug_en='slug_en', slug_de='slug_de')
+        root.save()
+
+        site = Site(root_page=root)
+        site.save()
+
+        # Add children to the root
+        child = root.add_child(
+            instance=models.TestSlugPage1(title='child1', slug_de='child', slug_en='child-en', depth=2, path='00010001')
+        )
+
+        child2 = root.add_child(
+            instance=models.TestSlugPage2(title='child2', slug_de='child-2', slug_en='child2-en', depth=2,
+                                          path='00010002')
+        )
+
+        # Clean should work fine as the two slugs are different
+        child2.clean()
+
+        # Make the slug equal to test if the duplicate is detected
+        child2.slug_de = 'child'
+
+        self.assertRaises(ValidationError, child2.clean)
+
 
 class ModeltranslationTransactionTest(ModeltranslationTransactionTestBase):
     def test_unique_nullable_field(self):
