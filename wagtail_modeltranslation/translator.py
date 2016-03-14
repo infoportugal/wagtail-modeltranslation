@@ -242,6 +242,15 @@ def patch_constructor(model):
                 # Old key is intentionally left in case old_init wants to play with it
                 kwargs.setdefault(new_key, val)
         old_init(self, *args, **kwargs)
+
+        from wagtail_modeltranslation.patch_wagtailadmin import WagtailTranslator
+        from wagtail.wagtailsnippets.models import get_snippet_models
+
+        # During the __init__ of the registered models check if they are an instance
+        # of Page or Snippet in order to patch the panels and forms
+        if issubclass(self.__class__, Page) or self.__class__ in get_snippet_models():
+            WagtailTranslator(self.__class__)
+
     model.__init__ = new_init
 
 
