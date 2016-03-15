@@ -13,8 +13,6 @@ from django.utils.translation import ugettext as _
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel
 from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
-from wagtail.wagtailadmin.views.pages import get_page_edit_handler, \
-    PAGE_EDIT_HANDLERS
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -22,6 +20,12 @@ from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler, \
     SNIPPET_EDIT_HANDLERS
 from wagtail_modeltranslation.translator import translator, NotRegistered
 from .utils import build_localized_fieldname
+
+try:
+    from wagtail.wagtailadmin.views.pages import get_page_edit_handler, \
+        PAGE_EDIT_HANDLERS
+except ImportError:
+    pass
 
 logger = logging.getLogger('wagtail.core')
 
@@ -40,7 +44,10 @@ class WagtailTranslator(object):
 
         # CONSTRUCT TEMPORARY EDIT HANDLER
         if issubclass(model, Page):
-            edit_handler_class = get_page_edit_handler(model)
+            if hasattr(model, 'get_edit_handler'):
+                edit_handler_class = model.get_edit_handler()
+            else:
+                edit_handler_class = get_page_edit_handler(model)
         else:
             edit_handler_class = get_snippet_edit_handler(model)
         WagtailTranslator._base_model_form = edit_handler_class.get_form_class(model)
@@ -62,9 +69,13 @@ class WagtailTranslator(object):
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
         if issubclass(model, Page):
-            if model in PAGE_EDIT_HANDLERS:
-                del PAGE_EDIT_HANDLERS[model]
-            edit_handler_class = get_page_edit_handler(model)
+            if hasattr(model, 'get_edit_handler'):
+                model.get_edit_handler.cache_clear()
+                edit_handler_class = model.get_edit_handler()
+            else:
+                if model in PAGE_EDIT_HANDLERS:
+                    del PAGE_EDIT_HANDLERS[model]
+                edit_handler_class = get_page_edit_handler(model)
         else:
             if model in SNIPPET_EDIT_HANDLERS:
                 del SNIPPET_EDIT_HANDLERS[model]

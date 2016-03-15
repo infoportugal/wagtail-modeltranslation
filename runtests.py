@@ -37,6 +37,7 @@ def runtests():
                 'django.contrib.contenttypes',
                 'django.contrib.auth',
                 'taggit',
+                'rest_framework',
 
                 'wagtail.wagtailcore',
                 'wagtail.wagtailadmin',

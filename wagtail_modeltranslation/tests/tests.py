@@ -18,7 +18,7 @@ from django.db.models import Q, F, Count
 from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils import six
-from django.utils.translation import get_language, override, trans_real
+from django.utils.translation import get_language, override, trans_real, ugettext
 
 from wagtail_modeltranslation import settings as mt_settings, translator
 from wagtail_modeltranslation.forms import TranslationModelForm
@@ -291,7 +291,10 @@ class ModeltranslationTest(ModeltranslationTestBase):
 
     def test_verbose_name(self):
         verbose_name = models.TestModel._meta.get_field('title_de').verbose_name
-        self.assertEqual(six.text_type(verbose_name), 'title [de]')
+        # We use ugettext to get the title since as of Wagtail 1.4 there is a
+        # german translation for title so the test would fail if we asserted against
+        # a constant string
+        self.assertEqual(six.text_type(verbose_name), ugettext('title') + ' [de]')
 
     def test_descriptor_introspection(self):
         # See Django #8248
@@ -498,6 +501,7 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
     """
     Test of the modeltranslation features with Wagtail models (Page and Snippet)
     """
+
     @classmethod
     def setUpClass(cls):
         super(WagtailModeltranslationTest, cls).setUpClass()
@@ -654,8 +658,16 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
         so if the created form has all fields the the form was correctly patched
         """
         models.InlinePanelPage()
-        from wagtail.wagtailadmin.views.pages import get_page_edit_handler
-        page_edit_handler = get_page_edit_handler(models.InlinePanelPage)
+        try:
+            from wagtail.wagtailadmin.views.pages import get_page_edit_handler, \
+                PAGE_EDIT_HANDLERS
+        except ImportError:
+            pass
+
+        if hasattr(models.InlinePanelPage, 'get_edit_handler'):
+            page_edit_handler = models.InlinePanelPage.get_edit_handler()
+        else:
+            page_edit_handler = get_page_edit_handler(models.InlinePanelPage)
         form = page_edit_handler.get_form_class(models.InlinePanelPage)
 
         page_base_fields = ['slug_de', 'slug_en', 'seo_title_de', 'seo_title_en', 'search_description_de',
