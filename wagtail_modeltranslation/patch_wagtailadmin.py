@@ -16,6 +16,7 @@ from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler, \
     SNIPPET_EDIT_HANDLERS
 from wagtail_modeltranslation.translator import translator, NotRegistered
@@ -104,6 +105,7 @@ class WagtailTranslator(object):
             model.relative_url = _new_relative_url
             model.url = _new_url
             _patch_clean(model)
+            _patch_elasticsearch_fields(model)
 
         WagtailTranslator._patched_models.append(model)
 
@@ -522,3 +524,15 @@ def _patch_clean(model):
             raise ValidationError(errors)
 
     model.clean = clean
+
+
+def _patch_elasticsearch_fields(model):
+    for field in model.search_fields:
+        # Check if the field is a SearchField and if it is one of the fields registered for translation
+        if field.__class__ is SearchField and field.field_name in WagtailTranslator._translation_options.fields:
+            # If it is we create a clone of the original SearchField to keep all the defined options
+            # and replace its name by the translated one
+            for lang in settings.LANGUAGES:
+                translated_field = copy.deepcopy(field)
+                translated_field.field_name = build_localized_fieldname(field.field_name, lang[0])
+                model.search_fields = model.search_fields + (translated_field,)

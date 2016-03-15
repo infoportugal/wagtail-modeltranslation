@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 from django import VERSION
 from django.utils.translation import ugettext_lazy
-
-from wagtail_modeltranslation.translator import translator, register, TranslationOptions
 from wagtail_modeltranslation.tests.models import (
     TestModel, FallbackModel, FallbackModel2, FileFieldsModel, ForeignKeyModel, OtherFieldsModel,
     DescriptorModel, AbstractModelA, AbstractModelB, Slugged, MetaData, Displayable, Page,
@@ -13,6 +11,7 @@ from wagtail_modeltranslation.tests.models import (
     FieldPanelPage, ImageChooserPanelPage, FieldRowPanelPage, MultiFieldPanelPage, InlinePanelPage,
     FieldPanelSnippet, ImageChooserPanelSnippet, FieldRowPanelSnippet, MultiFieldPanelSnippet, PageInlineModel,
     BaseInlineModel, StreamFieldPanelPage, StreamFieldPanelSnippet, SnippetInlineModel, InlinePanelSnippet)
+from wagtail_modeltranslation.translator import translator, register, TranslationOptions
 
 
 class TestTranslationOptions(TranslationOptions):

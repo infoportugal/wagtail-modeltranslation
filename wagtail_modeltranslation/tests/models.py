@@ -9,6 +9,7 @@ from wagtail.wagtailcore import blocks
 from wagtail.wagtailcore.fields import StreamField
 from wagtail.wagtailcore.models import Page as WagtailPage, Orderable
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.wagtailsearch import index
 from wagtail.wagtailsnippets.models import register_snippet
 
 
@@ -342,6 +343,11 @@ class TestSlugPage2(WagtailPage):
 
 class PatchTestPage(WagtailPage):
     description = models.CharField(max_length=50)
+
+    search_fields = (
+        index.SearchField('title'),
+        index.SearchField('description'),
+    )
 
 
 @register_snippet

@@ -1,19 +1,18 @@
 # -*- coding: utf-8 -*-
 from django import VERSION
-from django.utils.six import with_metaclass
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import Manager, ForeignKey, OneToOneField
 from django.db.models.base import ModelBase
 from django.db.models.signals import post_init
-
+from django.utils.six import with_metaclass
+from wagtail.wagtailcore.models import Page
 from wagtail_modeltranslation import settings as mt_settings
 from wagtail_modeltranslation.fields import (NONE, create_translation_field, TranslationFieldDescriptor,
-                                     TranslatedRelationIdDescriptor,
-                                     LanguageCacheSingleObjectDescriptor)
+                                             TranslatedRelationIdDescriptor,
+                                             LanguageCacheSingleObjectDescriptor)
 from wagtail_modeltranslation.manager import (MultilingualManager, MultilingualQuerysetManager,
-                                      rewrite_lookup_key)
+                                              rewrite_lookup_key)
 from wagtail_modeltranslation.utils import build_localized_fieldname, parse_field
-from wagtail.wagtailcore.models import Page
 
 NEW_RELATED_API = VERSION >= (1, 9)
 
@@ -34,6 +33,7 @@ class FieldsAggregationMetaClass(type):
     """
     Metaclass to handle custom inheritance of fields between classes.
     """
+
     def __new__(cls, name, bases, attrs):
         attrs['fields'] = set(attrs.get('fields', ()))
         for base in bases:
@@ -243,14 +243,6 @@ def patch_constructor(model):
                 kwargs.setdefault(new_key, val)
         old_init(self, *args, **kwargs)
 
-        from wagtail_modeltranslation.patch_wagtailadmin import WagtailTranslator
-        from wagtail.wagtailsnippets.models import get_snippet_models
-
-        # During the __init__ of the registered models check if they are an instance
-        # of Page or Snippet in order to patch the panels and forms
-        if issubclass(self.__class__, Page) or self.__class__ in get_snippet_models():
-            WagtailTranslator(self.__class__)
-
     model.__init__ = new_init
 
 
@@ -279,6 +271,7 @@ def patch_clean_fields(model):
                     field.save_form_data(self, value, check=False)
             delattr(self, '_mt_form_pending_clear')
         old_clean_fields(self, exclude)
+
     model.clean_fields = new_clean_fields
 
 
@@ -295,6 +288,7 @@ def patch_get_deferred_fields(model):
         if hasattr(self, '_fields_were_deferred'):
             sup.update(self._fields_were_deferred)
         return sup
+
     model.get_deferred_fields = new_get_deferred_fields
 
 
@@ -313,6 +307,7 @@ def patch_metaclass(model):
         Prevent this from happening with deleting those attributes from class being created.
         This metaclass would be called from django.db.models.query_utils.deferred_class_factory
         """
+
         def __new__(cls, name, bases, attrs):
             if attrs.get('_deferred', False):
                 opts = translator.get_options_for_model(model)
@@ -324,6 +319,7 @@ def patch_metaclass(model):
                 if len(were_deferred):
                     attrs['_fields_were_deferred'] = were_deferred
             return super(translation_deferred_mcs, cls).__new__(cls, name, bases, attrs)
+
     # Assign to __metaclass__ wouldn't work, since metaclass search algorithm check for __class__.
     # http://docs.python.org/2/reference/datamodel.html#__metaclass__
     model.__class__ = translation_deferred_mcs
@@ -398,8 +394,10 @@ def patch_related_object_descriptor_caching(ro_descriptor):
     Patch SingleRelatedObjectDescriptor or ReverseSingleRelatedObjectDescriptor to use
     language-aware caching.
     """
+
     class NewSingleObjectDescriptor(LanguageCacheSingleObjectDescriptor, ro_descriptor.__class__):
         pass
+
     ro_descriptor.accessor = ro_descriptor.related.get_accessor_name()
     ro_descriptor.__class__ = NewSingleObjectDescriptor
 
@@ -409,6 +407,7 @@ class Translator(object):
     A Translator object encapsulates an instance of a translator. Models are
     registered with the Translator using the register() method.
     """
+
     def __init__(self):
         # All seen models (model class -> ``TranslationOptions`` instance).
         self._registry = {}
@@ -599,7 +598,6 @@ class Translator(object):
 
 # This global object represents the singleton translator object
 translator = Translator()
-
 
 # Re-export the decorator for convenience
 from wagtail_modeltranslation.decorators import register  # NOQA re-export

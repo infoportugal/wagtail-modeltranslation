@@ -112,6 +112,11 @@ class ModeltranslationTransactionTestBase(TransactionTestCase):
                 from wagtail_modeltranslation import translation as wag_trans
                 imp.reload(wag_trans)
 
+                # Reload the patching class to update the imported translator
+                # in order to include the newly registered models
+                from wagtail_modeltranslation import patch_wagtailadmin
+                imp.reload(patch_wagtailadmin)
+
                 # 3. Reset test models (because autodiscover have already run, those models
                 #    have translation fields, but for languages previously defined. We want
                 #    to be sure that 'de' and 'en' are available)
@@ -505,10 +510,6 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
     @classmethod
     def setUpClass(cls):
         super(WagtailModeltranslationTest, cls).setUpClass()
-        # Reload the patching class to update the imported translator
-        # in order to include the newly registered models
-        from wagtail_modeltranslation import patch_wagtailadmin
-        imp.reload(patch_wagtailadmin)
 
         # Delete the default wagtail pages from db
         from wagtail.wagtailcore.models import Page
@@ -629,35 +630,32 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
         self.check_multipanel_patching(panels=panels[5:8])
 
     def test_page_patching(self):
-        self.check_fieldpanel_patching(panels=models.FieldPanelPage().content_panels)
-        self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelPage().content_panels)
-        self.check_fieldrowpanel_patching(panels=models.FieldRowPanelPage().content_panels)
-        self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelPage().content_panels)
-        self.check_multipanel_patching(panels=models.MultiFieldPanelPage().content_panels)
+        self.check_fieldpanel_patching(panels=models.FieldPanelPage.content_panels)
+        self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelPage.content_panels)
+        self.check_fieldrowpanel_patching(panels=models.FieldRowPanelPage.content_panels)
+        self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelPage.content_panels)
+        self.check_multipanel_patching(panels=models.MultiFieldPanelPage.content_panels)
 
         # In spite of the model being the InlinePanelPage the panels are patch on the related model
         # which is the PageInlineModel
-        models.InlinePanelPage()
         self.check_inlinepanel_patching(panels=models.PageInlineModel.panels)
 
     def test_snippet_patching(self):
-        self.check_fieldpanel_patching(panels=models.FieldPanelSnippet().panels)
-        self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelSnippet().panels)
-        self.check_fieldrowpanel_patching(panels=models.FieldRowPanelSnippet().panels)
-        self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelSnippet().panels)
-        self.check_multipanel_patching(panels=models.MultiFieldPanelSnippet().panels)
+        self.check_fieldpanel_patching(panels=models.FieldPanelSnippet.panels)
+        self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelSnippet.panels)
+        self.check_fieldrowpanel_patching(panels=models.FieldRowPanelSnippet.panels)
+        self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelSnippet.panels)
+        self.check_multipanel_patching(panels=models.MultiFieldPanelSnippet.panels)
 
         # In spite of the model being the InlinePanelSnippet the panels are patch on the related model
         # which is the SnippetInlineModel
-        models.InlinePanelSnippet()
-        self.check_inlinepanel_patching(panels=models.SnippetInlineModel().panels)
+        self.check_inlinepanel_patching(panels=models.SnippetInlineModel.panels)
 
     def test_page_form(self):
         """
         In this test we use the InlinePanelPage model because it has all the possible "patchable" fields
         so if the created form has all fields the the form was correctly patched
         """
-        models.InlinePanelPage()
         try:
             from wagtail.wagtailadmin.views.pages import get_page_edit_handler, \
                 PAGE_EDIT_HANDLERS
@@ -688,7 +686,6 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
         In this test we use the InlinePanelSnippet model because it has all the possible "patchable" fields
         so if the created form has all fields the the form was correctly patched
         """
-        models.InlinePanelSnippet()
         from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
@@ -728,6 +725,14 @@ class WagtailModeltranslationTest(ModeltranslationTestBase):
         child2.slug_de = 'child'
 
         self.assertRaises(ValidationError, child2.clean)
+
+    def test_searchfield_patching(self):
+        # Check if the search fields have the original field plus the translated ones
+        expected_fields = ['title', 'title_de', 'title_en', 'description', 'description_de', 'description_en']
+
+        model_search_fields = [searchfield.field_name for searchfield in models.PatchTestPage.search_fields]
+
+        self.assertItemsEqual(expected_fields, model_search_fields)
 
 
 class ModeltranslationTransactionTest(ModeltranslationTransactionTestBase):
