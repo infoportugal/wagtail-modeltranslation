@@ -1,9 +1,9 @@
 Metadata-Version: 1.0
 Name: wagtail-modeltranslation
-Version: 0.4.4
+Version: 0.5.0a
 Summary: Translates Wagtail CMS models using a registration approach.
 Home-page: https://github.com/infoportugal/wagtail-modeltranslation
-Author: Diogo Marques, Eduardo Nogueira, Rui Martins
+Author: InfoPortugal S.A.
 Author-email: ...
 License: New BSD
 Description: The modeltranslation application can be used to translate dynamic

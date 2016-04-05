@@ -6,8 +6,11 @@ Authors
 Core Committers
 ---------------
 
+* Alexandre Silva
 * Diogo Marques
+* Eduardo Nogueira
 * Rui Martins
+* Tiago Costa
 
 Contributors
 ------------
@@ -15,11 +18,9 @@ Contributors
 * `Django-modeltranslation`_
 * `Django-linguo`_
 * Alain Gelinas
-* Eduardo Nogueira
 * Karl Hobley
 * Raphael Grill
 * Tom Dyson
-* Tiago Costa
 * Tim Tan
 
 

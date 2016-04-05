@@ -1,3 +1,10 @@
+v0.5.0a:
+- Wagtail 1.4.x compatibility (#67)
+- ElasticSearch integration (#66)
+- Validation of slug uniqueness (#37)
+- Patching of inline-panels (#70)
+- Deprecated TranslationMixin and SnippetsMixin (#69)
+
 v0.4.4:
 - Fix issue related to Django 1.9.x
 
