@@ -30,6 +30,11 @@ try:
 except ImportError:
     pass
 
+try:
+    from functools import reduce
+except ImportError:
+    pass
+
 logger = logging.getLogger('wagtail.core')
 
 
