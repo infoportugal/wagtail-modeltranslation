@@ -1,0 +1,14 @@
+language: "python"
+python:
+  - "2.7"
+  - "3.2"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+env:
+  - DJANGO=1.8, DB=sqlite
+  - DJANGO=1.8, DB=postgres
+  - DJANGO=1.8, DB=mysql
+  - DJANGO=1.9, DB=sqlite
+  - DJANGO=1.9, DB=postgres
+  - DJANGO=1.9, DB=mysql
