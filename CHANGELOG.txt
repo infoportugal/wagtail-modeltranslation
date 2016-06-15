@@ -1,3 +1,6 @@
+v0.5.0a1:
+- Added patching for BaseSetting subclasses
+
 v0.5.0a:
 - Wagtail 1.4.x compatibility (#67)
 - ElasticSearch integration (#66)
