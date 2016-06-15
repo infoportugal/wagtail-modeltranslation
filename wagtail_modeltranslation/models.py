@@ -4,6 +4,7 @@ import logging
 import django
 import warnings
 from patch_wagtailadmin import WagtailTranslator
+from wagtail.contrib.settings.models import BaseSetting
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailsnippets.models import get_snippet_models
 
@@ -58,9 +59,9 @@ def autodiscover():
     for module in TRANSLATION_FILES:
         import_module(module)
 
-    # After all models being registered the Page subclasses and snippets are patched
+    # After all models being registered the Page or BaseSetting subclasses and snippets are patched
     for model in translator.get_registered_models():
-        if issubclass(model, Page) or model in get_snippet_models():
+        if issubclass(model, Page) or model in get_snippet_models() or issubclass(model, BaseSetting):
             WagtailTranslator(model)
 
     # In debug mode, print a list of registered models and pid to stdout.
