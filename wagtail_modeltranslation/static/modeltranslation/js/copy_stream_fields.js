@@ -49,7 +49,7 @@ function requestCopyField(originID, targetID) {
 	 */
 	$.ajax({
 		url: 'copy_translation_content',
-		type: 'GET',
+		type: 'POST',
 		dataType: 'json',
 		data: {'origin_field_name': originID, 'target_field_name': targetID, 'serializedOriginField': jsonString},
 	})
