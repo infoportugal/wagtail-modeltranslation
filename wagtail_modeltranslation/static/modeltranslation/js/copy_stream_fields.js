@@ -59,7 +59,7 @@ function requestCopyField(originID, targetID) {
 		$(wrapperDiv).html(data);
 	})
 	.fail(function(error) {
-		console.log("wagtail-modeltranslation error: %s", error);
+		console.log("wagtail-modeltranslation error: %s", error.responseText);
 	})
 
 }
