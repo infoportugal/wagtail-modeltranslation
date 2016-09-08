@@ -3,7 +3,7 @@ import logging
 
 import django
 import warnings
-from patch_wagtailadmin import WagtailTranslator
+from .patch_wagtailadmin import WagtailTranslator
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailsnippets.models import get_snippet_models
 
