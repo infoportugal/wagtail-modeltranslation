@@ -2,6 +2,7 @@
 import copy
 import logging
 import operator
+import inspect
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -55,7 +56,9 @@ class WagtailTranslator(object):
 
         defined_tabs = WagtailTranslator._fetch_defined_tabs(model)
 
+        k = -1
         for tab_name, tab in defined_tabs:
+            k += 1
             patched_tab = []
 
             for panel in tab:
@@ -66,6 +69,9 @@ class WagtailTranslator(object):
                         patched_tab.append(x)
 
             setattr(model, tab_name, patched_tab)
+            
+            if hasattr(model, 'edit_handler') :
+                model.edit_handler.children[k].children = patched_tab
 
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
@@ -122,12 +128,33 @@ class WagtailTranslator(object):
             tabs += (('panels', copy.deepcopy(defined_class.panels)),)
         # Check for common tabs
         else:
-            if hasattr(defined_class, 'content_panels'):
-                tabs += (('content_panels', copy.deepcopy(defined_class.content_panels)),)
-            if hasattr(defined_class, 'promote_panels'):
-                tabs += (('promote_panels', copy.deepcopy(defined_class.promote_panels)),)
-            if hasattr(defined_class, 'settings_panels'):
-                tabs += (('settings_panels', copy.deepcopy(defined_class.settings_panels)),)
+            
+            if hasattr(defined_class, 'edit_handler') :
+                
+                #Find all class members that could be tab panels like content_panels, settings_panels, promote_panels and any other custom defined panels
+                tab_panels = inspect.getmembers(defined_class, lambda x : isinstance(x, list))
+                
+                k = -1
+                for objlist in defined_class.edit_handler.children:
+                    k += 1
+                    
+                    #Try to understand if this tab_panel was defined as model attribute, so we can recycle its name and update its value
+                    for tab_panel_name, tab_panel in tab_panels :
+                        if tab_panel == objlist.children :
+                            tab_name = tab_panel_name
+                            break
+                    else :
+                        #It happens if a custom tab panel is defined as list onto the edit_handler directly
+                        tab_name = 'tab_panels_%d' % k
+                        
+                    tabs += ((tab_name, copy.deepcopy(objlist.children)),)
+            else :
+                if hasattr(defined_class, 'content_panels'):
+                    tabs += (('content_panels', copy.deepcopy(defined_class.content_panels)),)
+                if hasattr(defined_class, 'promote_panels'):
+                    tabs += (('promote_panels', copy.deepcopy(defined_class.promote_panels)),)
+                if hasattr(defined_class, 'settings_panels'):
+                    tabs += (('settings_panels', copy.deepcopy(defined_class.settings_panels)),)
 
         return tabs
 
