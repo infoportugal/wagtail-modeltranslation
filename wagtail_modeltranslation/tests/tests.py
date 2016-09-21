@@ -143,7 +143,9 @@ class ModeltranslationTransactionTestBase(TransactionTestCase):
                 # tests app has been added into INSTALLED_APPS and loaded
                 # (that's why this is not imported in normal import section)
                 global models, translation
-                from wagtail_modeltranslation.tests import models, translation
+                from wagtail_modeltranslation.tests import models as t_models, translation as t_translation
+                models = t_models
+                translation = t_translation
 
     def setUp(self):
         self._old_language = get_language()
