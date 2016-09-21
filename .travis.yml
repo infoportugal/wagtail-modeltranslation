@@ -1,14 +1,14 @@
 language: "python"
 python:
   - "2.7"
-  - "3.2"
-  - "3.3"
-  - "3.4"
-  - "3.5"
+cache: pip
+install: travis_retry pip install "virtualenv<14.0.0" tox
+script: tox -e $TOX_ENV
 env:
-  - DJANGO=1.8, DB=sqlite
-  - DJANGO=1.8, DB=postgres
-  - DJANGO=1.8, DB=mysql
-  - DJANGO=1.9, DB=sqlite
-  - DJANGO=1.9, DB=postgres
-  - DJANGO=1.9, DB=mysql
+  - TOX_ENV=django18-py27, DB=sqlite
+  - TOX_ENV=django18-py27, DB=postgres
+  - TOX_ENV=django18-py27, DB=mysql
+  - TOX_ENV=django19-py27, DB=sqlite
+  - TOX_ENV=django19-py27, DB=postgres
+  - TOX_ENV=django19-py27, DB=mysql
+script: tox -e $TOX_ENV
