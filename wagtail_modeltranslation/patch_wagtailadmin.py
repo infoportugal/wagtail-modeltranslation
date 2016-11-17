@@ -384,8 +384,9 @@ def _new_set_url_path(self, parent):
                 setattr(self, 'url_path', '/')
 
     # update url_path for children pages
-    for child in self.get_children():
+    for child in self.get_children().specific():
         child.set_url_path(self.specific)
+        child.save()
 
     return self.url_path
 
