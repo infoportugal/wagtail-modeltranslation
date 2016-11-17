@@ -503,7 +503,11 @@ def _validate_slugs(page):
         for model in allowed_sibblings:
             slug = getattr(page, current_slug, '') or ''
             if len(slug) and model is not Page:
-                kwargs = {'{0}__{1}'.format(model._meta.model_name, current_slug): slug}
+                if model in WagtailTranslator._patched_models:
+                    field_name = '{0}__{1}'.format(model._meta.model_name, current_slug)
+                else:
+                    field_name = '{0}__slug'.format(model._meta.model_name)
+                kwargs = {field_name: slug}
                 query_list.append(Q(**kwargs))
 
         if query_list and siblings.filter(reduce(operator.or_, query_list)).exists():

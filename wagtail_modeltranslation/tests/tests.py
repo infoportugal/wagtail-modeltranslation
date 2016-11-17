@@ -2,6 +2,8 @@
 import datetime
 import imp
 import shutil
+import unittest
+
 from decimal import Decimal
 
 import django
@@ -130,20 +132,19 @@ class ModeltranslationTransactionTestBase(TransactionTestCase):
                 from wagtail_modeltranslation.models import handle_translation_registrations
                 handle_translation_registrations()
 
-                # 5. makemigrations
-                from django.db import connections, DEFAULT_DB_ALIAS
-                call_command('makemigrations', verbosity=2, interactive=False,
-                             database=connections[DEFAULT_DB_ALIAS].alias)
-
-                # 6. Syncdb
-                call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
-                             database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
-
                 # A rather dirty trick to import models into module namespace, but not before
                 # tests app has been added into INSTALLED_APPS and loaded
                 # (that's why this is not imported in normal import section)
                 global models, translation
-                from wagtail_modeltranslation.tests import models, translation
+                from wagtail_modeltranslation.tests import models as t_models, translation as t_translation
+                models = t_models
+                translation = t_translation
+
+                from django.db import connections, DEFAULT_DB_ALIAS
+                # 6. Syncdb
+                call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
+                             database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
+
 
     def setUp(self):
         self._old_language = get_language()
@@ -2170,6 +2171,7 @@ class ModelInheritanceFieldAggregationTest(ModeltranslationTestBase):
 
 
 class UpdateCommandTest(ModeltranslationTestBase):
+    @unittest.skipIf('tox' in os.environ.get('VIRTUAL_ENV', ""), 'running the below command is no good in Tox')
     def test_update_command(self):
         # Here it would be convenient to use fixtures - unfortunately,
         # fixtures loader doesn't use raw sql but rather creates objects,
