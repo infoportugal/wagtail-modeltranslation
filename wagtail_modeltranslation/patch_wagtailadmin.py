@@ -100,7 +100,6 @@ class WagtailTranslator(object):
         if issubclass(model, Page):
             model.move = _new_move
             model.set_url_path = _new_set_url_path
-            model.url = _new_url
             _patch_clean(model)
             _patch_elasticsearch_fields(model)
 
@@ -385,27 +384,6 @@ def _new_set_url_path(self, parent):
         child.set_url_path(self.specific)
 
     return self.url_path
-
-
-@property
-def _new_url(self):
-    """
-    Return the 'most appropriate' URL for referring to this page from the pages we serve,
-    within the Wagtail backend and actual website templates;
-    this is the local URL (starting with '/') if we're only running a single site
-    (i.e. we know that whatever the current page is being served from, this link will be on the
-    same domain), and the full URL (with domain) if not.
-    Return None if the page is not routable.
-
-    Override for using custom get_site_root_paths() instead of
-    Site.get_site_root_paths()
-    """
-    root_paths = self.get_site_root_paths()
-
-    for (id, root_path, root_url) in root_paths:
-        if self.url_path.startswith(root_path):
-            return ('' if len(root_paths) == 1 else root_url) + reverse(
-                'wagtail_serve', args=(self.url_path[len(root_path):],))
 
 
 def _validate_slugs(page):
