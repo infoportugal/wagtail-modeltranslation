@@ -100,7 +100,6 @@ class WagtailTranslator(object):
         if issubclass(model, Page):
             model.move = _new_move
             model.set_url_path = _new_set_url_path
-            model.get_site_root_paths = _new_get_site_root_paths
             model.relative_url = _new_relative_url
             model.url = _new_url
             _patch_clean(model)
@@ -387,25 +386,6 @@ def _new_set_url_path(self, parent):
         child.set_url_path(self.specific)
 
     return self.url_path
-
-
-@staticmethod
-def _new_get_site_root_paths():
-    """
-    Return a list of (root_path, root_url) tuples, most specific path first -
-    used to translate url_paths into actual URLs with hostnames
-
-    Same method as Site.get_site_root_paths() but without cache
-
-    TODO: remake this method with cache and think of his integration in
-    Site.get_site_root_paths()
-    """
-    result = [
-        (site.id, site.root_page.specific.url_path, site.root_url)
-        for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
-        ]
-
-    return result
 
 
 def _new_relative_url(self, current_site):
