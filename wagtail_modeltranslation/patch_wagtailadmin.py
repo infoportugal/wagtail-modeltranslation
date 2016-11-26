@@ -100,7 +100,6 @@ class WagtailTranslator(object):
         if issubclass(model, Page):
             model.move = _new_move
             model.set_url_path = _new_set_url_path
-            model.relative_url = _new_relative_url
             model.url = _new_url
             _patch_clean(model)
             _patch_elasticsearch_fields(model)
@@ -386,21 +385,6 @@ def _new_set_url_path(self, parent):
         child.set_url_path(self.specific)
 
     return self.url_path
-
-
-def _new_relative_url(self, current_site):
-    """
-    Return the 'most appropriate' URL for this page taking into account the site we're currently on;
-    a local URL if the site matches, or a fully qualified one otherwise.
-    Return None if the page is not routable.
-
-    Override for using custom get_site_root_paths() instead of
-    Site.get_site_root_paths()
-    """
-    for (id, root_path, root_url) in self.get_site_root_paths():
-        if self.url_path.startswith(root_path):
-            return ('' if current_site.id == id else root_url) + reverse('wagtail_serve',
-                                                                         args=(self.url_path[len(root_path):],))
 
 
 @property
