@@ -11,15 +11,18 @@ $(document).ready(function(){
 		var header = $(currentStreamField).children('h2')[0];
 		//Search for the input field so that we can get is id to know the field's name.
 		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
-    var lastUnderscore = fieldInfos.lastIndexOf("_");
-    var fieldName = fieldInfos.substring(0, lastUnderscore);
-    var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+		var fieldId = $(streamFieldDiv).children('input')[0].id;
+		var fieldInfos = fieldId.split('-')[0];
+		var fieldIdPostfix = "-" + fieldId.split('-').slice(1).join("-");
+		var lastUnderscore = fieldInfos.lastIndexOf("_");
+	    var fieldName = fieldInfos.substring(0, lastUnderscore);
+	    var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+    
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
 		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
 		for (var j = 0; j < langs.length; j++) {
-			if (fieldLang != langs[j]) {
+			if ($("#" + fieldName + "_" + langs[j] + fieldIdPostfix).length && fieldLang != langs[j]) {
 				var currentFieldID = fieldName + '_' + fieldLang;
 				var targetFieldID = fieldName + '_' + langs [j];
 				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
