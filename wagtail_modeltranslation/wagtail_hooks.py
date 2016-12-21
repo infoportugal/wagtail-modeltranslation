@@ -47,9 +47,10 @@ def return_translation_target_field_rendered_html(request, page_id):
     if request.is_ajax():
         origin_field_name = request.POST.get('origin_field_name')
         target_field_name = request.POST.get('target_field_name')
+        related_model = request.POST.get('related_model')
+        related_model_offset = int(request.POST.get('related_model_offset', 0) or 0)
         origin_field_serialized = json.loads(
             request.POST.get('serializedOriginField'))
-
         # Patch field prefixes from origin field to target field
         target_field_patched = []
         for item in origin_field_serialized:
@@ -72,11 +73,17 @@ def return_translation_target_field_rendered_html(request, page_id):
 
         # get render html
 
-        target_field = page.specific._meta.get_field(target_field_name)
+        if related_model :
+            target_field = getattr(page.specific, related_model).all()[related_model_offset]._meta.get_field(target_field_name)
+            q_data_target_field_name = "%s-%s-%s" % (related_model, related_model_offset, target_field_name)
+        else :
+            target_field = page.specific._meta.get_field(target_field_name)
+            q_data_target_field_name = target_field_name
+
         value_data = target_field.stream_block.value_from_datadict(
-            q_data, {}, target_field_name)
+            q_data, {}, q_data_target_field_name)
         target_field_content_html = target_field.formfield().widget.render(
-            target_field_name, value_data)
+            q_data_target_field_name, value_data)
 
     # return html json
     return HttpResponse(
