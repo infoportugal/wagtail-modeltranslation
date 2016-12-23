@@ -11,12 +11,16 @@
             <input type="hidden" name="next" value="{{ next }}" />
 
             <ul class="fields">
-            	{% include "wagtailadmin/shared/field_as_li.html" with field=form.new_title %}
-            	{% include "wagtailadmin/shared/field_as_li.html" with field=form.new_title_it %}
-            	{% include "wagtailadmin/shared/field_as_li.html" with field=form.new_title_en %}
-            	{% include "wagtailadmin/shared/field_as_li.html" with field=form.new_slug %}
-                {% include "wagtailadmin/shared/field_as_li.html" with field=form.new_slug_it %}
-                {% include "wagtailadmin/shared/field_as_li.html" with field=form.new_slug_en %}
+            	{% for field in form.visible_fields %}
+            		{% if field.name|make_list|slice:":9"|join:"" == "new_title" %}
+            			{% include "wagtailadmin/shared/field_as_li.html" with field=field %}
+            		{% endif %}
+            	{% endfor %}
+            	{% for field in form.visible_fields %}
+            		{% if field.name|make_list|slice:":8"|join:"" == "new_slug" %}
+            			{% include "wagtailadmin/shared/field_as_li.html" with field=field %}
+            		{% endif %}
+            	{% endfor %}
                 {% include "wagtailadmin/shared/field_as_li.html" with field=form.new_parent_page %}
 
                 {% if form.copy_subpages %}

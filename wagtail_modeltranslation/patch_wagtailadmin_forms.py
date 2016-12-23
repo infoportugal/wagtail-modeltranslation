@@ -4,27 +4,30 @@ from django.conf import settings
 
 from django import forms
 from django.utils.translation import ugettext as _
+from django.utils.translation import ungettext
 
 from wagtail.wagtailadmin import widgets
 from wagtail.wagtailadmin.forms import CopyForm
 from wagtail.wagtailcore.models import Page
 
+
 # Copied from wagtail.wagtailadmin.forms.CopyForm and modified
+# We here inherit the original CopyForm, we could define a new one instead (as at today we redefine all its methods)
 class NewCopyForm(CopyForm):
     def __init__(self, *args, **kwargs):
         # CopyPage must be passed a 'page' kwarg indicating the page to be copied
         self.page = kwargs.pop('page').specific
         can_publish = kwargs.pop('can_publish')
-        super(CopyForm, self).__init__(*args, **kwargs)
+        super(CopyForm, self).__init__(*args, **kwargs)  # Yeah, call CopyForm not NewCopyForm
 
-        self.fields['new_title'] = forms.CharField(initial=self.page.title, label=_("New title"))
+        # self.fields['new_title'] = forms.CharField(initial=self.page.title, label=_("New title"))
         for isocode, description in settings.LANGUAGES:
             self.fields['new_title_%s' % isocode] = forms.CharField(initial=getattr(self.page, "title_%s" % isocode), label=_("New title") + (" [%s]" % isocode))
-            
-        self.fields['new_slug'] = forms.SlugField(initial=self.page.slug, label=_("New slug"))
+
+        # self.fields['new_slug'] = forms.SlugField(initial=self.page.slug, label=_("New slug"))
         for isocode, description in settings.LANGUAGES:
             self.fields['new_slug_%s' % isocode] = forms.CharField(initial=getattr(self.page, "slug_%s" % isocode), label=_("New slug") + (" [%s]" % isocode))
-            
+
         self.fields['new_parent_page'] = forms.ModelChoiceField(
             initial=self.page.get_parent(),
             queryset=Page.objects.all(),
@@ -60,3 +63,26 @@ class NewCopyForm(CopyForm):
                 self.fields['publish_copies'] = forms.BooleanField(
                     required=False, initial=True, label=label, help_text=help_text
                 )
+
+    def clean(self):
+        cleaned_data = super(CopyForm, self).clean()  # Yeah, call CopyForm not NewCopyForm
+
+        # Make sure the slug isn't already in use
+        # slug = cleaned_data.get('new_slug')
+
+        # New parent page given in form or parent of source, if parent_page is empty
+        parent_page = cleaned_data.get('new_parent_page') or self.page.get_parent()
+
+        for isocode, description in settings.LANGUAGES:
+            formfieldname = 'new_slug_%s' % isocode
+            slug = cleaned_data.get(formfieldname)
+
+            # Count the pages with the same slug within the context of our copy's parent page
+            if slug and parent_page.get_children().filter(slug=slug).count():
+                self._errors[formfieldname] = self.error_class(
+                    [_("This slug is already in use within the context of its parent page \"%s\"" % parent_page)]
+                )
+                # The slug is no longer valid, hence remove it from cleaned_data
+                del cleaned_data[formfieldname]
+
+        return cleaned_data

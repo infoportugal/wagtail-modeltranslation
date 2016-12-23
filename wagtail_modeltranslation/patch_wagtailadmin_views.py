@@ -12,7 +12,11 @@ from wagtail.wagtailadmin.views.pages import get_valid_next_url_from_request
 
 from wagtail_modeltranslation.patch_wagtailadmin_forms import NewCopyForm
 
-# Copied from wagtail.wagtailadmin.views.pages.copy and modified
+
+# Copied from wagtail.wagtailadmin.views.pages.copy for these modifications
+# - change data in update_attrs dict (use language fields instead of the original ones)
+# - add settings.LANGUAGES to the template context
+# - make use of the NewCopyForm (patch of the original CopyForm)
 def new_copy(request, page_id):
     page = Page.objects.get(id=page_id)
 
@@ -45,15 +49,11 @@ def new_copy(request, page_id):
             # Re-check if the user has permission to publish subpages on the new parent
             can_publish = parent_page.permissions_for_user(request.user).can_publish_subpage()
 
-            update_attrs = {
-                'title': form.cleaned_data['new_title'],
-                'slug': form.cleaned_data['new_slug'],
-            }
-            
+            update_attrs = {}
             for isocode, description in settings.LANGUAGES:
                 for fieldname in ['title', 'slug']:
                     update_attrs['%s_%s' % (fieldname, isocode)] = form.cleaned_data['new_%s_%s' % (fieldname, isocode)]
-                    
+
             # Copy the page
             new_page = page.copy(
                 recursive=form.cleaned_data.get('copy_subpages'),
