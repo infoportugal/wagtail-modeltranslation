@@ -3,12 +3,36 @@
 from django.conf import settings
 
 from django import forms
+
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
 
 from wagtail.wagtailadmin import widgets
-from wagtail.wagtailadmin.forms import CopyForm
+from wagtail.wagtailadmin.forms import WagtailAdminPageForm, CopyForm
 from wagtail.wagtailcore.models import Page
+
+
+class WagtailModeltranslationAdminPageForm(WagtailAdminPageForm):
+
+    def __init__(self, data=None, files=None, parent_page=None, *args, **kwargs):
+        super(WagtailModeltranslationAdminPageForm, self).__init__(data, files, parent_page, *args, **kwargs)
+
+    def clean(self):
+
+        cleaned_data = super(WagtailModeltranslationAdminPageForm, self).clean()
+
+        from wagtail_modeltranslation.patch_wagtailadmin import _validate_slugs
+
+        slugs_to_check = {}
+        for isocode, description in settings.LANGUAGES:
+            slugs_to_check["slug_%s" % isocode] = cleaned_data["slug_%s" % isocode]
+
+        for slugfield, des_error in _validate_slugs(self.instance,
+                                                    parent_page=self.parent_page,
+                                                    slugs_to_check=slugs_to_check).items():
+            self.add_error(slugfield, forms.ValidationError(des_error))
+
+        return cleaned_data
 
 
 # Copied from wagtail.wagtailadmin.forms.CopyForm and modified
@@ -73,16 +97,22 @@ class NewCopyForm(CopyForm):
         # New parent page given in form or parent of source, if parent_page is empty
         parent_page = cleaned_data.get('new_parent_page') or self.page.get_parent()
 
+        from wagtail_modeltranslation.patch_wagtailadmin import _validate_slugs
+
+        slugs_to_check = {}
         for isocode, description in settings.LANGUAGES:
             formfieldname = 'new_slug_%s' % isocode
-            slug = cleaned_data.get(formfieldname)
+            slugs_to_check["slug_%s" % isocode] = cleaned_data.get(formfieldname) or ""
 
-            # Count the pages with the same slug within the context of our copy's parent page
-            if slug and parent_page.get_children().filter(slug=slug).count():
-                self._errors[formfieldname] = self.error_class(
-                    [_("This slug is already in use within the context of its parent page \"%s\"" % parent_page)]
-                )
-                # The slug is no longer valid, hence remove it from cleaned_data
-                del cleaned_data[formfieldname]
-
+        for slugfield, des_error in _validate_slugs(self.page,
+                                                    parent_page=parent_page,
+                                                    slugs_to_check=slugs_to_check,
+                                                    exclude_self=False).items():
+            formfieldname = 'new_%s' % slugfield
+            self._errors[formfieldname] = self.error_class(
+                [_("This slug is already in use within the context of its parent page \"%s\"" % parent_page)]
+            )
+            # The slug is no longer valid, hence remove it from cleaned_data
+            del cleaned_data[formfieldname]
+            
         return cleaned_data
