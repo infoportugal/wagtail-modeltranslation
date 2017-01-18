@@ -529,7 +529,7 @@ def _validate_slugs(page, parent_page=None, slugs_to_check=None, exclude_self=Tr
     allowed_sibblings = parent_page.specific.allowed_subpage_models()
     siblings = parent_page.get_children()
     if exclude_self :
-        siblings.exclude(pk=page.pk)
+        siblings = siblings.exclude(pk=page.pk)
 
     errors = {}
 
