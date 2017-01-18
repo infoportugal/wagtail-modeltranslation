@@ -29,6 +29,8 @@ try:
 except ImportError:
     pass
 
+from wagtail_modeltranslation.patch_wagtailadmin_forms import WagtailModeltranslationAdminPageForm
+
 logger = logging.getLogger('wagtail.core')
 
 
@@ -43,6 +45,9 @@ class WagtailTranslator(object):
 
         WagtailTranslator._base_model = model
         WagtailTranslator._required_fields = {}
+
+        if issubclass(model, Page):
+            model.base_form_class = WagtailModeltranslationAdminPageForm  # This must be before the next edit_handler_class patch
 
         # CONSTRUCT TEMPORARY EDIT HANDLER
         if issubclass(model, Page):
@@ -507,12 +512,15 @@ def _new_url(self):
                 'wagtail_serve', args=(self.url_path[len(root_path):],))
 
 
-def _validate_slugs(page):
+def _validate_slugs(page, parent_page=None, slugs_to_check=None):
     """
     Determine whether the given slug is available for use on a child page of
     parent_page.
+
+    slugs_to_check: if used it must be a dict object where the keys are the translated slug fields and the values are what have to be checked
+        To be used if you want check specific values instead of the page's current slug values
     """
-    parent_page = page.get_parent()
+    parent_page = page.get_parent() if parent_page is None else parent_page
 
     if parent_page is None:
         # the root page's slug can be whatever it likes...
@@ -528,7 +536,7 @@ def _validate_slugs(page):
         query_list = []
 
         for model in allowed_sibblings:
-            slug = getattr(page, current_slug, '') or ''
+            slug = slugs_to_check[current_slug] if slugs_to_check is not None else getattr(page, current_slug, '') or ''
             if len(slug) and model is not Page:
                 if model in WagtailTranslator._patched_models:
                     field_name = '{0}__{1}'.format(model._meta.model_name, current_slug)
@@ -566,4 +574,4 @@ def _patch_elasticsearch_fields(model):
             for lang in settings.LANGUAGES:
                 translated_field = copy.deepcopy(field)
                 translated_field.field_name = build_localized_fieldname(field.field_name, lang[0])
-                model.search_fields = model.search_fields + [translated_field,]
+                model.search_fields = model.search_fields + [translated_field]
