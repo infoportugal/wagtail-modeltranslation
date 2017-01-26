@@ -14,6 +14,7 @@ import django
 from django.core.management.base import NoArgsCommand
 from django.core.management.color import no_style
 from django.db import connection, transaction
+from django.db.models import ForeignKey
 from django.utils.six import moves
 
 from wagtail_modeltranslation.settings import AVAILABLE_LANGUAGES
@@ -78,7 +79,7 @@ class Command(NoArgsCommand):
                 # Take `db_column` attribute into account
                 field = list(fields)[0]
                 column_name = field.db_column if field.db_column else field_name
-                missing_langs = list(self.get_missing_languages(column_name, db_table))
+                missing_langs = list(self.get_missing_languages(column_name, db_table, isinstance(field, ForeignKey)))  # ForeignKey type includes OneToOneField type
                 if missing_langs:
                     found_missing_fields = True
                     print_missing_langs(missing_langs, field_name, model_full_name)
@@ -106,13 +107,16 @@ class Command(NoArgsCommand):
         db_table_desc = self.introspection.get_table_description(self.cursor, db_table)
         return [t[0] for t in db_table_desc]
 
-    def get_missing_languages(self, field_name, db_table):
+    def get_missing_languages(self, field_name, db_table, is_foreign_key):
         """
         Gets only missings fields.
         """
         db_table_fields = self.get_table_fields(db_table)
         for lang_code in AVAILABLE_LANGUAGES:
-            if build_localized_fieldname(field_name, lang_code) not in db_table_fields:
+            localized_filename = build_localized_fieldname(field_name, lang_code)
+            if is_foreign_key:
+                localized_filename += "_id"
+            if localized_filename not in db_table_fields:
                 yield lang_code
 
     def get_sync_sql(self, field_name, missing_langs, model):
