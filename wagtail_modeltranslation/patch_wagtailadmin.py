@@ -2,6 +2,7 @@
 import copy
 import logging
 import operator
+import inspect
 
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -28,6 +29,8 @@ try:
 except ImportError:
     pass
 
+from wagtail_modeltranslation.patch_wagtailadmin_forms import WagtailModeltranslationAdminPageForm
+
 logger = logging.getLogger('wagtail.core')
 
 
@@ -43,6 +46,9 @@ class WagtailTranslator(object):
         WagtailTranslator._base_model = model
         WagtailTranslator._required_fields = {}
 
+        if issubclass(model, Page):
+            model.base_form_class = WagtailModeltranslationAdminPageForm  # This must be before the next edit_handler_class patch
+
         # CONSTRUCT TEMPORARY EDIT HANDLER
         if issubclass(model, Page):
             if hasattr(model, 'get_edit_handler'):
@@ -55,7 +61,9 @@ class WagtailTranslator(object):
 
         defined_tabs = WagtailTranslator._fetch_defined_tabs(model)
 
+        k = -1
         for tab_name, tab in defined_tabs:
+            k += 1
             patched_tab = []
 
             for panel in tab:
@@ -66,6 +74,9 @@ class WagtailTranslator(object):
                         patched_tab.append(x)
 
             setattr(model, tab_name, patched_tab)
+            
+            if hasattr(model, 'edit_handler') :
+                model.edit_handler.children[k].children = patched_tab
 
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
@@ -122,12 +133,33 @@ class WagtailTranslator(object):
             tabs += (('panels', copy.deepcopy(defined_class.panels)),)
         # Check for common tabs
         else:
-            if hasattr(defined_class, 'content_panels'):
-                tabs += (('content_panels', copy.deepcopy(defined_class.content_panels)),)
-            if hasattr(defined_class, 'promote_panels'):
-                tabs += (('promote_panels', copy.deepcopy(defined_class.promote_panels)),)
-            if hasattr(defined_class, 'settings_panels'):
-                tabs += (('settings_panels', copy.deepcopy(defined_class.settings_panels)),)
+            
+            if hasattr(defined_class, 'edit_handler') :
+                
+                #Find all class members that could be tab panels like content_panels, settings_panels, promote_panels and any other custom defined panels
+                tab_panels = inspect.getmembers(defined_class, lambda x : isinstance(x, list))
+                
+                k = -1
+                for objlist in defined_class.edit_handler.children:
+                    k += 1
+                    
+                    #Try to understand if this tab_panel was defined as model attribute, so we can recycle its name and update its value
+                    for tab_panel_name, tab_panel in tab_panels :
+                        if tab_panel == objlist.children :
+                            tab_name = tab_panel_name
+                            break
+                    else :
+                        #It happens if a custom tab panel is defined as list onto the edit_handler directly
+                        tab_name = 'tab_panels_%d' % k
+                        
+                    tabs += ((tab_name, copy.deepcopy(objlist.children)),)
+            else :
+                if hasattr(defined_class, 'content_panels'):
+                    tabs += (('content_panels', copy.deepcopy(defined_class.content_panels)),)
+                if hasattr(defined_class, 'promote_panels'):
+                    tabs += (('promote_panels', copy.deepcopy(defined_class.promote_panels)),)
+                if hasattr(defined_class, 'settings_panels'):
+                    tabs += (('settings_panels', copy.deepcopy(defined_class.settings_panels)),)
 
         return tabs
 
@@ -480,12 +512,15 @@ def _new_url(self):
                 'wagtail_serve', args=(self.url_path[len(root_path):],))
 
 
-def _validate_slugs(page):
+def _validate_slugs(page, parent_page=None, slugs_to_check=None):
     """
     Determine whether the given slug is available for use on a child page of
     parent_page.
+
+    slugs_to_check: if used it must be a dict object where the keys are the translated slug fields and the values are what have to be checked
+        To be used if you want check specific values instead of the page's current slug values
     """
-    parent_page = page.get_parent()
+    parent_page = page.get_parent() if parent_page is None else parent_page
 
     if parent_page is None:
         # the root page's slug can be whatever it likes...
@@ -501,7 +536,7 @@ def _validate_slugs(page):
         query_list = []
 
         for model in allowed_sibblings:
-            slug = getattr(page, current_slug, '') or ''
+            slug = slugs_to_check[current_slug] if slugs_to_check is not None else getattr(page, current_slug, '') or ''
             if len(slug) and model is not Page:
                 if model in WagtailTranslator._patched_models:
                     field_name = '{0}__{1}'.format(model._meta.model_name, current_slug)
@@ -539,4 +574,4 @@ def _patch_elasticsearch_fields(model):
             for lang in settings.LANGUAGES:
                 translated_field = copy.deepcopy(field)
                 translated_field.field_name = build_localized_fieldname(field.field_name, lang[0])
-                model.search_fields = model.search_fields + (translated_field,)
+                model.search_fields = list(model.search_fields) + [translated_field]
