@@ -1,7 +1,9 @@
 /* Creates the copy buttons in the header of each stream field */
-$(document).ready(function(){
+
+init_copy_stream_fields = function(){
 	//All the stream fields with all his content
-	var allStreamFields = $('li.stream-field');
+	var allStreamFields = $('li.stream-field:not([initialized])');
+	allStreamFields.attr("initialized", "1");
 
 	/* Iterate all stream fields, put the copy buttons in each one.*/
 	for (var i = 0; i < allStreamFields.length; i++) {
@@ -50,7 +52,7 @@ $(document).ready(function(){
 	};
 
 	/* on click binding */
-	$('.translation-field-copy').click(function(event){
+	allStreamFields.find('.translation-field-copy').click(function(event){
 		event.preventDefault();
 		var lang = $(this).attr('data-lang-code');
 		var currentLang = $(this).attr('current-lang-code');
@@ -58,6 +60,15 @@ $(document).ready(function(){
 		var relatedModelOffset = $(this).attr('related-model-offset');
 		requestCopyField(lang, currentLang, relatedModel, relatedModelOffset);
 	});
+	
+	/* Initialize new elements inside InlinePanel added by the user */
+	allStreamFields.parents("ul.multiple").siblings("p.add").click(function(){
+		window.setTimeout(init_copy_stream_fields, 500);
+	});
+}
+
+$(document).ready(function(){
+	init_copy_stream_fields();
 });
 
 /* Copy the content of originID field to the targetID field */
