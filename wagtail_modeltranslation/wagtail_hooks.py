@@ -74,7 +74,7 @@ def return_translation_target_field_rendered_html(request, page_id):
         # get render html
 
         if related_model :
-            target_field = getattr(page.specific, related_model).all()[related_model_offset]._meta.get_field(target_field_name)
+            target_field = getattr(page.specific, related_model).model._meta.get_field(target_field_name)
             q_data_target_field_name = "%s-%s-%s" % (related_model, related_model_offset, target_field_name)
         else :
             target_field = page.specific._meta.get_field(target_field_name)
