@@ -21,6 +21,12 @@ model class.
 .. image:: https://github.com/infoportugal/wagtail-modeltranslation/blob/master/screenshot.png?raw=true
     :target: https://github.com/infoportugal/wagtail-modeltranslation/blob/master/screenshot.png?raw=true
 
+NOTE:
+========
+We are currently refactoring this app to use django-modeltranslation as a requirement. See #101
+
+Current stage: Planning
+
 
 Features
 ========
