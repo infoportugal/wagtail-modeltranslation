@@ -8,6 +8,7 @@ from django.conf.urls import url
 from django.http import QueryDict
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.apps import apps
 
 from wagtail.wagtailcore import hooks
 from wagtail.wagtailcore.models import Page
@@ -36,13 +37,18 @@ def translated_slugs():
 # Copy StreamFields content
 ###############################################################################
 @csrf_exempt
-def return_translation_target_field_rendered_html(request, page_id):
+def return_translation_target_field_rendered_html(request, page_id, is_add = False, app_label = None, model_name = None):
     """
     Ajax view that allows to duplicate content
     between translated streamfields
     """
 
-    page = Page.objects.get(pk=page_id)
+    if is_add :
+        assert app_label and model_name
+        page = apps.get_model(app_label, model_name)()
+    else : # is_edit
+        assert app_label == model_name == None
+        page = Page.objects.get(pk=page_id)
 
     if request.is_ajax():
         origin_field_name = request.POST.get('origin_field_name')
@@ -96,6 +102,8 @@ def copy_streamfields_content():
     return [
         url(r'(?P<page_id>\d+)/edit/copy_translation_content$',
             return_translation_target_field_rendered_html, name=''),
+        url(r'add/(?P<app_label>\w+)/(?P<model_name>\w+)/(?P<page_id>\d+)/copy_translation_content$',
+            return_translation_target_field_rendered_html, name='', kwargs = {"is_add" : True}),
     ]
 
 

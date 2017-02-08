@@ -61,14 +61,22 @@ init_copy_stream_fields = function(){
 		requestCopyField(lang, currentLang, relatedModel, relatedModelOffset);
 	});
 	
-	/* Initialize new elements inside InlinePanel added by the user */
-	allStreamFields.parents("ul.multiple").siblings("p.add").click(function(){
-		window.setTimeout(init_copy_stream_fields, 500);
-	});
+	if (copy_stream_fields_is_first_init) {
+		/* Initialize new elements inside InlinePanel added by the user */
+		allStreamFields.parents("ul.multiple").siblings("p.add").click(init_added_copy_stream_fields);
+		/* Initialize empty InlinePanel that may contain StreamField */
+		$("li.object.empty p.add").click(init_added_copy_stream_fields);
+	}
 }
 
+init_added_copy_stream_fields = function(){
+	window.setTimeout(init_copy_stream_fields, 500);
+}
+
+var copy_stream_fields_is_first_init = true;
 $(document).ready(function(){
 	init_copy_stream_fields();
+	copy_stream_fields_is_first_init = false;
 });
 
 /* Copy the content of originID field to the targetID field */
