@@ -24,12 +24,6 @@ from wagtail.wagtailsnippets.models import get_snippet_models
 from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler, \
     SNIPPET_EDIT_HANDLERS
 
-try:
-    from wagtail.wagtailadmin.views.pages import get_page_edit_handler, \
-        PAGE_EDIT_HANDLERS
-except ImportError:
-    pass
-
 logger = logging.getLogger('wagtail.core')
 
 
@@ -47,12 +41,10 @@ class WagtailTranslator(object):
 
         # CONSTRUCT TEMPORARY EDIT HANDLER
         if issubclass(model, Page):
-            if hasattr(model, 'get_edit_handler'):
-                edit_handler_class = model.get_edit_handler()
-            else:
-                edit_handler_class = get_page_edit_handler(model)
+            edit_handler_class = model.get_edit_handler()
         else:
             edit_handler_class = get_snippet_edit_handler(model)
+
         WagtailTranslator._base_model_form = edit_handler_class.get_form_class(model)
 
         defined_tabs = WagtailTranslator._fetch_defined_tabs(model)
@@ -72,13 +64,8 @@ class WagtailTranslator(object):
         # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
         # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
         if issubclass(model, Page):
-            if hasattr(model, 'get_edit_handler'):
-                model.get_edit_handler.cache_clear()
-                edit_handler_class = model.get_edit_handler()
-            else:
-                if model in PAGE_EDIT_HANDLERS:
-                    del PAGE_EDIT_HANDLERS[model]
-                edit_handler_class = get_page_edit_handler(model)
+            model.get_edit_handler.cache_clear()
+            edit_handler_class = model.get_edit_handler()
         else:
             if model in SNIPPET_EDIT_HANDLERS:
                 del SNIPPET_EDIT_HANDLERS[model]
