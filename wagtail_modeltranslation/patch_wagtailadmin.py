@@ -10,12 +10,12 @@ from django.db import transaction
 from django.db.models import Q
 from django.http import Http404
 from django.utils.translation import ugettext as _
+from modeltranslation import settings as mt_settings
 from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
-    MultiFieldPanel, FieldRowPanel
-from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
+    MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -26,43 +26,34 @@ from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler, \
 
 logger = logging.getLogger('wagtail.core')
 
+SUPPORTED_PANELS = ['panels', 'content_panels', 'promote_panels', 'settings_panels']
+SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel]
+COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel]
+
 
 class WagtailTranslator(object):
     _patched_models = []
 
     def __init__(self, model):
-
         # Check if this class was already patched
         if model in WagtailTranslator._patched_models:
             return
 
-        WagtailTranslator._base_model = model
-        WagtailTranslator._required_fields = {}
+        self.patched_model = model
+        self.required_fields = {}
 
-        # CONSTRUCT TEMPORARY EDIT HANDLER
-        if issubclass(model, Page):
-            edit_handler_class = model.get_edit_handler()
-        else:
-            edit_handler_class = get_snippet_edit_handler(model)
+        # construct temporary edit handler
+        edit_handler_class = model.get_edit_handler() if issubclass(model, Page) else get_snippet_edit_handler(model)
+        self.original_model_form = edit_handler_class.get_form_class(model)
 
-        WagtailTranslator._base_model_form = edit_handler_class.get_form_class(model)
+        # Patch the panels defined in the model
+        for panels_list in SUPPORTED_PANELS:
+            if hasattr(model, panels_list):
+                patched_panels = self._patch_panels(getattr(model, panels_list))
+                setattr(model, panels_list, patched_panels)
 
-        defined_tabs = WagtailTranslator._fetch_defined_tabs(model)
-
-        for tab_name, tab in defined_tabs:
-            patched_tab = []
-
-            for panel in tab:
-                trtab = WagtailTranslator._patch_panel(model, panel)
-
-                if trtab:
-                    for x in trtab:
-                        patched_tab.append(x)
-
-            setattr(model, tab_name, patched_tab)
-
-        # DELETE TEMPORARY EDIT HANDLER IN ORDER TO LET WAGTAIL RECONSTRUCT
-        # NEW EDIT HANDLER BASED ON NEW TRANSLATION PANELS
+        # delete temporary edit handler in order to let wagtail reconstruct
+        # new edit handler based on new translation panels
         if issubclass(model, Page):
             model.get_edit_handler.cache_clear()
             edit_handler_class = model.get_edit_handler()
@@ -72,17 +63,18 @@ class WagtailTranslator(object):
             edit_handler_class = get_snippet_edit_handler(model)
 
         # Set the required of the translated fields that were required on the original field
-        form = edit_handler_class.get_form_class(model)
-        for fname, f in form.base_fields.items():
-            if fname in WagtailTranslator._required_fields[model]:
-                f.required = True
+        localized_form = edit_handler_class.get_form_class(model)
+
+        if model in self.required_fields:
+            for fname, f in localized_form.base_fields.items():
+                if fname in self.required_fields[model]:
+                    f.required = True
 
         # Do the same to the formsets
-        for related_name, formset in form.formsets.iteritems():
-            if (formset.model in WagtailTranslator._required_fields and
-                    WagtailTranslator._required_fields[formset.model]):
+        for related_name, formset in localized_form.formsets.iteritems():
+            if formset.model in self.required_fields and self.required_fields[formset.model]:
                 for fname, f in formset.form.base_fields.items():
-                    if fname in WagtailTranslator._required_fields[formset.model]:
+                    if fname in self.required_fields[formset.model]:
                         f.required = True
 
         # Overide page methods
@@ -94,226 +86,115 @@ class WagtailTranslator(object):
             model.relative_url = _new_relative_url
             model.url = _new_url
             _patch_clean(model)
-            _patch_elasticsearch_fields(model)
+            # _patch_elasticsearch_fields(model)
 
         WagtailTranslator._patched_models.append(model)
 
-    @staticmethod
-    def _fetch_defined_tabs(defined_class):
+    def _patch_panels(self, panels_list, related_model=None):
         """
-        Fetch tabs defined by user in models.py
+            Patching of the admin panels. If we're patching an InlinePanel panels we must provide
+             the related model for that class, otherwise its used the model passed on init.
         """
-        tabs = ()
+        patched_panels = []
+        current_patching_model = related_model or self.patched_model
 
-        # If user has defined panels dict on models.py
-        if hasattr(defined_class, 'panels'):
-            # TEST !!!
-            tabs += (('panels', copy.deepcopy(defined_class.panels)),)
-        # Check for common tabs
+        for panel in panels_list:
+            if panel.__class__ in SIMPLE_PANEL_CLASSES:
+                patched_panels += self._patch_simple_panel(current_patching_model, panel)
+            elif panel.__class__ in COMPOSED_PANEL_CLASSES:
+                patched_panels.append(self._patch_composed_panel(panel, related_model))
+            elif panel.__class__ == InlinePanel:
+                patched_panels.append(self._patch_inline_panel(panel))
+            else:
+                patched_panels.append(panel)
+
+        return patched_panels
+
+    def _patch_simple_panel(self, model, original_panel):
+        panel_class = original_panel.__class__
+        translated_panels = []
+        translation_registered_fields = translator.get_options_for_model(model).fields
+
+        # If the panel field is not registered for translation
+        # the original one is returned
+        if original_panel.field_name not in translation_registered_fields:
+            return [original_panel]
+
+        if model not in self.required_fields:
+            self.required_fields[model] = set()
+
+        for language in mt_settings.AVAILABLE_LANGUAGES:
+            localized_field_name = build_localized_fieldname(original_panel.field_name, language)
+
+            # if the original field is required and the current language is the default one
+            # this field is marked as required
+            if self._is_orig_required(model, original_panel.field_name) and language == mt_settings.DEFAULT_LANGUAGE:
+                self.required_fields[model].add(localized_field_name)
+
+            localized_panel = panel_class(localized_field_name)
+
+            # Pass the original panel extra attributes to the localized
+            if hasattr(original_panel, 'classname'):
+                localized_panel.classname = original_panel.classname
+            if hasattr(original_panel, 'widget'):
+                localized_panel.widget = original_panel.widget
+
+            translated_panels.append(localized_panel)
+
+        return translated_panels
+
+    def _patch_composed_panel(self, original_panel, related_model=None):
+        panel_class = original_panel.__class__
+        patched_children_panels = self._patch_panels(original_panel.children, related_model)
+
+        localized_panel = panel_class(patched_children_panels)
+
+        # Pass the original panel extra attributes to the localized
+        if hasattr(original_panel, 'classname'):
+            localized_panel.classname = original_panel.classname
+        if hasattr(original_panel, 'heading'):
+            localized_panel.heading = original_panel.heading
+
+        return localized_panel
+
+    def _patch_inline_panel(self, panel):
+        # get the model relation through the panel relation_name which is the
+        # inline model related_name
+        relation = getattr(self.patched_model, panel.relation_name)
+
+        related_model = relation.rel.related_model
+
+        # If the related model is not registered for translation there is nothing
+        # for us to do
+        try:
+            translator.get_options_for_model(related_model)
+        except NotRegistered:
+            pass
         else:
-            if hasattr(defined_class, 'content_panels'):
-                tabs += (('content_panels', copy.deepcopy(defined_class.content_panels)),)
-            if hasattr(defined_class, 'promote_panels'):
-                tabs += (('promote_panels', copy.deepcopy(defined_class.promote_panels)),)
-            if hasattr(defined_class, 'settings_panels'):
-                tabs += (('settings_panels', copy.deepcopy(defined_class.settings_panels)),)
+            related_model.panels = self._patch_panels(getattr(related_model, 'panels', []), related_model)
 
-        return tabs
+        # The original panel is returned as only the related_model panels need to be
+        # patched, leaving the original untouched
+        return panel
 
-    @staticmethod
-    def _patch_panel(model, panel):
-        """
-        Generic panel patching function
-        """
-
-        WagtailTranslator._current_model = model
-        WagtailTranslator._translation_options = translator.get_options_for_model(model)
-        if model not in WagtailTranslator._required_fields:
-            WagtailTranslator._required_fields[model] = []
-
-        if panel.__class__.__name__ == 'FieldPanel':
-            trpanels = WagtailTranslator._patch_fieldpanel(panel)
-        elif panel.__class__.__name__ == 'ImageChooserPanel':
-            trpanels = WagtailTranslator._patch_imagechooser(panel)
-        elif panel.__class__.__name__ == 'MultiFieldPanel':
-            trpanels = [WagtailTranslator._patch_multifieldpanel(panel)]
-        elif panel.__class__.__name__ == 'InlinePanel':
-            WagtailTranslator._patch_inlinepanel(model, panel)
-            trpanels = [panel]
-        elif panel.__class__.__name__ == 'StreamFieldPanel':
-            trpanels = WagtailTranslator._patch_streamfieldpanel(panel)
-        elif panel.__class__.__name__ == 'FieldRowPanel':
-            trpanels = [WagtailTranslator._patch_fieldrowpanel(panel)]
-        else:
-            trpanels = [panel]
-
-        return trpanels
-
-    @classmethod
-    def _is_orig_required(cls, field_name):
+    def _is_orig_required(self, model, field_name):
         """
         check if original field is required
         """
-        if cls._base_model == cls._current_model:
-            for fname, f in cls._base_model_form.base_fields.items():
-                if fname == field_name:
-                    return f.required
+
+        if model == self.patched_model:
+            for original_field_name, field in self.original_model_form.base_fields.items():
+                if original_field_name == field_name:
+                    return field.required
         else:
-            for related_name, formset in cls._base_model_form.formsets.iteritems():
-                if formset.model == cls._current_model:
-                    for fname, f in formset.form.base_fields.items():
-                        if fname == field_name:
-                            return f.required
+            for related_name, formset in self.original_model_form.formsets.iteritems():
+                if formset.model == model:
+                    for original_field_name, field in formset.form.base_fields.items():
+                        if original_field_name == field_name:
+                            return field.required
                     break
 
         return False
-
-    # FieldPanel
-    ####################################
-    @classmethod
-    def _patch_fieldpanel(cls, fieldpanel):
-        """
-        Patch FieldPanels and return one per available language
-        """
-
-        tr_fields = cls._translation_options.fields
-
-        translated_fieldpanels = []
-        if fieldpanel.field_name in tr_fields:
-            for lang in settings.LANGUAGES:
-                classes = fieldpanel.classname
-
-                if cls._is_orig_required(fieldpanel.field_name) and (lang[0] == settings.LANGUAGE_CODE):
-                    if (build_localized_fieldname(fieldpanel.field_name, lang[0]) not in
-                            cls._required_fields[cls._current_model]):
-                        cls._required_fields[cls._current_model].append(
-                            build_localized_fieldname(fieldpanel.field_name, lang[0]))
-
-                translated_field_name = build_localized_fieldname(fieldpanel.field_name, lang[0])
-                translated_fieldpanels.append(
-                    FieldPanel(translated_field_name, classname=classes, widget=fieldpanel.widget)
-                )
-
-        else:
-            return [fieldpanel]
-
-        return translated_fieldpanels
-
-    # ImageChooserPanel
-    ####################################
-    @classmethod
-    def _patch_imagechooser(cls, imagechooser):
-        """
-        Patch ImageChooserPanels and return one per available language
-        """
-        tr_fields = cls._translation_options.fields
-
-        translated_imagechoosers = []
-        if imagechooser.field_name in tr_fields:
-            for lang in settings.LANGUAGES:
-
-                if cls._is_orig_required(imagechooser.field_name) and (lang[0] == settings.LANGUAGE_CODE):
-                    if (build_localized_fieldname(imagechooser.field_name, lang[0]) not in
-                            cls._required_fields[cls._current_model]):
-                        cls._required_fields[cls._current_model].append(
-                            build_localized_fieldname(imagechooser.field_name, lang[0])
-                        )
-
-                translated_field_name = build_localized_fieldname(imagechooser.field_name, lang[0])
-                translated_imagechoosers.append(ImageChooserPanel(translated_field_name))
-        else:
-            return [imagechooser]
-
-        return translated_imagechoosers
-
-    # StreamFieldPanel
-    ####################################
-    @classmethod
-    def _patch_streamfieldpanel(cls, fieldpanel):
-        """
-        Patch StreamFieldPanels and return one per available language
-        """
-        tr_fields = cls._translation_options.fields
-
-        translated_fieldpanels = []
-        if fieldpanel.field_name in tr_fields:
-            for lang in settings.LANGUAGES:
-                if cls._is_orig_required(fieldpanel.field_name) and (lang[0] == settings.LANGUAGE_CODE):
-                    if (build_localized_fieldname(fieldpanel.field_name, lang[0]) not in
-                            cls._required_fields[cls._current_model]):
-                        cls._required_fields[cls._current_model].append(
-                            build_localized_fieldname(fieldpanel.field_name, lang[0])
-                        )
-
-                translated_field_name = build_localized_fieldname(fieldpanel.field_name, lang[0])
-                translated_fieldpanels.append(StreamFieldPanel(translated_field_name))
-        else:
-            return [fieldpanel]
-
-        return translated_fieldpanels
-
-    @classmethod
-    def _patch_multifieldpanel(cls, mfpanel):
-        """
-        Patch MultiFieldPanel
-        """
-        patched_fields = []
-
-        for panel in mfpanel.children:
-            if panel.__class__.__name__ == 'FieldPanel':
-                for item in cls._patch_fieldpanel(panel):
-                    patched_fields.append(item)
-            elif panel.__class__.__name__ == 'ImageChooserPanel':
-                for item in cls._patch_imagechooser(panel):
-                    patched_fields.append(item)
-            elif panel.__class__.__name__ == 'FieldRowPanel':
-                patched_fields.append(cls._patch_fieldrowpanel(panel))
-            else:
-                patched_fields.append(panel)
-
-        return MultiFieldPanel(patched_fields, classname=mfpanel.classname, heading=mfpanel.heading)
-
-    @classmethod
-    def _patch_fieldrowpanel(cls, frpanel):
-        """
-        Patch FieldRowPanel
-        """
-        patched_fields = []
-
-        for panel in frpanel.children:
-            if panel.__class__.__name__ == 'FieldPanel':
-                for item in cls._patch_fieldpanel(panel):
-                    patched_fields.append(item)
-            else:
-                patched_fields.append(panel)
-
-        return FieldRowPanel(
-            patched_fields,
-            classname=frpanel.classname)
-
-    @classmethod
-    def _patch_inlinepanel(cls, model, panel):
-        relation = getattr(model, panel.relation_name)
-
-        related_fieldname = 'related'
-
-        try:
-            inline_panels = getattr(getattr(relation, related_fieldname).related_model, 'panels', [])
-        except AttributeError:
-            related_fieldname = 'rel'
-            inline_panels = getattr(getattr(relation, related_fieldname).related_model, 'panels', [])
-
-        try:
-            related_model = getattr(getattr(model, panel.relation_name), related_fieldname).related_model
-            WagtailTranslator._translation_options = translator.get_options_for_model(related_model)
-        except NotRegistered:
-            return None
-        translated_inline = []
-        for inline_panel in inline_panels:
-            for item in cls._patch_panel(related_model, inline_panel):
-                translated_inline.append(item)
-
-        related_model.panels = translated_inline
 
 
 # Overridden Page methods adapted to the translated fields
@@ -530,6 +411,6 @@ def _patch_elasticsearch_fields(model):
 
 def patch_wagtail_models():
     # After all models being registered the Page or BaseSetting subclasses and snippets are patched
-    for model in translator.get_registered_models():
-        if issubclass(model, Page) or model in get_snippet_models() or issubclass(model, BaseSetting):
-            WagtailTranslator(model)
+    for model_class in translator.get_registered_models():
+        if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):
+            WagtailTranslator(model_class)
