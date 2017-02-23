@@ -86,7 +86,7 @@ class WagtailTranslator(object):
             model.relative_url = _new_relative_url
             model.url = _new_url
             _patch_clean(model)
-            # _patch_elasticsearch_fields(model)
+            _patch_elasticsearch_fields(model)
 
         WagtailTranslator._patched_models.append(model)
 
@@ -397,16 +397,17 @@ def _patch_clean(model):
 
 
 def _patch_elasticsearch_fields(model):
+    translation_registered_fields = translator.get_options_for_model(model).fields
+
     for field in model.search_fields:
         # Check if the field is a SearchField and if it is one of the fields registered for translation
-        if field.__class__ is SearchField and field.field_name in WagtailTranslator._translation_options.fields:
+        if field.__class__ is SearchField and field.field_name in translation_registered_fields:
             # If it is we create a clone of the original SearchField to keep all the defined options
             # and replace its name by the translated one
             for lang in settings.LANGUAGES:
                 translated_field = copy.deepcopy(field)
                 translated_field.field_name = build_localized_fieldname(field.field_name, lang[0])
-                model.search_fields += (translated_field,) if isinstance(model.search_fields, tuple) else [
-                    translated_field]
+                model.search_fields = list(model.search_fields) + [translated_field]
 
 
 def patch_wagtail_models():

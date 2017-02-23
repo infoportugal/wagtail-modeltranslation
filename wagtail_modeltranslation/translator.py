@@ -1,9 +1,9 @@
 from modeltranslation.translator import TranslationOptions
 
 
-class PageTranslationOptions(TranslationOptions):
+class WagtailTranslationOptions(TranslationOptions):
     def __init__(self, model):
-        super(PageTranslationOptions, self).__init__(model)
+        super(WagtailTranslationOptions, self).__init__(model)
 
         # TODO: validate condition
         from wagtail.wagtailcore.models import Page
