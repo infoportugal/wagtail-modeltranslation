@@ -21,8 +21,7 @@ from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.models import get_snippet_models
-from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler, \
-    SNIPPET_EDIT_HANDLERS
+from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
 logger = logging.getLogger('wagtail.core')
 
@@ -40,11 +39,6 @@ class WagtailTranslator(object):
             return
 
         self.patched_model = model
-        self.required_fields = {}
-
-        # construct temporary edit handler
-        edit_handler_class = model.get_edit_handler() if issubclass(model, Page) else get_snippet_edit_handler(model)
-        self.original_model_form = edit_handler_class.get_form_class(model)
 
         # Patch the panels defined in the model
         for panels_list in SUPPORTED_PANELS:
@@ -56,26 +50,9 @@ class WagtailTranslator(object):
         # new edit handler based on new translation panels
         if issubclass(model, Page):
             model.get_edit_handler.cache_clear()
-            edit_handler_class = model.get_edit_handler()
         else:
             if model in SNIPPET_EDIT_HANDLERS:
                 del SNIPPET_EDIT_HANDLERS[model]
-            edit_handler_class = get_snippet_edit_handler(model)
-
-        # Set the required of the translated fields that were required on the original field
-        localized_form = edit_handler_class.get_form_class(model)
-
-        if model in self.required_fields:
-            for fname, f in localized_form.base_fields.items():
-                if fname in self.required_fields[model]:
-                    f.required = True
-
-        # Do the same to the formsets
-        for related_name, formset in localized_form.formsets.iteritems():
-            if formset.model in self.required_fields and self.required_fields[formset.model]:
-                for fname, f in formset.form.base_fields.items():
-                    if fname in self.required_fields[formset.model]:
-                        f.required = True
 
         # Overide page methods
         if issubclass(model, Page):
@@ -120,16 +97,15 @@ class WagtailTranslator(object):
         if original_panel.field_name not in translation_registered_fields:
             return [original_panel]
 
-        if model not in self.required_fields:
-            self.required_fields[model] = set()
-
         for language in mt_settings.AVAILABLE_LANGUAGES:
+            original_field = model._meta.get_field(original_panel.field_name)
             localized_field_name = build_localized_fieldname(original_panel.field_name, language)
 
             # if the original field is required and the current language is the default one
-            # this field is marked as required
-            if self._is_orig_required(model, original_panel.field_name) and language == mt_settings.DEFAULT_LANGUAGE:
-                self.required_fields[model].add(localized_field_name)
+            # this field's blank property is set to False
+            if not original_field.blank and language == mt_settings.DEFAULT_LANGUAGE:
+                localized_field = model._meta.get_field(localized_field_name)
+                localized_field.blank = False
 
             localized_panel = panel_class(localized_field_name)
 
@@ -176,25 +152,6 @@ class WagtailTranslator(object):
         # The original panel is returned as only the related_model panels need to be
         # patched, leaving the original untouched
         return panel
-
-    def _is_orig_required(self, model, field_name):
-        """
-        check if original field is required
-        """
-
-        if model == self.patched_model:
-            for original_field_name, field in self.original_model_form.base_fields.items():
-                if original_field_name == field_name:
-                    return field.required
-        else:
-            for related_name, formset in self.original_model_form.formsets.iteritems():
-                if formset.model == model:
-                    for original_field_name, field in formset.form.base_fields.items():
-                        if original_field_name == field_name:
-                            return field.required
-                    break
-
-        return False
 
 
 # Overridden Page methods adapted to the translated fields
