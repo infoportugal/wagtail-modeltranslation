@@ -24,6 +24,8 @@ from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.models import get_snippet_models
 from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
+from wagtail_modeltranslation.utils import compare_class_tree_depth
+
 logger = logging.getLogger('wagtail.core')
 
 SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel]
@@ -48,6 +50,8 @@ class WagtailTranslator(object):
         WagtailTranslator._patched_models.append(model)
 
     def _patch_page_models(self, model):
+        # PANEL PATCHING
+
         # Check if the model has a custom edit handler
         if hasattr(model, 'edit_handler'):
             tabs = model.edit_handler.children
@@ -70,7 +74,22 @@ class WagtailTranslator(object):
         # the edit_handler based on the patched panels
         model.get_edit_handler.cache_clear()
 
-        # Overide page methods
+        # SEARCH FIELDS PATCHING
+
+        translation_registered_fields = translator.get_options_for_model(model).fields
+
+        for field in model.search_fields:
+            # Check if the field is a SearchField and if it is one of the fields registered for translation
+            if field.__class__ is SearchField and field.field_name in translation_registered_fields:
+                # If it is we create a clone of the original SearchField to keep all the defined options
+                # and replace its name by the translated one
+                for language in mt_settings.AVAILABLE_LANGUAGES:
+                    translated_field = copy.deepcopy(field)
+                    translated_field.field_name = build_localized_fieldname(field.field_name, language)
+                    model.search_fields = list(model.search_fields) + [translated_field]
+
+        # OVERRIDE PAGE METHODS
+
         model.move = _new_move
         model.set_url_path = _new_set_url_path
         model.route = _new_route
@@ -78,7 +97,6 @@ class WagtailTranslator(object):
         model.relative_url = _new_relative_url
         model.url = _new_url
         _patch_clean(model)
-        _patch_elasticsearch_fields(model)
 
     def _patch_other_models(self, model):
         if hasattr(model, 'edit_handler'):
@@ -252,18 +270,6 @@ def _new_route(self, request, path_components):
         child_slug = path_components[0]
         remaining_components = path_components[1:]
 
-        # try:
-        #     q = Q()
-        #     for lang in settings.LANGUAGES:
-        #         tr_field_name = 'slug_%s' % (lang[0])
-        #         condition = {tr_field_name: child_slug}
-        #         q |= Q(**condition)
-        #     subpage = self.get_children().get(q)
-        # except Page.DoesNotExist:
-        #     raise Http404
-
-        # return subpage.specific.route(request, remaining_components)
-
         subpages = self.get_children()
         for page in subpages:
             if page.specific.slug == child_slug:
@@ -379,20 +385,6 @@ def _patch_clean(model):
     model.clean = clean
 
 
-def _patch_elasticsearch_fields(model):
-    translation_registered_fields = translator.get_options_for_model(model).fields
-
-    for field in model.search_fields:
-        # Check if the field is a SearchField and if it is one of the fields registered for translation
-        if field.__class__ is SearchField and field.field_name in translation_registered_fields:
-            # If it is we create a clone of the original SearchField to keep all the defined options
-            # and replace its name by the translated one
-            for lang in settings.LANGUAGES:
-                translated_field = copy.deepcopy(field)
-                translated_field.field_name = build_localized_fieldname(field.field_name, lang[0])
-                model.search_fields = list(model.search_fields) + [translated_field]
-
-
 def patch_wagtail_models():
     # After all models being registered the Page or BaseSetting subclasses and snippets are patched
     registered_models = translator.get_registered_models()
@@ -405,13 +397,3 @@ def patch_wagtail_models():
     for model_class in registered_models:
         if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):
             WagtailTranslator(model_class)
-
-
-def compare_class_tree_depth(a, b):
-    """
-     Function to sort a list of class objects, where subclasses
-    have lower indices than their superclasses
-    """
-    import inspect
-    return len(inspect.getmro(b)) - len(inspect.getmro(a))
-
