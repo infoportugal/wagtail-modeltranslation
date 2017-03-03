@@ -225,38 +225,33 @@ def _new_set_url_path(self, parent):
     This way we can get different urls for each language, defined
     by page slug.
     """
+    for language in mt_settings.AVAILABLE_LANGUAGES:
+        localized_slug_field = build_localized_fieldname('slug', language)
+        default_localized_slug_field = build_localized_fieldname('slug', mt_settings.DEFAULT_LANGUAGE)
+        localized_url_path_field = build_localized_fieldname('url_path', language)
+        default_localized_url_path_field = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
 
-    for lang in settings.LANGUAGES:
         if parent:
             parent = parent.specific
-            tr_slug = getattr(self, 'slug_' + lang[0]) if hasattr(
-                self, 'slug_' + lang[0]) else getattr(self, 'slug')
 
-            if not tr_slug:
-                tr_slug = getattr(self, 'slug_' + settings.LANGUAGE_CODE) if \
-                    hasattr(self, 'slug_' + settings.LANGUAGE_CODE) else \
-                    getattr(self, 'slug')
+            # Emulate the default behavior of django-modeltranslation to get the slug and url path
+            # for the current language. If the value for the current language is invalid we get the one
+            # for the default fallback language
+            slug = getattr(self, localized_slug_field, None) or getattr(self, default_localized_slug_field, self.slug)
+            parent_url_path = getattr(parent, localized_url_path_field, None) or \
+                              getattr(parent, default_localized_url_path_field, parent.url_path)
 
-            if hasattr(parent, 'url_path_' + lang[0]) and getattr(parent, 'url_path_' + lang[0]) is not None:
-                parent_url_path = getattr(parent, 'url_path_' + lang[0])
-            else:
-                parent_url_path = getattr(parent, 'url_path')
+            setattr(self, localized_url_path_field, parent_url_path + slug + '/')
 
-            if hasattr(self, 'url_path_' + lang[0]):
-                setattr(self, 'url_path_' + lang[0], parent_url_path + tr_slug + '/')
-            else:
-                setattr(self, 'url_path', parent_url_path + tr_slug + '/')
         else:
             # a page without a parent is the tree root,
             # which always has a url_path of '/'
-            if hasattr(self, 'url_path_' + lang[0]):
-                setattr(self, 'url_path_' + lang[0], '/')
-            else:
-                setattr(self, 'url_path', '/')
+            setattr(self, localized_url_path_field, '/')
 
     # update url_path for children pages
-    for child in self.get_children():
+    for child in self.get_children().specific():
         child.set_url_path(self.specific)
+        child.save()
 
     return self.url_path
 
