@@ -14,6 +14,7 @@ from modeltranslation import settings as mt_settings
 from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname
 from wagtail.contrib.settings.models import BaseSetting
+from wagtail.contrib.settings.views import get_setting_edit_handler
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
 from wagtail.wagtailcore.models import Page, Site
@@ -25,7 +26,6 @@ from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
 logger = logging.getLogger('wagtail.core')
 
-SUPPORTED_PANELS = ['panels', 'content_panels', 'promote_panels', 'settings_panels']
 SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel]
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel]
 
@@ -40,32 +40,58 @@ class WagtailTranslator(object):
 
         self.patched_model = model
 
-        # Patch the panels defined in the model
-        for panels_list in SUPPORTED_PANELS:
-            if hasattr(model, panels_list):
-                patched_panels = self._patch_panels(getattr(model, panels_list))
-                setattr(model, panels_list, patched_panels)
-
-        # delete temporary edit handler in order to let wagtail reconstruct
-        # new edit handler based on new translation panels
         if issubclass(model, Page):
-            model.get_edit_handler.cache_clear()
+            self._patch_page_models(model)
         else:
-            if model in SNIPPET_EDIT_HANDLERS:
-                del SNIPPET_EDIT_HANDLERS[model]
-
-        # Overide page methods
-        if issubclass(model, Page):
-            model.move = _new_move
-            model.set_url_path = _new_set_url_path
-            model.route = _new_route
-            model.get_site_root_paths = _new_get_site_root_paths
-            model.relative_url = _new_relative_url
-            model.url = _new_url
-            _patch_clean(model)
-            _patch_elasticsearch_fields(model)
+            self._patch_other_models(model)
 
         WagtailTranslator._patched_models.append(model)
+
+    def _patch_page_models(self, model):
+        # Check if the model has a custom edit handler
+        if hasattr(model, 'edit_handler'):
+            tabs = model.edit_handler.children
+
+            for tab in tabs.children:
+                tab.children = self._patch_panels(tab.children)
+
+        else:
+            # If the page doesn't have an edit_handler we patch the panels that
+            # wagtail uses by default
+
+            if hasattr(model, 'content_panels'):
+                model.content_panels = self._patch_panels(model.content_panels)
+            if hasattr(model, 'promote_panels'):
+                model.promote_panels = self._patch_panels(model.promote_panels)
+            if hasattr(model, 'settings_panels'):
+                model.settings_panels = self._patch_panels(model.settings_panels)
+
+        # Clear the edit handler cached value, if it exists, so wagtail reconstructs
+        # the edit_handler based on the patched panels
+        model.get_edit_handler.cache_clear()
+
+        # Overide page methods
+        model.move = _new_move
+        model.set_url_path = _new_set_url_path
+        model.route = _new_route
+        model.get_site_root_paths = _new_get_site_root_paths
+        model.relative_url = _new_relative_url
+        model.url = _new_url
+        _patch_clean(model)
+        _patch_elasticsearch_fields(model)
+
+    def _patch_other_models(self, model):
+        if hasattr(model, 'edit_handler'):
+            edit_handler = model.edit_handler
+            for tab in edit_handler:
+                tab.children = self._patch_panels(tab.children)
+        elif hasattr(model, 'panels'):
+            model.panels = self._patch_panels(model.panels)
+
+        if model in get_snippet_models() and model in SNIPPET_EDIT_HANDLERS:
+            del SNIPPET_EDIT_HANDLERS[model]
+        else:
+            get_setting_edit_handler.cache_clear()
 
     def _patch_panels(self, panels_list, related_model=None):
         """
@@ -369,6 +395,23 @@ def _patch_elasticsearch_fields(model):
 
 def patch_wagtail_models():
     # After all models being registered the Page or BaseSetting subclasses and snippets are patched
-    for model_class in translator.get_registered_models():
+    registered_models = translator.get_registered_models()
+
+    # We need to sort the models to ensure that subclasses of a model are registered first,
+    # or else if the panels are inherited all the changes on the subclass would be
+    # reflected in the superclass
+    registered_models.sort(compare_class_tree_depth)
+
+    for model_class in registered_models:
         if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):
             WagtailTranslator(model_class)
+
+
+def compare_class_tree_depth(a, b):
+    """
+     Function to sort a list of class objects, where subclasses
+    have lower indices than their superclasses
+    """
+    import inspect
+    return len(inspect.getmro(b)) - len(inspect.getmro(a))
+
