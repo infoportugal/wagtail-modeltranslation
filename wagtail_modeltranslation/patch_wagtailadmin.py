@@ -390,7 +390,7 @@ def patch_wagtail_models():
     # We need to sort the models to ensure that subclasses of a model are registered first,
     # or else if the panels are inherited all the changes on the subclass would be
     # reflected in the superclass
-    registered_models.sort(compare_class_tree_depth)
+    registered_models.sort(key=compare_class_tree_depth)
 
     for model_class in registered_models:
         if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):

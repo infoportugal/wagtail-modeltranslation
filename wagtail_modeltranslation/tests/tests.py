@@ -10,7 +10,6 @@ from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
 
-
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
 
 models = translation = None
@@ -194,7 +193,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertListEqual(['body_de', 'body_en'], fields)
 
         # Fetch one of the streamfield panels to see if the block was correctly created
-        child_block = models.StreamFieldPanelPage.body_en.field.stream_block.child_blocks.items()
+        child_block = list(models.StreamFieldPanelPage.body_en.field.stream_block.child_blocks.items())
 
         self.assertEquals(len(child_block), 1)
 
@@ -267,7 +266,12 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         page_base_fields = ['slug_de', 'slug_en', 'seo_title_de', 'seo_title_en', 'search_description_de',
                             'search_description_en', u'show_in_menus', u'go_live_at', u'expire_at']
 
-        self.assertItemsEqual(page_base_fields, form.base_fields.keys())
+        try:
+            # python 3
+            self.assertCountEqual(page_base_fields, form.base_fields.keys())
+        except AttributeError:
+            # python 2.7
+            self.assertItemsEqual(page_base_fields, form.base_fields.keys())
 
         inline_model_fields = ['field_name_de', 'field_name_en', 'image_chooser_de', 'image_chooser_en',
                                'fieldrow_name_de', 'fieldrow_name_en', 'name_de', 'name_en', 'image_de', 'image_en',
@@ -275,7 +279,12 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         related_formset_form = form.formsets['related_page_model'].form
 
-        self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
+        try:
+            # python 3
+            self.assertCountEqual(inline_model_fields, related_formset_form.base_fields.keys())
+        except AttributeError:
+            # python 2.7
+            self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
 
     def test_snippet_form(self):
         """
@@ -293,7 +302,12 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         related_formset_form = form.formsets['related_snippet_model'].form
 
-        self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
+        try:
+            # python 3
+            self.assertCountEqual(inline_model_fields, related_formset_form.base_fields.keys())
+        except AttributeError:
+            # python 2.7
+            self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
 
     def test_duplicate_slug(self):
         from wagtail.wagtailcore.models import Site
@@ -328,4 +342,9 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         model_search_fields = [searchfield.field_name for searchfield in models.PatchTestPage.search_fields]
 
-        self.assertItemsEqual(expected_fields, model_search_fields)
+        try:
+            # python 3
+            self.assertCountEqual(expected_fields, model_search_fields)
+        except AttributeError:
+            # python 2.7
+            self.assertItemsEqual(expected_fields, model_search_fields)

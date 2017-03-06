@@ -1,4 +1,6 @@
 # coding: utf-8
+from __future__ import absolute_import
+
 from django.apps import AppConfig
 
 
@@ -15,5 +17,5 @@ class ModeltranslationConfig(AppConfig):
         from modeltranslation.models import handle_translation_registrations
         handle_translation_registrations()
 
-        from patch_wagtailadmin import patch_wagtail_models
+        from .patch_wagtailadmin import patch_wagtail_models
         patch_wagtail_models()
