@@ -104,8 +104,10 @@ class WagtailTranslator(object):
                         f.required = True
 
         # Overide page methods
-        if issubclass(model, Page):
+        if model == Page:
             model.move = _new_move
+        if issubclass(model, Page):
+            #model.move = _new_move
             model.set_url_path = _new_set_url_path
             model.route = _new_route
             model.get_site_root_paths = _new_get_site_root_paths
