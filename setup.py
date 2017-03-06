@@ -24,7 +24,7 @@ setup(
         'wagtail_modeltranslation.templatetags'],
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
-    install_requires=['wagtail(>=1.9)', 'django-modeltranslation(<=0.12.99)'],
+    install_requires=['wagtail(>=1.4)', 'django-modeltranslation(<=0.12.99)'],
     download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.6rc1.tar.gz',
     classifiers=[
         'Programming Language :: Python',

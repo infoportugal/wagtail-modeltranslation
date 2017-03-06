@@ -5,13 +5,14 @@ python:
   - "3.4"
   - "3.5"
 env:
-  - WAGTAIL=wagtail>=1.4,<1.5
-  - WAGTAIL=wagtail>=1.5,<1.6
-  - WAGTAIL=wagtail>=1.6,<1.7
-  - WAGTAIL=wagtail>=1.7,<1.8
-  - WAGTAIL=wagtail>=1.8,<1.9
-  - WAGTAIL=wagtail>=1.9,<1.10
+  - WAGTAIL="wagtail>=1.4,<1.5"
+  - WAGTAIL="wagtail>=1.5,<1.6"
+  - WAGTAIL="wagtail>=1.6,<1.7"
+  - WAGTAIL="wagtail>=1.7,<1.8"
+  - WAGTAIL="wagtail>=1.8,<1.9"
+  - WAGTAIL="wagtail>=1.9,<1.10"
 install:
+  - pip install --upgrade -q setuptools
   - pip install -q $WAGTAIL
   - pip install -e .
 script:
