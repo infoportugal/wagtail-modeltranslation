@@ -4,6 +4,7 @@ from django import forms
 from django.core.exceptions import ImproperlyConfigured
 from django.db.models import fields
 from wagtail.wagtailcore.fields import StreamField
+from wagtail.wagtailcore.blocks.stream_block import StreamValue
 from django.utils import six
 
 from wagtail_modeltranslation import settings as mt_settings
@@ -329,6 +330,9 @@ class TranslationFieldDescriptor(object):
         if isinstance(val, fields.files.FieldFile):
             return val.name and not (
                 isinstance(undefined, fields.files.FieldFile) and val == undefined)
+        if isinstance(val, StreamValue):
+            return len(val) > 0 and not (
+                isinstance(undefined, StreamValue) and val == undefined)
         return val is not None and val != undefined
 
     def __get__(self, instance, owner):
