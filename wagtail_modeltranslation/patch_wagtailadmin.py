@@ -1,18 +1,16 @@
 # coding: utf-8
 import copy
 import logging
-import operator
 
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction
-from django.db.models import Q
 from django.http import Http404
-from django.utils.translation import ugettext as _
+from django.utils.translation import trans_real
+from django.utils.translation import ugettext_lazy as _
 from modeltranslation import settings as mt_settings
 from modeltranslation.translator import translator, NotRegistered
-from modeltranslation.utils import build_localized_fieldname
+from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
@@ -345,23 +343,27 @@ def _validate_slugs(page):
         # the root page's slug can be whatever it likes...
         return {}
 
-    allowed_sibblings = parent_page.specific.allowed_subpage_models()
-    siblings = parent_page.get_children().exclude(pk=page.pk)
+    # Save the current active language
+    current_language = get_language()
+
+    siblings = page.get_siblings(inclusive=False).specific()
 
     errors = {}
 
-    for lang in settings.LANGUAGES:
-        current_slug = 'slug_' + lang[0]
-        query_list = []
+    for language in mt_settings.AVAILABLE_LANGUAGES:
+        # Temporarily activate every language because even though there might
+        # be no repeated value for slug_pt the fallback of an empty slug could
+        # already be in use
 
-        for model in allowed_sibblings:
-            slug = getattr(page, current_slug, '') or ''
-            if len(slug) and model is not Page:
-                kwargs = {'{0}__{1}'.format(model._meta.model_name, current_slug): slug}
-                query_list.append(Q(**kwargs))
+        trans_real.activate(language)
 
-        if query_list and siblings.filter(reduce(operator.or_, query_list)).exists():
-            errors[current_slug] = _(u'Slug already in use')
+        siblings_slugs = [sibling.slug for sibling in siblings]
+
+        if page.specific.slug in siblings_slugs:
+            errors[build_localized_fieldname('slug', language)] = _("This slug is already in use")
+
+    # Re-enable the original language
+    trans_real.activate(current_language)
 
     return errors
 
@@ -369,13 +371,14 @@ def _validate_slugs(page):
 def _patch_clean(model):
     old_clean = model.clean
 
-    # Call the original clean method to avoid losing validations
     def clean(self):
-        old_clean(self)
         errors = _validate_slugs(self)
 
         if errors:
             raise ValidationError(errors)
+
+        # Call the original clean method to avoid losing validations
+        old_clean(self)
 
     model.clean = clean
 
