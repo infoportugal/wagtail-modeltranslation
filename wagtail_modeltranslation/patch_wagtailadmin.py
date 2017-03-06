@@ -3,6 +3,8 @@ import copy
 import logging
 import operator
 
+from six import iteritems
+
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
@@ -25,6 +27,11 @@ from .utils import build_localized_fieldname
 try:
     from wagtail.wagtailadmin.views.pages import get_page_edit_handler, \
         PAGE_EDIT_HANDLERS
+except ImportError:
+    pass
+
+try:
+    from functools import reduce
 except ImportError:
     pass
 
@@ -89,7 +96,7 @@ class WagtailTranslator(object):
                 f.required = True
 
         # Do the same to the formsets
-        for related_name, formset in form.formsets.iteritems():
+        for related_name, formset in iteritems(form.formsets):
             if (formset.model in WagtailTranslator._required_fields and
                     WagtailTranslator._required_fields[formset.model]):
                 for fname, f in formset.form.base_fields.items():
@@ -170,7 +177,7 @@ class WagtailTranslator(object):
                 if fname == field_name:
                     return f.required
         else:
-            for related_name, formset in cls._base_model_form.formsets.iteritems():
+            for related_name, formset in iteritems(cls._base_model_form.formsets):
                 if formset.model == cls._current_model:
                     for fname, f in formset.form.base_fields.items():
                         if fname == field_name:

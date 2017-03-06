@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import re
+from six import iteritems
 
 from django import template
 from django.core.urlresolvers import resolve
@@ -34,7 +35,7 @@ def change_lang(context, lang=None, *args, **kwargs):
             translated_url = '/' + lang + '/' + path_components[0] + '/'
             if request.GET:
                 translated_url += '?'
-                for key, value in request.GET.iteritems():
+                for key, value in iteritems(request.GET):
                     translated_url += key + '=' + value
             return translated_url
 

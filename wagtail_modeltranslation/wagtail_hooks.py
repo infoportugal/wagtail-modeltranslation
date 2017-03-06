@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import json
+from six import iteritems
 
 from django.utils.html import format_html, format_html_join
 from django.conf import settings
@@ -54,7 +55,7 @@ def return_translation_target_field_rendered_html(request, page_id):
         target_field_patched = []
         for item in origin_field_serialized:
             patched_item = None
-            for att in item.iteritems():
+            for att in iteritems(item):
                 target_value = att[1]
                 if att[0] == 'name':
                     target_value = att[1].replace(
