@@ -180,7 +180,11 @@ class WagtailTranslator(object):
         # inline model related_name
         relation = getattr(self.patched_model, panel.relation_name)
 
-        related_model = relation.rel.related_model
+        try:
+            related_model = relation.rel.related_model
+        except AttributeError:
+            # Django 1.8
+            related_model = relation.related.related_model
 
         # If the related model is not registered for translation there is nothing
         # for us to do
