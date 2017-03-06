@@ -286,6 +286,8 @@ class WagtailTranslator(object):
                     patched_fields.append(item)
             elif panel.__class__.__name__ == 'FieldRowPanel':
                 patched_fields.append(cls._patch_fieldrowpanel(panel))
+            elif panel.__class__.__name__ == 'MultiFieldPanel':
+                patched_fields.append(cls._patch_multifieldpanel(panel))
             else:
                 patched_fields.append(panel)
 
@@ -546,4 +548,4 @@ def _patch_elasticsearch_fields(model):
             for lang in settings.LANGUAGES:
                 translated_field = copy.deepcopy(field)
                 translated_field.field_name = build_localized_fieldname(field.field_name, lang[0])
-                model.search_fields = model.search_fields + (translated_field,)
+                model.search_fields = model.search_fields + [translated_field,]
