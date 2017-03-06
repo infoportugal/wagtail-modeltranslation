@@ -246,6 +246,7 @@ class TranslationField(object):
                 formfield = super(TranslationField, self).formfield(*args, **kwargs)
                 if isinstance(formfield.widget, (forms.TextInput, forms.Textarea)):
                     formfield.widget = ClearableWidgetWrapper(formfield.widget)
+        formfield.widget.attrs['data-language'] = self.language
         return formfield
 
     def save_form_data(self, instance, data, check=True):
