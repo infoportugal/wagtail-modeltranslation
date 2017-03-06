@@ -1,0 +1,32 @@
+language: "python"
+python:
+  - "2.7"
+cache: pip
+install: travis_retry pip install "virtualenv<14.0.0" tox
+script: tox -e $TOX_ENV
+env:
+  - TOX_ENV=py35-1.9.X
+  - TOX_ENV=py34-1.9.X
+  - TOX_ENV=py33-1.9.X
+  - TOX_ENV=py27-1.9.X
+  - TOX_ENV=py35-1.8.X
+  - TOX_ENV=py34-1.8.X
+  - TOX_ENV=py33-1.8.X
+  - TOX_ENV=py27-1.8.X
+  - TOX_ENV=py35-1.7.X
+  - TOX_ENV=py34-1.7.X
+  - TOX_ENV=py33-1.7.X
+  - TOX_ENV=py27-1.7.X
+  - TOX_ENV=py35-1.6.X
+  - TOX_ENV=py34-1.6.X
+  - TOX_ENV=py33-1.6.X
+  - TOX_ENV=py27-1.6.X
+  - TOX_ENV=py35-1.5.X
+  - TOX_ENV=py34-1.5.X
+  - TOX_ENV=py33-1.5.X
+  - TOX_ENV=py27-1.5.X
+  - TOX_ENV=py35-1.4.X
+  - TOX_ENV=py34-1.4.X
+  - TOX_ENV=py33-1.4.X
+  - TOX_ENV=py27-1.4.X
+script: tox -e $TOX_ENV
