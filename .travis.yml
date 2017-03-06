@@ -12,7 +12,7 @@ env:
   - WAGTAIL="wagtail>=1.8,<1.9"
   - WAGTAIL="wagtail>=1.9,<1.10"
 install:
-  - pip install --upgrade -q setuptools
+  - pip install --upgrade -q pip
   - pip install -q $WAGTAIL
   - pip install -e .
 script:
