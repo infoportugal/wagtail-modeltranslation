@@ -84,6 +84,22 @@ Quick start
 7. Run :code:`python manage.py makemigrations` followed by :code:`python manage.py migrate`
 
 
+Upgrade considerations (v0.6)
+======================
+
+This version has some important changes as there was a refactoring to include django-modeltranslation as a dependency instead of
+duplicating their code in our version. This allow us to focus on Wagtail admin integration features as django-modeltranslation is
+very well mantained and is very quickly to fix problems with the latest Django versions. This way we also keep all the django-modeltranslation
+features (if you want you can also customize django-admin, for example). We also provide a new class to create the translation options classes: **WagtailTranslationOptions**
+Most of the changes are related to imports as they change from wagtail-modeltranslation to modeltranslation.
+
+To upgrade to this version you need to:
+
+- Replace the ``TranslationOption`` with ``WagtailTranslationOptions`` in all translation.py files
+- The import of the register decorator is now ``from modeltranslation.decorators import register``
+- The import of translator is now ``from modeltranslation.translator import translator``
+
+
 Project Home
 ------------
 https://github.com/infoportugal/wagtail-modeltranslation
