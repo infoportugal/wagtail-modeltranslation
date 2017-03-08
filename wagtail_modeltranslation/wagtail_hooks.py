@@ -7,6 +7,7 @@ from django.conf.urls import url
 from django.http import HttpResponse
 from django.http import QueryDict
 from django.utils.html import format_html, format_html_join, escape
+from django.views.decorators.csrf import csrf_exempt
 from six import iteritems
 from wagtail.wagtailcore import hooks
 from wagtail.wagtailcore.models import Page
@@ -35,6 +36,7 @@ def translated_slugs():
 ###############################################################################
 # Copy StreamFields content
 ###############################################################################
+@csrf_exempt
 def return_translation_target_field_rendered_html(request, page_id):
     """
     Ajax view that allows to duplicate content
@@ -44,10 +46,10 @@ def return_translation_target_field_rendered_html(request, page_id):
     page = Page.objects.get(pk=page_id)
 
     if request.is_ajax():
-        origin_field_name = request.GET.get('origin_field_name')
-        target_field_name = request.GET.get('target_field_name')
+        origin_field_name = request.POST.get('origin_field_name')
+        target_field_name = request.POST.get('target_field_name')
         origin_field_serialized = json.loads(
-            request.GET.get('serializedOriginField'))
+            request.POST.get('serializedOriginField'))
 
         # Patch field prefixes from origin field to target field
         target_field_patched = []
