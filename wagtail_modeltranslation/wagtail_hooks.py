@@ -6,10 +6,11 @@ from django.conf import settings
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.http import QueryDict
-from django.utils.html import format_html, format_html_join
+from django.utils.html import format_html, format_html_join, escape
 from six import iteritems
 from wagtail.wagtailcore import hooks
 from wagtail.wagtailcore.models import Page
+from wagtail.wagtailcore.rich_text import PageLinkHandler
 
 
 @hooks.register('insert_editor_js')
@@ -114,3 +115,28 @@ def modeltranslation_page_editor_css():
     return format_html('<link rel="stylesheet" href="'
                        + settings.STATIC_URL
                        + 'wagtail_modeltranslation/css/page_editor_modeltranslation.css" >')
+
+
+@hooks.register('register_rich_text_link_handler')
+def register_localized_page_link_handler():
+    class LocalizedPageLinkHandler(PageLinkHandler):
+        @staticmethod
+        def expand_db_attributes(attrs, for_editor):
+            # This method is a copy of the original one
+            # the only difference is the .specific on the escape method
+            try:
+                page = Page.objects.get(id=attrs['id'])
+
+                if for_editor:
+                    editor_attrs = 'data-linktype="page" data-id="%d" ' % page.id
+                    parent_page = page.get_parent()
+                    if parent_page:
+                        editor_attrs += 'data-parent-id="%d" ' % parent_page.id
+                else:
+                    editor_attrs = ''
+
+                return '<a %shref="%s">' % (editor_attrs, escape(page.specific.url))
+            except Page.DoesNotExist:
+                return "<a>"
+
+    return ('page', LocalizedPageLinkHandler)
