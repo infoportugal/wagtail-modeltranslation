@@ -240,9 +240,12 @@ def _new_set_url_path(self, parent):
             # Emulate the default behavior of django-modeltranslation to get the slug and url path
             # for the current language. If the value for the current language is invalid we get the one
             # for the default fallback language
-            slug = getattr(self, localized_slug_field, None) or getattr(self, default_localized_slug_field, self.slug)
-            parent_url_path = getattr(parent, localized_url_path_field, None) or \
-                              getattr(parent, default_localized_url_path_field, parent.url_path)
+            slug = getattr(self, localized_slug_field, None) or getattr(self, default_localized_slug_field, None) or self.slug
+            parent_url_path = (
+                getattr(parent, localized_url_path_field, None)
+                or getattr(parent, default_localized_url_path_field, None)
+                or parent.url_path
+            )
 
             setattr(self, localized_url_path_field, parent_url_path + slug + '/')
 
