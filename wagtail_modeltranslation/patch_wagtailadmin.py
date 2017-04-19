@@ -336,6 +336,8 @@ def _new_url(self):
 
     for (id, root_path, root_url) in root_paths:
         if self.url_path.startswith(root_path):
+            if root_path == '':
+                root_path = '/'
             return ('' if len(root_paths) == 1 else root_url) + reverse(
                 'wagtail_serve', args=(self.url_path[len(root_path):],))
 
