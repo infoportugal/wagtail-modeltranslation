@@ -30,7 +30,7 @@ class Command(BaseCommand):
 
             self.set_subtree(child, root_path + slug + '/', lang)
 
-    def handle_noargs(self, **options):
+    def handle(self, **options):
         for node in Page.get_root_nodes():
             for lang in settings.LANGUAGES:
                 self.set_subtree(node, '/', lang=lang[0])
