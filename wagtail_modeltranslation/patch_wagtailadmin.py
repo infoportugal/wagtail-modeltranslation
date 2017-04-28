@@ -17,11 +17,16 @@ from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailcore.url_routing import RouteResult
-from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.models import get_snippet_models
 from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
+
+# WAGTAIL_APPEND_SLASH didn't exist in Wagtail < 1.5. This ensures the default behaviour.
+try:
+    from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
+except ImportError:
+    WAGTAIL_APPEND_SLASH = True
 
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
