@@ -263,6 +263,20 @@ def _new_route(self, request, path_components):
     """
     Rewrite route method in order to handle languages fallbacks
     """
+    ## copied from wagtail/contrib/wagtailroutablepage/models.py mixin ##
+    # Override route when Page is also RoutablePage
+    if hasattr(self, 'resolve_subpage'):
+        if self.live:
+            try:
+                path = '/'
+                if path_components:
+                    path += '/'.join(path_components) + '/'
+
+                view, args, kwargs = self.resolve_subpage(path)
+                return RouteResult(self, args=(view, args, kwargs))
+            except Http404:
+                pass
+
     if path_components:
         # request is for a child of this page
         child_slug = path_components[0]
