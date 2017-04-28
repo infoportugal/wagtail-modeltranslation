@@ -17,6 +17,7 @@ from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailcore.url_routing import RouteResult
+from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.models import get_snippet_models
@@ -94,6 +95,7 @@ class WagtailTranslator(object):
         model.route = _new_route
         model.get_site_root_paths = _new_get_site_root_paths
         model.relative_url = _new_relative_url
+        model.get_url_parts = _new_get_url_parts
         model.url = _new_url
         _patch_clean(model)
 
@@ -315,6 +317,32 @@ def _new_relative_url(self, current_site):
             return ('' if current_site.id == id else root_url) + reverse('wagtail_serve',
                                                                          args=(self.url_path[len(root_path):],))
 
+
+def _new_get_url_parts(self):
+    """
+    Determine the URL for this page and return it as a tuple of
+    ``(site_id, site_root_url, page_url_relative_to_site_root)``.
+    Return None if the page is not routable.
+
+    This is used internally by the ``full_url``, ``url``, ``relative_url``
+    and ``get_site`` properties and methods; pages with custom URL routing
+    should override this method in order to have those operations return
+    the custom URLs.
+
+    Override for using custom get_site_root_paths() instead of
+    Site.get_site_root_paths()
+    """
+    for (site_id, root_path, root_url) in self.get_site_root_paths():
+        if self.url_path.startswith(root_path):
+            page_path = reverse('wagtail_serve', args=(self.url_path[len(root_path):],))
+
+            # Remove the trailing slash from the URL reverse generates if
+            # WAGTAIL_APPEND_SLASH is False and we're not trying to serve
+            # the root path
+            if not WAGTAIL_APPEND_SLASH and page_path != '/':
+                page_path = page_path.rstrip('/')
+
+            return (site_id, root_url, page_path)
 
 @property
 def _new_url(self):
