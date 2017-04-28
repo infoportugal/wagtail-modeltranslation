@@ -4,7 +4,7 @@ from modeltranslation.translator import TranslationOptions
 class WagtailTranslationOptions(TranslationOptions):
     def __init__(self, model):
         from wagtail.wagtailcore.models import Page
-        if Page in model.__bases__:
+        if issubclass(model, Page):
             self.fields += (
                 'title',
                 'slug',
