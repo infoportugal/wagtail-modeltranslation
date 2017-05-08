@@ -1,6 +1,15 @@
------------------------------------
+----------
 Change Log
------------------------------------
+----------
+
+v0.6.0rc2
+
+- added RichTextFieldPanel to the default list of patched panels
+- added settings to allow the patching of custom panels
+- slug auto-population is now made the same way as wagtail (no changes in live pages)
+- Fixed: When adding a page link in a translated RichTextField the link was always to the default language version of that page
+- Fixed: Copy content of streamfield fails with 414 Request-URI Too Long
+- Fixed: Panel patching failed with the error "AttributeError: 'list' object has no attribute 'children'"
 
 v0.6.0rc1:
 

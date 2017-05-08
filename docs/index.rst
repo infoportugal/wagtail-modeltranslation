@@ -48,6 +48,8 @@ Contents
    Introduction
    Installation
    Registering Models
+   advanced settings
+   template tags
    recommended reading
    releases/index
    AUTHORS
