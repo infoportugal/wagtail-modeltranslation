@@ -55,7 +55,7 @@ class WagtailTranslator(object):
         if hasattr(model, 'edit_handler'):
             tabs = model.edit_handler.children
 
-            for tab in tabs.children:
+            for tab in tabs:
                 tab.children = self._patch_panels(tab.children)
 
         else:
