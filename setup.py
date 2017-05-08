@@ -3,7 +3,7 @@ from distutils.core import setup
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.6.0rc1',
+    version='0.6.0rc2',
     description='Translates Wagtail CMS models using a registration approach.',
     long_description=(
         'The modeltranslation application can be used to translate dynamic '
@@ -25,7 +25,7 @@ setup(
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
     install_requires=['wagtail(>=1.4)', 'django-modeltranslation(<=0.12.99)'],
-    download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.6rc1.tar.gz',
+    download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.6rc2.tar.gz',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
