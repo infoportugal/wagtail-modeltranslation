@@ -14,7 +14,7 @@ from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
-    MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
+    MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
 from wagtail.wagtailcore.models import Page, Site
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -27,7 +27,7 @@ from wagtail_modeltranslation.utils import compare_class_tree_depth
 
 logger = logging.getLogger('wagtail.core')
 
-SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel] + CUSTOM_SIMPLE_PANELS
+SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel, RichTextFieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS
 
 
@@ -296,7 +296,7 @@ def _new_get_site_root_paths():
     result = [
         (site.id, site.root_page.specific.url_path, site.root_url)
         for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
-        ]
+    ]
 
     return result
 
