@@ -13,6 +13,7 @@ from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
+from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
 from wagtail.wagtailcore.models import Page, Site
@@ -263,9 +264,9 @@ def _new_route(self, request, path_components):
     """
     Rewrite route method in order to handle languages fallbacks
     """
-    ## copied from wagtail/contrib/wagtailroutablepage/models.py mixin ##
+    # copied from wagtail/contrib/wagtailroutablepage/models.py mixin ##
     # Override route when Page is also RoutablePage
-    if hasattr(self, 'resolve_subpage'):
+    if isinstance(self, RoutablePageMixin):
         if self.live:
             try:
                 path = '/'
