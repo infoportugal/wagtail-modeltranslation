@@ -13,7 +13,7 @@ class Command(BaseCommand):
     help = ('Updates empty values of default translation fields using'
             ' values from original fields (in all translated models).')
 
-    def handle_noargs(self, **options):
+    def handle(self, **options):
         verbosity = int(options['verbosity'])
         if verbosity > 0:
             self.stdout.write(
