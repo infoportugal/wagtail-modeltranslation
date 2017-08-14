@@ -7,4 +7,10 @@ from wagtail.wagtailcore.models import Page
 
 @register(Page)
 class PageTR(TranslationOptions):
-    pass
+    fields = (
+        'title',
+        'slug',
+        'seo_title',
+        'search_description',
+        'url_path',
+    )
