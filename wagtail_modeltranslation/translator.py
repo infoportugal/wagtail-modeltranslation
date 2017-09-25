@@ -4,7 +4,7 @@ from modeltranslation.translator import TranslationOptions
 class WagtailTranslationOptions(TranslationOptions):
 
     @staticmethod
-    def any_in(self, l1, l2):
+    def any_in(l1, l2):
         return any(i in l1 for i in l2)
 
     def __init__(self, model):
