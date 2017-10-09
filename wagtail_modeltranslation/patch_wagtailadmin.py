@@ -153,8 +153,7 @@ class WagtailTranslator(object):
             if isinstance(translation_required_fields, tuple):
                 is_required = language in translation_required_fields
             elif isinstance(translation_required_fields, dict):
-                is_required = original_field.name in 
-                    translation_required_fields[language]
+                is_required = original_field.name in translation_required_fields[language]
             else:
                 is_required = false
 
