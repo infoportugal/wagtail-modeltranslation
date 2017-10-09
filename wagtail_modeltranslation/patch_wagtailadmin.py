@@ -135,6 +135,11 @@ class WagtailTranslator(object):
         panel_class = original_panel.__class__
         translated_panels = []
         translation_registered_fields = translator.get_options_for_model(model).fields
+        translation_required_fields = getattr(
+            translator.get_options_for_model(model),
+            'required_languages',
+            None
+        )
 
         # If the panel field is not registered for translation
         # the original one is returned
@@ -145,9 +150,17 @@ class WagtailTranslator(object):
             original_field = model._meta.get_field(original_panel.field_name)
             localized_field_name = build_localized_fieldname(original_panel.field_name, language)
 
-            # if the original field is required and the current language is the default one
-            # this field's blank property is set to False
-            if not original_field.blank and language == mt_settings.DEFAULT_LANGUAGE:
+            if isinstance(translation_required_fields, tuple):
+                is_required = language in translation_required_fields
+            elif isinstance(translation_required_fields, dict):
+                is_required = original_field.name in 
+                    translation_required_fields[language]
+            else:
+                is_required = false
+
+            # if the original field is required and is_required, this field's
+            # blank property is set to False
+            if not original_field.blank and is_required:
                 localized_field = model._meta.get_field(localized_field_name)
                 localized_field.blank = False
 
