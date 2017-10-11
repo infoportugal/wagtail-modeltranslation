@@ -4,6 +4,8 @@ import json
 
 from six import iteritems
 
+from django import forms
+from django.shortcuts import render
 from django.conf import settings
 from django.conf.urls import url
 from django.http import HttpResponse, QueryDict
@@ -20,7 +22,18 @@ except ImportError:
     from wagtail.wagtailcore import hooks
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailcore.rich_text import PageLinkHandler
+from wagtail.wagtailadmin.forms import CopyForm
 
+# Required for PatchedCopyForm
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy, ungettext
+
+# TODO: Already in wagtail, replace with proper import
+def get_valid_next_url_from_request(request):
+    next_url = request.POST.get('next') or request.GET.get('next')
+    if not next_url or not is_safe_url(url=next_url, host=request.get_host()):
+        return ''
+    return next_url
 
 @hooks.register('insert_editor_js')
 def translated_slugs():
@@ -160,3 +173,31 @@ def register_localized_page_link_handler():
                 return "<a>"
 
     return ('page', LocalizedPageLinkHandler)
+
+class PatchedCopyForm(CopyForm):
+
+    def __init__(self, *args, **kwargs):
+        self.page = kwargs.pop('page')
+        self.user = kwargs.pop('user', None)
+        can_publish = kwargs.pop('can_publish')
+        super(CopyForm, self).__init__(*args, **kwargs)
+
+        for language in ('fr', 'en'):
+            title_initial = self.page.title+"_"+language
+            title_label = "new_title_"+language
+            self.fields[title_label] = forms.SlugField(initial=title_initial, label=_("New title"))
+            slug_initial = self.page.slug+"_"+language
+            slug_label = "new_slug_"+language
+            self.fields[slug_label] = forms.SlugField(initial=slug_initial, label=_("New slug"))
+         
+@hooks.register('before_copy_page')
+def before_copy_page(request, page):
+    parent_page = page.get_parent()
+    can_publish = parent_page.permissions_for_user(request.user).can_publish_subpage()
+    form = PatchedCopyForm(request.POST or None, user=request.user, page=page, can_publish=can_publish)
+    next_url = get_valid_next_url_from_request(request)
+    return render(request, 'modeltranslation_copy.html', {
+        'page': page,
+        'form': form,
+        'next': next_url
+    })
