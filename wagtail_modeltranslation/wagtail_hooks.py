@@ -2,23 +2,25 @@
 
 import json
 
-from django import forms
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.conf import settings
 from django.conf.urls import url
 from django.http import HttpResponse
 from django.http import QueryDict
 from django.utils.html import format_html, format_html_join, escape
 from django.views.decorators.csrf import csrf_exempt
+from django.utils.translation import ugettext as _
+from django.utils.translation import ugettext_lazy, ungettext
 from six import iteritems
 from wagtail.wagtailcore import hooks
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.rich_text import PageLinkHandler
-from wagtail.wagtailadmin.forms import CopyForm
+
+from wagtail.wagtailadmin import messages
+
+from .patch_wagtailadmin_forms import PatchedCopyForm
 
 # Required for PatchedCopyForm
-from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy, ungettext
 
 # TODO: Already in wagtail, replace with proper import
 def get_valid_next_url_from_request(request):
@@ -156,30 +158,68 @@ def register_localized_page_link_handler():
 
     return ('page', LocalizedPageLinkHandler)
 
-class PatchedCopyForm(CopyForm):
-
-    def __init__(self, *args, **kwargs):
-        self.page = kwargs.pop('page')
-        self.user = kwargs.pop('user', None)
-        can_publish = kwargs.pop('can_publish')
-        super(CopyForm, self).__init__(*args, **kwargs)
-
-        for language in ('fr', 'en'):
-            title_initial = self.page.title+"_"+language
-            title_label = "new_title_"+language
-            self.fields[title_label] = forms.SlugField(initial=title_initial, label=_("New title"))
-            slug_initial = self.page.slug+"_"+language
-            slug_label = "new_slug_"+language
-            self.fields[slug_label] = forms.SlugField(initial=slug_initial, label=_("New slug"))
-         
 @hooks.register('before_copy_page')
 def before_copy_page(request, page):
     parent_page = page.get_parent()
     can_publish = parent_page.permissions_for_user(request.user).can_publish_subpage()
     form = PatchedCopyForm(request.POST or None, user=request.user, page=page, can_publish=can_publish)
     next_url = get_valid_next_url_from_request(request)
+
+    if request.method == 'POST':
+        # Prefill parent_page in case the form is invalid (as prepopulated value for the form field,
+        # because ModelChoiceField seems to not fall back to the user given value)
+        parent_page = Page.objects.get(id=request.POST['new_parent_page'])
+
+        if form.is_valid():
+            # Receive the parent page (this should never be empty)
+            if form.cleaned_data['new_parent_page']:
+                parent_page = form.cleaned_data['new_parent_page']
+
+            if not page.permissions_for_user(request.user).can_copy_to(parent_page,
+                                                                       form.cleaned_data.get('copy_subpages')):
+                raise PermissionDenied
+
+            # Re-check if the user has permission to publish subpages on the new parent
+            can_publish = parent_page.permissions_for_user(request.user).can_publish_subpage()
+
+            update_attrs = {}
+            for language in ('fr', 'en'):
+                slug = "slug_{}".format(language)
+                title = "title_{}".format(language)
+                update_attrs[slug] = form.cleaned_data["new_{}".format(slug)]
+                update_attrs[title] = form.cleaned_data["new_{}".format(title)]
+
+            # Copy the page
+            new_page = page.copy(
+                recursive=form.cleaned_data.get('copy_subpages'),
+                to=parent_page,
+                update_attrs=update_attrs,
+                keep_live=(can_publish and form.cleaned_data.get('publish_copies')),
+                user=request.user,
+            )
+
+            # Give a success message back to the user
+            if form.cleaned_data.get('copy_subpages'):
+                messages.success(
+                    request,
+                    _("Page '{0}' and {1} subpages copied.").format(page.get_admin_display_title(), new_page.get_descendants().count())
+                )
+            else:
+                messages.success(request, _("Page '{0}' copied.").format(page.get_admin_display_title()))
+
+            for fn in hooks.get_hooks('after_copy_page'):
+                result = fn(request, page, new_page)
+                if hasattr(result, 'status_code'):
+                    return result
+
+            # Redirect to explore of parent page
+            if next_url:
+                return redirect(next_url)
+            return redirect('wagtailadmin_explore', parent_page.id)
+
     return render(request, 'modeltranslation_copy.html', {
         'page': page,
         'form': form,
         'next': next_url
     })
+        
