@@ -1,6 +1,7 @@
 # coding: utf-8
 
 from django import forms
+from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy, ungettext
 from wagtail.wagtailcore.models import Page
@@ -17,15 +18,15 @@ class PatchedCopyForm(CopyForm):
         super(CopyForm, self).__init__(*args, **kwargs)
 
         #self.fields['new_title'] = forms.CharField(initial=self.page.title, label=_("New title"))
-        for language in ('fr', 'en'):
-            locale_title = "new_title_{}".format(language)
-            locale_label = "{} [{}]".format(_("New title"), language)
+        for code, name in settings.LANGUAGES:
+            locale_title = "new_title_{}".format(code)
+            locale_label = "{} [{}]".format(_("New title"), code)
             self.fields[locale_title] = forms.CharField(initial=self.page.title, label=locale_label)
 
         #self.fields['new_slug'] = forms.SlugField(initial=self.page.slug, label=_("New slug"))
-        for language in ('fr', 'en'):
-            locale_title = "new_slug_{}".format(language)
-            locale_label = "{} [{}]".format(_("New slug"), language)
+        for code, name in settings.LANGUAGES:
+            locale_title = "new_slug_{}".format(code)
+            locale_label = "{} [{}]".format(_("New slug"), code)
             self.fields[locale_title] = forms.CharField(initial=self.page.title, label=locale_label)
 
         self.fields['new_parent_page'] = forms.ModelChoiceField(
@@ -79,8 +80,8 @@ class PatchedCopyForm(CopyForm):
             ])
 
         # Count the pages with the same slug within the context of our copy's parent page
-        for language in ('fr', 'en'):
-            locale_slug = "slug_{}".format(language)
+        for code, name in settings.LANGUAGES:
+            locale_slug = "slug_{}".format(code)
             slug = cleaned_data.get(locale_slug)
 
             if slug and parent_page.get_children().filter(slug=slug).count():

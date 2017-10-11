@@ -198,9 +198,9 @@ def before_copy_page(request, page):
             can_publish = parent_page.permissions_for_user(request.user).can_publish_subpage()
 
             update_attrs = {}
-            for language in ('fr', 'en'):
-                slug = "slug_{}".format(language)
-                title = "title_{}".format(language)
+            for code, name in settings.LANGUAGES:
+                slug = "slug_{}".format(code)
+                title = "title_{}".format(code)
                 update_attrs[slug] = form.cleaned_data["new_{}".format(slug)]
                 update_attrs[title] = form.cleaned_data["new_{}".format(title)]
 
