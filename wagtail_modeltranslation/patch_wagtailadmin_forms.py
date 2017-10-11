@@ -27,7 +27,7 @@ class PatchedCopyForm(CopyForm):
         for code, name in settings.LANGUAGES:
             locale_title = "new_slug_{}".format(code)
             locale_label = "{} [{}]".format(_("New slug"), code)
-            self.fields[locale_title] = forms.CharField(initial=self.page.title, label=locale_label)
+            self.fields[locale_title] = forms.SlugField(initial=self.page.slug, label=locale_label)
 
         self.fields['new_parent_page'] = forms.ModelChoiceField(
             initial=self.page.get_parent(),
