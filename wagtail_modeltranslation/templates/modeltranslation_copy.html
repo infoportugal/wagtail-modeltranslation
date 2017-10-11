@@ -9,12 +9,11 @@
         <form action="{% url 'wagtailadmin_pages:copy' page.id %}" method="POST" novalidate>
             {% csrf_token %}
             <input type="hidden" name="next" value="{{ next }}" />
-            <h1>Wagtail modeltranslation copy</h1>
 
             <ul class="fields">
-                {% include "wagtailadmin/shared/field_as_li.html" with field=form.new_title %}
-                {% include "wagtailadmin/shared/field_as_li.html" with field=form.new_slug %}
-                {% include "wagtailadmin/shared/field_as_li.html" with field=form.new_parent_page %}
+                {% for field in form.visible_fields %}
+             	    {% include "wagtailadmin/shared/field_as_li.html" with field=field %}
+             	{% endfor %}
 
                 {% if form.copy_subpages %}
                     {% include "wagtailadmin/shared/field_as_li.html" with field=form.copy_subpages %}
