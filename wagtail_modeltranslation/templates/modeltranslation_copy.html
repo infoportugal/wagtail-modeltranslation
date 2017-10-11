@@ -18,10 +18,6 @@
                 {% if form.copy_subpages %}
                     {% include "wagtailadmin/shared/field_as_li.html" with field=form.copy_subpages %}
                 {% endif %}
-
-                {% if form.publish_copies %}
-                    {% include "wagtailadmin/shared/field_as_li.html" with field=form.publish_copies %}
-                {% endif %}
             </ul>
 
             <input type="submit" value="{% trans 'Copy this page' %}" class="button">
