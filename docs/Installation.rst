@@ -93,8 +93,8 @@ To setup the application please follow these steps:
 .. code-block:: console
 
    from .models import foo
-   from wagtail_modeltranslation.translation import WagtailTranslationOptions
-   from modeltranslation.decorators import register
+   from wagtail_modeltranslation.translator import WagtailTranslationOptions
+   from wagtail_modeltranslation.translation import register
 
    @register(foo)
    class FooTR(WagtailTranslationOptions):
