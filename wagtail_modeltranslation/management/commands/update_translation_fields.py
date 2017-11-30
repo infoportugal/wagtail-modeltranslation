@@ -8,16 +8,6 @@ from modeltranslation.utils import build_localized_fieldname
 from wagtail.wagtailcore.models import Page
 
 
-def is_field_from_parents(field_name, model):
-    for klass in model.__bases__:
-        if field_name in klass.__dict__:
-            return klass
-        field_klass = is_field_from_parents(field_name, klass)
-        if field_klass:
-            return field_klass
-    return None
-
-
 class Command(BaseCommand):
     help = ('Updates empty values of default translation fields using'
             ' values from original fields (in all translated models).')
@@ -47,7 +37,7 @@ class Command(BaseCommand):
                         original_field = obj.__dict__.get(field_name)  # retrieve original untranslated value
                         setattr(obj, def_lang_fieldname, original_field)
 
-                        # patching Page.full_clean() to avoid validation errors due to slug and title absence
+                        # patching Page.full_clean() to avoid validation errors due to 'slug_xx' and 'title_xx' absence
                         original_full_clean = obj.full_clean
                         obj.full_clean = lambda *args: None
                         obj.save(update_fields=[def_lang_fieldname])
