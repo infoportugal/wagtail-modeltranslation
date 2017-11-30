@@ -1,12 +1,21 @@
 # coding: utf-8
 
 from django.core.management.base import BaseCommand
-from django.db import connection
 from django.db.models import F, Q
 from modeltranslation.settings import DEFAULT_LANGUAGE
 from modeltranslation.translator import translator
 from modeltranslation.utils import build_localized_fieldname
 from wagtail.wagtailcore.models import Page
+
+
+def is_field_from_parents(field_name, model):
+    for klass in model.__bases__:
+        if field_name in klass.__dict__:
+            return klass
+        field_klass = is_field_from_parents(field_name, klass)
+        if field_klass:
+            return field_klass
+    return None
 
 
 class Command(BaseCommand):
@@ -35,43 +44,15 @@ class Command(BaseCommand):
 
                 if issubclass(model, Page):
                     for obj in model._default_manager.filter(q):
-                        # Get table description in order to know if field is
-                        # in child or parent table
-                        # TODO: Tested only on PostgreSQL engine
-                        db_table = model._meta.db_table
-                        db_table_desc = connection.introspection. \
-                            get_table_description(
-                            connection.cursor(), db_table)
-                        # original field in child class
-                        if field_name in [x.name for x in db_table_desc]:
-                            raw = model._default_manager.raw(
-                                'SELECT *, %s AS original_field FROM %s \
-                                 WHERE page_ptr_id=%d LIMIT 1' % (
-                                    field_name, db_table, obj.page_ptr_id))[0]
-                            setattr(
-                                obj, def_lang_fieldname, raw.original_field)
-                        # field is a foreign key
-                        elif (field_name + '_id') in \
-                                [x.name for x in db_table_desc]:
-                            raw = model._default_manager.raw(
-                                'SELECT *, %s AS original_field FROM %s \
-                                 WHERE page_ptr_id=%d LIMIT 1' % (
-                                    field_name + '_id',
-                                    db_table,
-                                    obj.page_ptr_id))[0]
-                            setattr(
-                                obj,
-                                def_lang_fieldname + '_id',
-                                raw.original_field)
-                        # original field parent class
-                        else:
-                            raw = Page._default_manager.raw(
-                                'SELECT *, %s AS original_field FROM \
-                                 wagtailcore_page WHERE id=%d LIMIT 1' % (
-                                    field_name, obj.page_ptr_id))[0]
-                            setattr(
-                                obj, def_lang_fieldname, raw.original_field)
+                        original_field = obj.__dict__.get(field_name)  # retrieve original untranslated value
+                        setattr(obj, def_lang_fieldname, original_field)
+
+                        # patching Page.full_clean() to avoid validation errors due to slug and title absence
+                        original_full_clean = obj.full_clean
+                        obj.full_clean = lambda *args: None
                         obj.save(update_fields=[def_lang_fieldname])
+
+                        obj.full_clean = original_full_clean
                 else:
                     model._default_manager.filter(q).rewrite(False).update(
                         **{def_lang_fieldname: F(field_name)})
