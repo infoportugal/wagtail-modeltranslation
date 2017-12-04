@@ -33,16 +33,16 @@ class Command(BaseCommand):
                     q |= Q(**{def_lang_fieldname: ''})
 
                 if issubclass(model, Page):
+                    # patching Page.full_clean() to avoid validation errors due to 'slug_xx' and 'title_xx' absences
+                    original_full_clean = model.full_clean
+                    model.full_clean = lambda *args: None
+
                     for obj in model._default_manager.filter(q):
                         original_field = obj.__dict__.get(field_name)  # retrieve original untranslated value
                         setattr(obj, def_lang_fieldname, original_field)
-
-                        # patching Page.full_clean() to avoid validation errors due to 'slug_xx' and 'title_xx' absence
-                        original_full_clean = obj.full_clean
-                        obj.full_clean = lambda *args: None
                         obj.save(update_fields=[def_lang_fieldname])
 
-                        obj.full_clean = original_full_clean
+                    model.full_clean = original_full_clean
                 else:
                     model._default_manager.filter(q).rewrite(False).update(
                         **{def_lang_fieldname: F(field_name)})
