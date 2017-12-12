@@ -10,3 +10,5 @@ CUSTOM_SIMPLE_PANELS = [import_from_string(panel_class) for panel_class in
                         getattr(settings, 'WAGTAILMODELTRANSLATION_CUSTOM_SIMPLE_PANELS', [])]
 CUSTOM_COMPOSED_PANELS = [import_from_string(panel_class) for panel_class in
                           getattr(settings, 'WAGTAILMODELTRANSLATION_CUSTOM_COMPOSED_PANELS', [])]
+
+ORIGINAL_SLUG_LANGUAGE = getattr(settings, 'WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE', None)
