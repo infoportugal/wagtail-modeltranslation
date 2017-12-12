@@ -348,3 +348,16 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         except AttributeError:
             # python 2.7
             self.assertItemsEqual(expected_fields, model_search_fields)
+
+    def test_streamfield_fallback(self):
+        body_text = '[{"value": "Some text", "type": "text"}]'
+        page = models.StreamFieldPanelPage(title='Streamfield Fallback', slug='streamfield_fallback',
+                                           depth=1, path='0005', body=body_text)
+        page.save()
+
+        self.assertEqual(str(page.body), '<div class="block-text">Some text</div>')
+
+        trans_real.activate('en')
+
+        self.assertEqual(str(page.body), '<div class="block-text">Some text</div>',
+                         'page.body did not fallback to original language.')
