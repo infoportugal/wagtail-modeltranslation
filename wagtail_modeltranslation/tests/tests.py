@@ -5,7 +5,7 @@ import django
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.test import TestCase, TransactionTestCase
+from django.test import TestCase, TransactionTestCase, RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
@@ -335,6 +335,95 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         child2.slug_de = 'child'
 
         self.assertRaises(ValidationError, child2.clean)
+
+    def test_original_slug_update(self):
+        from wagtail.wagtailcore.models import Page
+        # save the page in the default language
+        root = models.TestRootPage(title='original slug', title_de='originalschnecke', depth=1, path='0002',
+                                   slug_en='test-slug-en', slug_de='test-slug-de')
+        root.save()
+
+        # some control checks, we don't expect any surprises here
+        self.assertEqual(root.slug, 'test-slug-de', 'slug has the wrong value.')
+        self.assertEqual(root.slug_de, 'test-slug-de', 'slug_de has the wrong value.')
+        self.assertEqual(root.slug_en, 'test-slug-en', 'slug_en has the wrong value.')
+
+        # fetches the correct Page using slug
+        page = Page.objects.filter(slug='test-slug-de').first()
+        self.assertEqual(page.specific, root, 'The wrong page was retrieved from DB.')
+
+        trans_real.activate('en')
+
+        # fetches the correct Page using slug using non-default language
+        page = Page.objects.filter(slug='test-slug-de').first()
+        self.assertEqual(page.specific, root, 'The wrong page was retrieved from DB.')
+
+        # save the page 2 in the non-default language
+        root2 = models.TestRootPage(title='original slug 2', title_de='originalschnecke 2', depth=1, path='0003',
+                                    slug_en='test-slug2-en', slug_de='test-slug2-de')
+        root2.save()
+
+        # sanity checks
+        self.assertEqual(root2.slug, 'test-slug2-en', 'slug has the wrong value.')
+        self.assertEqual(root2.slug_de, 'test-slug2-de', 'slug_de has the wrong value.')
+        self.assertEqual(root2.slug_en, 'test-slug2-en', 'slug_en has the wrong value.')
+
+        # fetches the correct Page using slug using non-default language
+        page = Page.objects.filter(slug='test-slug2-de').first()
+        self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
+
+        trans_real.activate('de')
+
+        # fetches the correct Page using slug using default language
+        page = Page.objects.filter(slug='test-slug2-de').first()
+        self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
+
+
+
+    def test_relative_url(self):
+        from wagtail.wagtailcore.models import Site
+        # Create a test Site with a root page
+        root = models.TestRootPage(title='title slugurl', depth=1, path='0004',
+                                   slug_en='title_slugurl_en', slug_de='title_slugurl_de')
+        root.save()
+        site = Site(root_page=root)
+        site.save()
+
+        # Add children to the root
+        child = root.add_child(
+            instance=models.TestSlugPage1(title='child1 slugurl',
+                                          slug_en='child-slugurl-en', slug_de='child-slugurl-de',
+                                          depth=2, path='00040001')
+        )
+        child.save_revision().publish()
+
+        url_1_de = child.relative_url(site)
+        self.assertEqual(url_1_de, '/de/child-slugurl-de/',
+                         'When using the default language, slugurl produces the wrong url.')
+
+        trans_real.activate('en')
+
+        url_1_en = child.relative_url(site)
+        self.assertEqual(url_1_en, '/en/child-slugurl-en/',
+                         'When using non-default language, slugurl produces the wrong url.')
+
+        # Add children using non-default language
+        child2 = root.add_child(
+            instance=models.TestSlugPage2(title='child2 slugurl', title_de='child2 slugurl DE',
+                                          slug_de='child2-slugurl-de', slug_en='child2-slugurl-en',
+                                          depth=2, path='00040002')
+        )
+        child2.save_revision().publish()
+
+        url_2_en = child2.relative_url(site)
+        self.assertEqual(url_2_en, '/en/child2-slugurl-en/',
+                         'When using non-default language, slugurl produces the wrong url.')
+
+        trans_real.activate('de')
+
+        url_2_de = child2.relative_url(site)
+        self.assertEqual(url_2_de, '/de/child2-slugurl-de/',
+                         'When using non-default language, slugurl produces the wrong url.')
 
     def test_searchfield_patching(self):
         # Check if the search fields have the original field plus the translated ones

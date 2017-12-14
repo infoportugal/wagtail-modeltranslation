@@ -23,8 +23,36 @@ If, for example, you're using wagtail-embedvideos the EmbedVideoChooserPanel is 
 
 Default: ``[]`` (empty list)
 
-This settings behaves as the above but should be used for panels that are composed by other panels (MultiFieldPanel or FieldRowPanel for example).
+This setting behaves as the above but should be used for panels that are composed by other panels (MultiFieldPanel or FieldRowPanel for example).
 
 .. code-block:: python
 
     WAGTAILMODELTRANSLATION_CUSTOM_COMPOSED_PANELS = ['app_x.module_y.PanelZ']
+
+
+``WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. versionadded:: 0.6.0
+
+Default: ``None``
+
+This setting enables consistency for the original (not translated) 'slug' value that is saved to the ``Page`` model table (wagtailcore_page). The value saved to the DB will be independent of user's current language and instead will rely on this setting's language.
+This is specially useful when Wagtail pages are edited by users of different languages and the site makes use of `slugurl <http://docs.wagtail.io/en/latest/topics/writing_templates.html#slugurl>`_.
+
+``None``
+    [set by default]
+
+    Setting turned off. Behaviour is the same as django-modeltranslation, meaning the value of the original slug field is undetermined (check `The State of the Original Field <http://django-modeltranslation.readthedocs.io/en/latest/usage.html#the-state-of-the-original-field>`_).
+
+``'default'``
+    Original slug field saved to the DB is in django-modeltranslation's default language.
+
+``'xx'`` (language code)
+    Use a language code to ensure the value saved to the original slug field is in the chosen language. For example: ``'en'``.
+
+Example:
+
+.. code-block:: python
+
+    WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE = 'default'
