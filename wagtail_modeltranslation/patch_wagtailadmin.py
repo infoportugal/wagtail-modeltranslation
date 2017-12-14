@@ -17,6 +17,7 @@ from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
 from wagtail.wagtailcore.models import Page, Site
+from wagtail.wagtailcore.fields import StreamField, StreamValue
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsearch.index import SearchField
@@ -88,8 +89,14 @@ class WagtailTranslator(object):
                     translated_field.field_name = build_localized_fieldname(field.field_name, language)
                     model.search_fields = list(model.search_fields) + [translated_field]
 
-        # SLUG FIELD PATCHING
+        # OVERRIDE FIELDS
+        model_fields = model._meta.get_fields()
+        for field in model_fields:
+            if isinstance(field, StreamField) and field.name in translation_registered_fields:
+                descriptor = getattr(model, field.name)
+                _patch_stream_field_meaningful_value(descriptor)
 
+        # SLUG FIELD PATCHING
         try:
             slug_field = model._meta.get_field('slug')
             _patch_pre_save(slug_field)
@@ -408,6 +415,18 @@ def _patch_clean(model):
 
     model.clean = clean
 
+def _patch_stream_field_meaningful_value(field):
+    old_meaningful_value = field.meaningful_value
+
+    def meaningful_value(self, val, undefined):
+        """
+            Check if val is considered non-empty.
+        """
+        if isinstance(val, StreamValue):
+            return len(val.stream_data) != 0
+        return old_meaningful_value(self, val, undefined)
+
+    field.meaningful_value = meaningful_value.__get__(field)
 
 def _patch_pre_save(field):
     if not ORIGINAL_SLUG_LANGUAGE:
