@@ -5,7 +5,7 @@ import django
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
-from django.test import TestCase, TransactionTestCase, RequestFactory
+from django.test import TestCase, TransactionTestCase
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
@@ -450,3 +450,41 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertEqual(str(page.body), '<div class="block-text">Some text</div>',
                          'page.body did not fallback to original language.')
+
+    def test_set_url_path(self):
+        from wagtail.wagtailcore.models import Site
+        # Create a test Site with a root page
+        root = models.TestRootPage(title='url paths', depth=1, path='0006', slug='url-path-slug')
+        root.save()
+
+        site = Site(root_page=root)
+        site.save()
+
+        # Add children to the root
+        child = root.add_child(
+            instance=models.TestSlugPage1(title='child', slug='child', depth=2, path='00060001')
+        )
+        child.save()
+
+        # Add grandchildren to the root
+        grandchild = child.add_child(
+            instance=models.TestSlugPage1(title='grandchild', slug='grandchild', depth=2, path='000600010001')
+        )
+        grandchild.save()
+
+        self.assertEqual(child.url_path_de, '/child/')
+        self.assertEqual(child.url_path_en, '/child/')
+        self.assertEqual(grandchild.url_path_de, '/child/grandchild/')
+        self.assertEqual(grandchild.url_path_en, '/child/grandchild/')
+
+        grandchild.slug_de = 'grandchild1'
+        grandchild.save()
+
+        self.assertEqual(grandchild.url_path_de, '/child/grandchild1/')
+        self.assertEqual(grandchild.url_path_en, '/child/grandchild1/')
+
+        grandchild.slug_en = 'grandchild1_en'
+        grandchild.save()
+
+        self.assertEqual(grandchild.url_path_de, '/child/grandchild1/')
+        self.assertEqual(grandchild.url_path_en, '/child/grandchild1_en/')
