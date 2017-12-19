@@ -111,6 +111,7 @@ class WagtailTranslator(object):
         model.relative_url = _new_relative_url
         model.url = _new_url
         _patch_clean(model)
+        _patch_save(model)
 
     def _patch_other_models(self, model):
         if hasattr(model, 'edit_handler'):
@@ -415,6 +416,36 @@ def _patch_clean(model):
 
     model.clean = clean
 
+def _patch_save(model):
+    old_save = model.save
+
+    def save(self, *args, **kwargs):
+        # when updating, save doesn't check if slug_xx has changed so it can only detect changes in slug
+        # from current language. We need to ensure that if a given localized slug changes we call set_url_path
+        if not self.id:  # creating a record, wagtail will call set_url_path, nothing to do.
+            return old_save(self, *args, **kwargs)
+
+        current_language = get_language()
+        old_record = None
+        call_set_url_path = False
+        for language in mt_settings.AVAILABLE_LANGUAGES:
+            localized_slug = build_localized_fieldname('slug', language)
+            # similar logic used in save
+            if not ('update_fields' in kwargs and localized_slug not in kwargs['update_fields']):
+                old_record = old_record or Page.objects.get(id=self.id).specific
+                if getattr(old_record, localized_slug) != getattr(self, localized_slug):
+                    if language == current_language:
+                        # Wagtail's save will detect slug change so it will call set_url_path
+                        call_set_url_path = False
+                        break
+                    call_set_url_path = True
+
+        if call_set_url_path:
+            self.set_url_path(self.get_parent())
+        return old_save(self, *args, **kwargs)
+
+    model.save = save
+
 def _patch_stream_field_meaningful_value(field):
     old_meaningful_value = field.meaningful_value
 
@@ -450,7 +481,6 @@ def _patch_pre_save(field):
         return value
 
     field.pre_save = pre_save.__get__(field)
-
 
 def patch_wagtail_models():
     # After all models being registered the Page or BaseSetting subclasses and snippets are patched
