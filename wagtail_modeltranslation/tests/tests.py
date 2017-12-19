@@ -488,3 +488,31 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertEqual(grandchild.url_path_de, '/child/grandchild1/')
         self.assertEqual(grandchild.url_path_en, '/child/grandchild1_en/')
+
+        # Children url paths should update when parent changes
+        child.slug_en = 'child_en'
+        child.save()
+
+        self.assertEqual(child.url_path_de, '/child/')
+        self.assertEqual(child.url_path_en, '/child_en/')
+
+        # We should retrieve grandchild with the below command:
+        # grandchild_new = models.TestSlugPage1.objects.get(id=grandchild.id)
+        # but it's exhibiting strange behaviour during tests. See:
+        # https://github.com/infoportugal/wagtail-modeltranslation/issues/103#issuecomment-352006610
+        grandchild_new = models.TestSlugPage1._default_manager.raw("""
+            SELECT page_ptr_id, url_path_en, url_path_de FROM {}
+            WHERE page_ptr_id=%s LIMIT 1
+        """.format(models.TestSlugPage1._meta.db_table), [grandchild.page_ptr_id])[0]
+        self.assertEqual(grandchild_new.url_path_en, '/child_en/grandchild1_en/')
+        self.assertEqual(grandchild_new.url_path_de, '/child/grandchild1/')
+
+
+    def test_page_fields_tables(self):
+        from wagtail_modeltranslation.patch_wagtailadmin import WagtailTranslator
+
+        self.assertIn(models.TestSlugPage1, WagtailTranslator._patched_models)
+        self.assertIn('tests_testslugpage1', WagtailTranslator._page_fields_tables)
+        self.assertIn(models.TestSlugPage1Subclass, WagtailTranslator._patched_models)
+        self.assertNotIn('tests_testslugpage1subclass', WagtailTranslator._page_fields_tables)
+        self.assertNotIn('wagtailcore_page', WagtailTranslator._page_fields_tables)
