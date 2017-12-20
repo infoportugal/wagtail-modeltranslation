@@ -4,7 +4,7 @@ from modeltranslation.translator import translator, register, TranslationOptions
 from wagtail_modeltranslation.tests.models import TestRootPage, TestSlugPage1, TestSlugPage2, PatchTestPage, \
     PatchTestSnippet, FieldPanelPage, ImageChooserPanelPage, FieldRowPanelPage, MultiFieldPanelPage, InlinePanelPage, \
     FieldPanelSnippet, ImageChooserPanelSnippet, FieldRowPanelSnippet, MultiFieldPanelSnippet, PageInlineModel, \
-    BaseInlineModel, StreamFieldPanelPage, StreamFieldPanelSnippet, SnippetInlineModel, InlinePanelSnippet
+    BaseInlineModel, StreamFieldPanelPage, StreamFieldPanelSnippet, SnippetInlineModel, InlinePanelSnippet, TestSlugPage1Subclass
 from wagtail_modeltranslation.translator import WagtailTranslationOptions
 
 
@@ -23,6 +23,11 @@ class TestSlugPage1TranslationOptions(WagtailTranslationOptions):
 @register(TestSlugPage2)
 class TestSlugPage2TranslationOptions(WagtailTranslationOptions):
     fields = ()
+
+
+@register(TestSlugPage1Subclass)
+class TestSlugPage1SubclassTranslationOptions(WagtailTranslationOptions):
+    pass
 
 
 @register(PatchTestPage)
