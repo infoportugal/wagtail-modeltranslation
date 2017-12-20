@@ -1,10 +1,11 @@
 # coding: utf-8
 import copy
 import logging
+import types
 
-from django.core.exceptions import ValidationError
+from django.core.exceptions import ValidationError, FieldDoesNotExist
 from django.core.urlresolvers import reverse
-from django.db import transaction
+from django.db import transaction, connection
 from django.http import Http404
 from django.utils.translation import trans_real
 from django.utils.translation import ugettext_lazy as _
@@ -17,13 +18,14 @@ from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
 from wagtail.wagtailcore.models import Page, Site
+from wagtail.wagtailcore.fields import StreamField, StreamValue
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.models import get_snippet_models
 from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
+from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, ORIGINAL_SLUG_LANGUAGE
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
 logger = logging.getLogger('wagtail.core')
@@ -34,6 +36,7 @@ COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANE
 
 class WagtailTranslator(object):
     _patched_models = []
+    _page_fields_tables = []
 
     def __init__(self, model):
         # Check if this class was already patched
@@ -48,6 +51,11 @@ class WagtailTranslator(object):
             self._patch_other_models(model)
 
         WagtailTranslator._patched_models.append(model)
+
+        # compile all tables that are holding page translated fields (title_xx, slug_xx, url_path_xx)
+        options = translator.get_options_for_model(model)
+        if 'url_path' in options.local_fields.keys() and model._meta.db_table is not 'wagtailcore_page':
+            WagtailTranslator._page_fields_tables.append(model._meta.db_table)
 
     def _patch_page_models(self, model):
         # PANEL PATCHING
@@ -88,8 +96,21 @@ class WagtailTranslator(object):
                     translated_field.field_name = build_localized_fieldname(field.field_name, language)
                     model.search_fields = list(model.search_fields) + [translated_field]
 
-        # OVERRIDE PAGE METHODS
+        # OVERRIDE FIELDS
+        model_fields = model._meta.get_fields()
+        for field in model_fields:
+            if isinstance(field, StreamField) and field.name in translation_registered_fields:
+                descriptor = getattr(model, field.name)
+                _patch_stream_field_meaningful_value(descriptor)
 
+        # SLUG FIELD PATCHING
+        try:
+            slug_field = model._meta.get_field('slug')
+            _patch_pre_save(slug_field)
+        except FieldDoesNotExist:
+            pass
+
+        # OVERRIDE PAGE METHODS
         model.move = _new_move
         model.set_url_path = _new_set_url_path
         model.route = _new_route
@@ -97,6 +118,10 @@ class WagtailTranslator(object):
         model.relative_url = _new_relative_url
         model.url = _new_url
         _patch_clean(model)
+
+        if not model.save.__name__.startswith('localized'):
+            descriptor = LocalizedSaveDescriptor(model.save)
+            setattr(model, 'save', descriptor)
 
     def _patch_other_models(self, model):
         if hasattr(model, 'edit_handler'):
@@ -201,7 +226,6 @@ class WagtailTranslator(object):
         # patched, leaving the original untouched
         return panel
 
-
 # Overridden Page methods adapted to the translated fields
 
 @transaction.atomic  # only commit when all descendants are properly updated
@@ -251,11 +275,6 @@ def _new_set_url_path(self, parent):
             # a page without a parent is the tree root,
             # which always has a url_path of '/'
             setattr(self, localized_url_path_field, '/')
-
-    # update url_path for children pages
-    for child in self.get_children().specific():
-        child.set_url_path(self.specific)
-        child.save()
 
     return self.url_path
 
@@ -316,7 +335,7 @@ def _new_get_site_root_paths():
     return result
 
 
-def _new_relative_url(self, current_site):
+def _new_relative_url(self, current_site, request=None):
     """
     Return the 'most appropriate' URL for this page taking into account the site we're currently on;
     a local URL if the site matches, or a fully qualified one otherwise.
@@ -328,7 +347,7 @@ def _new_relative_url(self, current_site):
     for (id, root_path, root_url) in self.get_site_root_paths():
         if self.url_path.startswith(root_path):
             return ('' if current_site.id == id else root_url) + reverse('wagtail_serve',
-                                                                         args=(self.url_path[len(root_path):],))
+                                                                         args=(self.specific.url_path[len(root_path):],))
 
 
 @property
@@ -403,6 +422,125 @@ def _patch_clean(model):
     model.clean = clean
 
 
+def _localized_update_descendant_url_paths(self, old_url_path, new_url_path, language):
+    localized_url_path = build_localized_fieldname('url_path', language)
+
+    for db_table in WagtailTranslator._page_fields_tables:
+        cursor = connection.cursor()
+        if connection.vendor == 'sqlite':
+            update_statement = """
+                UPDATE {db_table}
+                SET {localized_url_path} = %s || substr({localized_url_path}, %s)
+                WHERE EXISTS (SELECT * FROM wagtailcore_page AS p
+                    WHERE p.id = {db_table}.page_ptr_id AND p.path LIKE %s)
+                AND page_ptr_id <> %s
+            """.format(db_table=db_table, localized_url_path=localized_url_path)
+        elif connection.vendor == 'mysql':
+            update_statement = """
+                UPDATE {db_table} t
+                JOIN wagtailcore_page p ON p.id = t.page_ptr_id
+                SET {localized_url_path}= CONCAT(%s, substring({localized_url_path}, %s))
+                WHERE p.path LIKE %s AND t.page_ptr_id <> %s
+            """.format(db_table=db_table, localized_url_path=localized_url_path)
+        elif connection.vendor in ('mssql', 'microsoft'):
+            update_statement = """
+                UPDATE t
+                SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
+                FROM {db_table} t
+                JOIN wagtailcore_page p
+                    ON p.id = t.page_ptr_id
+                WHERE p.path LIKE %s AND t.page_ptr_id <> %s
+            """.format(db_table=db_table, localized_url_path=localized_url_path)
+        else:
+            update_statement = """
+                UPDATE {db_table} as t
+                SET {localized_url_path} = %s || substring({localized_url_path} from %s)
+                FROM wagtailcore_page AS p
+                WHERE p.id = t.page_ptr_id AND p.path LIKE %s AND t.page_ptr_id <> %s
+            """.format(db_table=db_table, localized_url_path=localized_url_path)
+        cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, self.path + '%', self.page_ptr_id])
+
+
+class LocalizedSaveDescriptor(object):
+    def __init__(self, f):
+        self.func = f
+        self.__name__ = 'localized_{}'.format(f.__name__)
+
+    def __call__(self, *args, **kwargs):
+        # when updating, save doesn't check if slug_xx has changed so it can only detect changes in slug
+        # from current language. We need to ensure that if a given localized slug changes we call set_url_path
+        instance = args[0]
+        if not instance.id:  # creating a record, wagtail will call set_url_path, nothing to do.
+            return self.func(*args, **kwargs)
+
+        old_record = None
+        changed_localized_slugs = []
+        for language in mt_settings.AVAILABLE_LANGUAGES:
+            localized_slug = build_localized_fieldname('slug', language)
+            # similar logic used in save
+            if not ('update_fields' in kwargs and localized_slug not in kwargs['update_fields']):
+                old_record = old_record or instance.__class__.objects.get(id=instance.id)
+                if getattr(old_record, localized_slug) != getattr(instance, localized_slug):
+                    changed_localized_slugs.append(language)
+
+        # if any language other than current language had it slug changed
+        # we'll execute set_url_path
+        if len(changed_localized_slugs) > 1 or \
+            (len(changed_localized_slugs) == 1 and changed_localized_slugs[0] != get_language()):
+            instance.set_url_path(instance.get_parent())
+        result = self.func(*args, **kwargs)
+
+        # update children paths
+        for language in changed_localized_slugs:
+            localized_url_path = build_localized_fieldname('url_path', language)
+            old_url_path = getattr(old_record, localized_url_path)
+            new_url_path = getattr(instance, localized_url_path)
+            _localized_update_descendant_url_paths(instance, old_url_path, new_url_path, language)
+
+        return result
+
+    def __get__(self, instance, owner=None):
+        return types.MethodType(self, instance) if instance else self
+
+
+def _patch_stream_field_meaningful_value(field):
+    old_meaningful_value = field.meaningful_value
+
+    def meaningful_value(self, val, undefined):
+        """
+            Check if val is considered non-empty.
+        """
+        if isinstance(val, StreamValue):
+            return len(val.stream_data) != 0
+        return old_meaningful_value(self, val, undefined)
+
+    field.meaningful_value = meaningful_value.__get__(field)
+
+
+def _patch_pre_save(field):
+    if not ORIGINAL_SLUG_LANGUAGE:
+        return
+
+    if ORIGINAL_SLUG_LANGUAGE == 'default':
+        reference_slug_language = mt_settings.DEFAULT_LANGUAGE
+    else:
+        reference_slug_language = ORIGINAL_SLUG_LANGUAGE
+
+    def pre_save(self, model_instance, add):
+        """
+        Returns slug field's value using the language set by `WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE`
+        just before saving.
+        """
+        current_language = get_language()
+        # using ORIGINAL_SLUG_LANGUAGE makes Page's slug value consistent
+        trans_real.activate(reference_slug_language)
+        value = getattr(model_instance, self.attname)
+        trans_real.activate(current_language)
+        return value
+
+    field.pre_save = pre_save.__get__(field)
+
+
 def patch_wagtail_models():
     # After all models being registered the Page or BaseSetting subclasses and snippets are patched
     registered_models = translator.get_registered_models()
@@ -415,3 +553,4 @@ def patch_wagtail_models():
     for model_class in registered_models:
         if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):
             WagtailTranslator(model_class)
+
