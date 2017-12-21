@@ -54,8 +54,10 @@ def runtests():
                 'wagtail.contrib.wagtailapi',
 
                 'wagtail_modeltranslation',
-
             ),
+            # remove wagtailcore from serialization as translation columns have not been created at this point
+            # (which causes OperationalError: no such column)
+            TEST_NON_SERIALIZED_APPS=['wagtail.wagtailcore'],
             ROOT_URLCONF=None,  # tests override urlconf, but it still needs to be defined
             LANGUAGES=(
                 ('en', 'English'),

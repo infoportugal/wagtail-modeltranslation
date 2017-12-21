@@ -36,7 +36,6 @@ COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANE
 
 class WagtailTranslator(object):
     _patched_models = []
-    _page_fields_tables = []
 
     def __init__(self, model):
         # Check if this class was already patched
@@ -52,10 +51,6 @@ class WagtailTranslator(object):
 
         WagtailTranslator._patched_models.append(model)
 
-        # compile all tables that are holding page translated fields (title_xx, slug_xx, url_path_xx)
-        options = translator.get_options_for_model(model)
-        if 'url_path' in options.local_fields.keys() and model._meta.db_table is not 'wagtailcore_page':
-            WagtailTranslator._page_fields_tables.append(model._meta.db_table)
 
     def _patch_page_models(self, model):
         # PANEL PATCHING
@@ -425,40 +420,32 @@ def _patch_clean(model):
 def _localized_update_descendant_url_paths(self, old_url_path, new_url_path, language):
     localized_url_path = build_localized_fieldname('url_path', language)
 
-    for db_table in WagtailTranslator._page_fields_tables:
-        cursor = connection.cursor()
-        if connection.vendor == 'sqlite':
-            update_statement = """
-                UPDATE {db_table}
-                SET {localized_url_path} = %s || substr({localized_url_path}, %s)
-                WHERE EXISTS (SELECT * FROM wagtailcore_page AS p
-                    WHERE p.id = {db_table}.page_ptr_id AND p.path LIKE %s)
-                AND page_ptr_id <> %s
-            """.format(db_table=db_table, localized_url_path=localized_url_path)
-        elif connection.vendor == 'mysql':
-            update_statement = """
-                UPDATE {db_table} t
-                JOIN wagtailcore_page p ON p.id = t.page_ptr_id
-                SET {localized_url_path}= CONCAT(%s, substring({localized_url_path}, %s))
-                WHERE p.path LIKE %s AND t.page_ptr_id <> %s
-            """.format(db_table=db_table, localized_url_path=localized_url_path)
-        elif connection.vendor in ('mssql', 'microsoft'):
-            update_statement = """
-                UPDATE t
-                SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
-                FROM {db_table} t
-                JOIN wagtailcore_page p
-                    ON p.id = t.page_ptr_id
-                WHERE p.path LIKE %s AND t.page_ptr_id <> %s
-            """.format(db_table=db_table, localized_url_path=localized_url_path)
-        else:
-            update_statement = """
-                UPDATE {db_table} as t
-                SET {localized_url_path} = %s || substring({localized_url_path} from %s)
-                FROM wagtailcore_page AS p
-                WHERE p.id = t.page_ptr_id AND p.path LIKE %s AND t.page_ptr_id <> %s
-            """.format(db_table=db_table, localized_url_path=localized_url_path)
-        cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, self.path + '%', self.page_ptr_id])
+    cursor = connection.cursor()
+    if connection.vendor == 'sqlite':
+        update_statement = """
+            UPDATE wagtailcore_page
+            SET {localized_url_path} = %s || substr({localized_url_path}, %s)
+            WHERE path LIKE %s AND id <> %s
+        """.format(localized_url_path=localized_url_path)
+    elif connection.vendor == 'mysql':
+        update_statement = """
+            UPDATE wagtailcore_page
+            SET {localized_url_path}= CONCAT(%s, substring({localized_url_path}, %s))
+            WHERE path LIKE %s AND id <> %s
+        """.format(localized_url_path=localized_url_path)
+    elif connection.vendor in ('mssql', 'microsoft'):
+        update_statement = """
+            UPDATE wagtailcore_page
+            SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
+            WHERE path LIKE %s AND id <> %s
+        """.format(localized_url_path=localized_url_path)
+    else:
+        update_statement = """
+            UPDATE wagtailcore_page
+            SET {localized_url_path} = %s || substring({localized_url_path} from %s)
+            WHERE path LIKE %s AND id <> %s
+        """.format(localized_url_path=localized_url_path)
+    cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, self.path + '%', self.id])
 
 
 class LocalizedSaveDescriptor(object):

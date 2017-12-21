@@ -51,9 +51,20 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 imp.reload(translator)
 
                 # reload the translation module to register the Page model
+                # and also edit_handlers so any patches made to Page are reapplied
                 from wagtail_modeltranslation import translation as wag_translation, translator as wag_translator
+                from wagtail.wagtailadmin import edit_handlers
+                import sys
+                del cls.cache.all_models['wagtailcore']
+                sys.modules.pop('wagtail_modeltranslation.translation.pagetr', None)
+                sys.modules.pop('wagtail.wagtailcore.models', None)
                 imp.reload(wag_translation)
                 imp.reload(wag_translator)
+                imp.reload(edit_handlers)  # so Page can be repatched by edit_handlers
+                wagtailcore_args = []
+                if django.VERSION < (1, 11):
+                    wagtailcore_args = [cls.cache.all_models['wagtailcore']]
+                cls.cache.get_app_config('wagtailcore').import_models(*wagtailcore_args)
 
                 # Reload the patching class to update the imported translator
                 # in order to include the newly registered models
@@ -64,10 +75,12 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 #    have translation fields, but for languages previously defined. We want
                 #    to be sure that 'de' and 'en' are available)
                 del cls.cache.all_models['tests']
-                import sys
                 sys.modules.pop('wagtail_modeltranslation.tests.models', None)
                 sys.modules.pop('wagtail_modeltranslation.tests.translation', None)
-                cls.cache.get_app_config('tests').import_models(cls.cache.all_models['tests'])
+                tests_args = []
+                if django.VERSION < (1, 11):
+                    tests_args = [cls.cache.all_models['tests']]
+                cls.cache.get_app_config('tests').import_models(*tests_args)
 
                 # 4. Autodiscover
                 from modeltranslation.models import handle_translation_registrations
@@ -75,14 +88,17 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # 5. makemigrations
                 from django.db import connections, DEFAULT_DB_ALIAS
-                call_command('makemigrations', verbosity=2, interactive=False,
+                call_command('makemigrations_translation', verbosity=2, interactive=False,
                              database=connections[DEFAULT_DB_ALIAS].alias)
 
                 # 6. Syncdb
                 call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
                              database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
 
-                # 7. patch wagtail models
+                # 7. Make sure Page translation fields are created
+                call_command('sync_page_translation_fields', interactive=False, verbosity=0, database=connections[DEFAULT_DB_ALIAS].alias)
+
+                # 8. patch wagtail models
                 from wagtail_modeltranslation.patch_wagtailadmin import patch_wagtail_models
                 patch_wagtail_models()
 
@@ -90,7 +106,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 # tests app has been added into INSTALLED_APPS and loaded
                 # (that's why this is not imported in normal import section)
                 global models, translation
-                from wagtail_modeltranslation.tests import models, translation
+                from wagtail_modeltranslation.tests import models, translation # NOQA
 
     def setUp(self):
         self._old_language = get_language()
@@ -355,7 +371,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         trans_real.activate('en')
 
         # fetches the correct Page using slug using non-default language
-        page = Page.objects.filter(slug='test-slug-de').first()
+        page = Page.objects.rewrite(False).filter(slug='test-slug-de').first()
         self.assertEqual(page.specific, root, 'The wrong page was retrieved from DB.')
 
         # save the page 2 in the non-default language
@@ -369,13 +385,13 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(root2.slug_en, 'test-slug2-en', 'slug_en has the wrong value.')
 
         # fetches the correct Page using slug using non-default language
-        page = Page.objects.filter(slug='test-slug2-de').first()
+        page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
         self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
 
         trans_real.activate('de')
 
         # fetches the correct Page using slug using default language
-        page = Page.objects.filter(slug='test-slug2-de').first()
+        page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
         self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
 
 
@@ -497,22 +513,6 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(child.url_path_en, '/child_en/')
 
         # We should retrieve grandchild with the below command:
-        # grandchild_new = models.TestSlugPage1.objects.get(id=grandchild.id)
-        # but it's exhibiting strange behaviour during tests. See:
-        # https://github.com/infoportugal/wagtail-modeltranslation/issues/103#issuecomment-352006610
-        grandchild_new = models.TestSlugPage1._default_manager.raw("""
-            SELECT page_ptr_id, url_path_en, url_path_de FROM {}
-            WHERE page_ptr_id=%s LIMIT 1
-        """.format(models.TestSlugPage1._meta.db_table), [grandchild.page_ptr_id])[0]
+        grandchild_new = models.TestSlugPage1.objects.get(id=grandchild.id)
         self.assertEqual(grandchild_new.url_path_en, '/child_en/grandchild1_en/')
         self.assertEqual(grandchild_new.url_path_de, '/child/grandchild1/')
-
-
-    def test_page_fields_tables(self):
-        from wagtail_modeltranslation.patch_wagtailadmin import WagtailTranslator
-
-        self.assertIn(models.TestSlugPage1, WagtailTranslator._patched_models)
-        self.assertIn('tests_testslugpage1', WagtailTranslator._page_fields_tables)
-        self.assertIn(models.TestSlugPage1Subclass, WagtailTranslator._patched_models)
-        self.assertNotIn('tests_testslugpage1subclass', WagtailTranslator._page_fields_tables)
-        self.assertNotIn('wagtailcore_page', WagtailTranslator._page_fields_tables)
