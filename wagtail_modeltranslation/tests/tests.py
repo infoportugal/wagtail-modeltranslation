@@ -88,7 +88,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # 5. makemigrations
                 from django.db import connections, DEFAULT_DB_ALIAS
-                call_command('makemigrations_translation', verbosity=2, interactive=False,
+                call_command('makemigrations', verbosity=2, interactive=False,
                              database=connections[DEFAULT_DB_ALIAS].alias)
 
                 # 6. Syncdb

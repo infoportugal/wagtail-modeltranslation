@@ -53,6 +53,7 @@ def runtests():
                 'wagtail.contrib.settings',
                 'wagtail.contrib.wagtailapi',
 
+                'wagtail_modeltranslation.makemigrations',
                 'wagtail_modeltranslation',
             ),
             # remove wagtailcore from serialization as translation columns have not been created at this point
