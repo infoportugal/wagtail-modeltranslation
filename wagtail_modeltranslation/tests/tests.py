@@ -468,13 +468,15 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
                          'page.body did not fallback to original language.')
 
     def test_set_url_path(self):
+        """
+        Assert translation URL Paths are correctly set in page and descendants for a slug change and
+        page move operations
+        """
         from wagtail.wagtailcore.models import Site
         # Create a test Site with a root page
-        root = models.TestRootPage(title='url paths', depth=1, path='0006', slug='url-path-slug')
-        root.save()
+        root = models.TestRootPage.objects.create(title='url paths', depth=1, path='0006', slug='url-path-slug')
 
-        site = Site(root_page=root)
-        site.save()
+        site = Site.objects.create(root_page=root)
 
         # Add children to the root
         child = root.add_child(
@@ -488,11 +490,13 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         )
         grandchild.save()
 
+        # check everything is as expected
         self.assertEqual(child.url_path_de, '/child/')
         self.assertEqual(child.url_path_en, '/child/')
         self.assertEqual(grandchild.url_path_de, '/child/grandchild/')
         self.assertEqual(grandchild.url_path_en, '/child/grandchild/')
 
+        # PAGE SLUG CHANGE
         grandchild.slug_de = 'grandchild1'
         grandchild.save()
 
@@ -512,10 +516,39 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(child.url_path_de, '/child/')
         self.assertEqual(child.url_path_en, '/child_en/')
 
-        # We should retrieve grandchild with the below command:
+        # Retrieve grandchild from DB:
         grandchild_new = models.TestSlugPage1.objects.get(id=grandchild.id)
         self.assertEqual(grandchild_new.url_path_en, '/child_en/grandchild1_en/')
         self.assertEqual(grandchild_new.url_path_de, '/child/grandchild1/')
+
+        # Add 2nd child to the root
+        child2 = root.add_child(
+            instance=models.TestSlugPage1(title='child2', slug='child2', depth=2, path='00060002')
+        )
+        child2.save()
+
+        # Add grandchildren
+        grandchild2 = child2.add_child(
+            instance=models.TestSlugPage1(title='grandchild2', slug='grandchild2', depth=3, path='000600020001')
+        )
+        grandchild2.save()
+
+        # PAGE MOVE
+        child2.move(child, pos='last-child')
+
+        # re-fetch child2 to confirm db fields have been updated
+        child2 = models.TestSlugPage1.objects.get(id=child2.id)
+
+        self.assertEqual(child2.depth, 3)
+        self.assertEqual(child2.get_parent().id, child.id)
+        self.assertEqual(child2.url_path_de, '/child/child2/')
+        self.assertEqual(child2.url_path_en, '/child_en/child2/')
+
+        # children of child2 should also have been updated
+        grandchild2 = child2.get_children().get(slug='grandchild2').specific
+        self.assertEqual(grandchild2.depth, 4)
+        self.assertEqual(grandchild2.url_path_de, '/child/child2/grandchild2/')
+        self.assertEqual(grandchild2.url_path_en, '/child_en/child2/grandchild2/')
 
     def test_fetch_translation_records(self):
         """
