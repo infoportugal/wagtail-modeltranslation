@@ -70,9 +70,8 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # Reload the patching class to update the imported translator
                 # in order to include the newly registered models
-                from wagtail_modeltranslation import patch_wagtailadmin, patch_wagtailcore
+                from wagtail_modeltranslation import patch_wagtailadmin
                 imp.reload(patch_wagtailadmin)
-                imp.reload(patch_wagtailcore)
 
                 # 3. Reset test models (because autodiscover have already run, those models
                 #    have translation fields, but for languages previously defined. We want
@@ -355,8 +354,11 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertRaises(ValidationError, child2.clean)
 
-    def test_slugurl(self):
-        from wagtail.wagtailcore.templatetags.wagtailcore_tags import slugurl
+    def test_slugurl_trans(self):
+        """
+        Assert tag slugurl_trans is immune to user's current language
+        """
+        from wagtail_modeltranslation.templatetags.wagtail_modeltranslation import slugurl_trans
         site_pages = {
             'model': models.TestRootPage,
             'kwargs': {'title': 'root slugurl', },
@@ -374,13 +376,15 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         setattr(request_mock, 'site', site)
         context = {'request': request_mock}
 
-        self.assertEqual(slugurl(context, 'root-slugurl'), '/de/')
-        self.assertEqual(slugurl(context, 'child-slugurl'), '/de/child-slugurl/')
+        self.assertEqual(slugurl_trans(context, 'root-slugurl'), '/de/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl'), '/de/child-slugurl/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/de/child-slugurl/')
 
         trans_real.activate('en')
 
-        self.assertEqual(slugurl(context, 'root-slugurl'), '/en/')
-        self.assertEqual(slugurl(context, 'child-slugurl'), '/en/child-slugurl-en/')
+        self.assertEqual(slugurl_trans(context, 'root-slugurl'), '/en/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl'), '/en/child-slugurl-en/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/en/child-slugurl-en/')
 
     def test_original_slug_update(self):
         from wagtail.wagtailcore.models import Page

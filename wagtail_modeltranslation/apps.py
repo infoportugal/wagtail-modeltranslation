@@ -19,6 +19,3 @@ class ModeltranslationConfig(AppConfig):
 
         from .patch_wagtailadmin import patch_wagtail_models
         patch_wagtail_models()
-
-        from .patch_wagtailcore import patch_wagtail_tags
-        patch_wagtail_tags()

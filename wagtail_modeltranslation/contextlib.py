@@ -2,12 +2,12 @@ from django.utils.translation import activate
 from modeltranslation.utils import get_language
 
 
-class set_language:
+class use_language:
     """
     Context manager to safely change language momentarily
 
     Usage:
-        with set_language('en'):
+        with use_language('en'):
             en_url = obj.get_absolute_url()
     """
     def __init__(self, lang):
