@@ -6,14 +6,16 @@ from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
+from .util import page_factory
 
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
 
 models = translation = None
-
+request_factory = RequestFactory()
 
 class dummy_context_mgr():
     def __enter__(self):
@@ -68,8 +70,9 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # Reload the patching class to update the imported translator
                 # in order to include the newly registered models
-                from wagtail_modeltranslation import patch_wagtailadmin
+                from wagtail_modeltranslation import patch_wagtailadmin, patch_wagtailcore
                 imp.reload(patch_wagtailadmin)
+                imp.reload(patch_wagtailcore)
 
                 # 3. Reset test models (because autodiscover have already run, those models
                 #    have translation fields, but for languages previously defined. We want
@@ -352,12 +355,38 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertRaises(ValidationError, child2.clean)
 
+    def test_slugurl(self):
+        from wagtail.wagtailcore.templatetags.wagtailcore_tags import slugurl
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root slugurl', },
+            'children': {
+                'child': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child slugurl', 'slug': 'child-slugurl', 'slug_en': 'child-slugurl-en'},
+                    'children': {},
+                },
+            },
+        }
+        site = page_factory.get_page_tree(site_pages)
+
+        request_mock = request_factory.get('/')
+        setattr(request_mock, 'site', site)
+        context = {'request': request_mock}
+
+        self.assertEqual(slugurl(context, 'root-slugurl'), '/de/')
+        self.assertEqual(slugurl(context, 'child-slugurl'), '/de/child-slugurl/')
+
+        trans_real.activate('en')
+
+        self.assertEqual(slugurl(context, 'root-slugurl'), '/en/')
+        self.assertEqual(slugurl(context, 'child-slugurl'), '/en/child-slugurl-en/')
+
     def test_original_slug_update(self):
         from wagtail.wagtailcore.models import Page
         # save the page in the default language
-        root = models.TestRootPage(title='original slug', title_de='originalschnecke', depth=1, path='0002',
-                                   slug_en='test-slug-en', slug_de='test-slug-de')
-        root.save()
+        root = models.TestRootPage.objects.create(title='original slug', title_de='originalschnecke', depth=1,
+                                                  path='0002', slug_en='test-slug-en', slug_de='test-slug-de')
 
         # some control checks, we don't expect any surprises here
         self.assertEqual(root.slug, 'test-slug-de', 'slug has the wrong value.')
@@ -393,8 +422,6 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # fetches the correct Page using slug using default language
         page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
         self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
-
-
 
     def test_relative_url(self):
         from wagtail.wagtailcore.models import Site
@@ -476,7 +503,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Create a test Site with a root page
         root = models.TestRootPage.objects.create(title='url paths', depth=1, path='0006', slug='url-path-slug')
 
-        site = Site.objects.create(root_page=root)
+        Site.objects.create(root_page=root)
 
         # Add children to the root
         child = root.add_child(
