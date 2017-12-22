@@ -51,7 +51,6 @@ class WagtailTranslator(object):
 
         WagtailTranslator._patched_models.append(model)
 
-
     def _patch_page_models(self, model):
         # PANEL PATCHING
 
@@ -106,7 +105,6 @@ class WagtailTranslator(object):
             pass
 
         # OVERRIDE PAGE METHODS
-        model.move = _new_move
         model.set_url_path = _new_set_url_path
         model.route = _new_route
         model.get_site_root_paths = _new_get_site_root_paths
@@ -114,9 +112,11 @@ class WagtailTranslator(object):
         model.url = _new_url
         _patch_clean(model)
 
+        if not model.move.__name__.startswith('localized'):
+            setattr(model, 'move', LocalizedMoveDescriptor(model.move))
+
         if not model.save.__name__.startswith('localized'):
-            descriptor = LocalizedSaveDescriptor(model.save)
-            setattr(model, 'save', descriptor)
+            setattr(model, 'save', LocalizedSaveDescriptor(model.save))
 
     def _patch_other_models(self, model):
         if hasattr(model, 'edit_handler'):
@@ -222,24 +222,6 @@ class WagtailTranslator(object):
         return panel
 
 # Overridden Page methods adapted to the translated fields
-
-@transaction.atomic  # only commit when all descendants are properly updated
-def _new_move(self, target, pos=None):
-    """
-    Extension to the treebeard 'move' method to ensure that url_path is updated too.
-    """
-    old_url_path = Page.objects.get(id=self.id).url_path
-    super(Page, self).move(target, pos=pos)
-    # treebeard's move method doesn't actually update the in-memory instance, so we need to work
-    # with a freshly loaded one now
-    # added .specific to use the most specific class so that url_paths are updated to all languages
-    new_self = Page.objects.get(id=self.id).specific
-    new_url_path = new_self.set_url_path(new_self.get_parent())
-    new_self.save()
-    new_self._update_descendant_url_paths(old_url_path, new_url_path)
-
-    # Log
-    logger.info("Page moved: \"%s\" id=%d path=%s", self.title, self.id, new_url_path)
 
 
 def _new_set_url_path(self, parent):
@@ -417,7 +399,11 @@ def _patch_clean(model):
     model.clean = clean
 
 
-def _localized_update_descendant_url_paths(self, old_url_path, new_url_path, language):
+def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language):
+    if old_url_path == new_url_path:
+        # nothing to do
+        return
+
     localized_url_path = build_localized_fieldname('url_path', language)
 
     cursor = connection.cursor()
@@ -445,7 +431,36 @@ def _localized_update_descendant_url_paths(self, old_url_path, new_url_path, lan
             SET {localized_url_path} = %s || substring({localized_url_path} from %s)
             WHERE path LIKE %s AND id <> %s
         """.format(localized_url_path=localized_url_path)
-    cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, self.path + '%', self.id])
+    cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, page.path + '%', page.id])
+
+
+def _new_update_descendant_url_paths(old_record, page):
+    # update children paths, must be done for all languages to ensure fallbacks are applied
+    default_localized_url_path = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
+    for language in mt_settings.AVAILABLE_LANGUAGES:
+        localized_url_path = build_localized_fieldname('url_path', language)
+        old_url_path = getattr(old_record, localized_url_path) or getattr(old_record, default_localized_url_path)
+        new_url_path = getattr(page, localized_url_path) or getattr(page, default_localized_url_path)
+        _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language)
+
+
+class LocalizedMoveDescriptor(object):
+    def __init__(self, f):
+        self.func = f
+        self.__name__ = 'localized_{}'.format(f.__name__)
+
+    @transaction.atomic  # only commit when all descendants are properly updated
+    def __call__(self, instance, *args, **kwargs):
+        # when moving pages ensure children localized paths have their URL Paths updated
+        old_record = instance.__class__.objects.get(id=instance.id)
+        result = self.func(instance, *args, **kwargs)
+        # treebeard's move method doesn't actually update the in-memory instance, so we need to reload it
+        new_instance = Page.objects.get(id=instance.id)
+        _new_update_descendant_url_paths(old_record, new_instance)
+        return result
+
+    def __get__(self, instance, owner=None):
+        return types.MethodType(self, instance) if instance else self
 
 
 class LocalizedSaveDescriptor(object):
@@ -453,12 +468,12 @@ class LocalizedSaveDescriptor(object):
         self.func = f
         self.__name__ = 'localized_{}'.format(f.__name__)
 
-    def __call__(self, *args, **kwargs):
+    @transaction.atomic  # only commit when all descendants are properly updated
+    def __call__(self, instance, *args, **kwargs):
         # when updating, save doesn't check if slug_xx has changed so it can only detect changes in slug
         # from current language. We need to ensure that if a given localized slug changes we call set_url_path
-        instance = args[0]
         if not instance.id:  # creating a record, wagtail will call set_url_path, nothing to do.
-            return self.func(*args, **kwargs)
+            return self.func(instance, *args, **kwargs)
 
         old_record = None
         changed_localized_slugs = []
@@ -475,14 +490,11 @@ class LocalizedSaveDescriptor(object):
         if len(changed_localized_slugs) > 1 or \
             (len(changed_localized_slugs) == 1 and changed_localized_slugs[0] != get_language()):
             instance.set_url_path(instance.get_parent())
-        result = self.func(*args, **kwargs)
+        result = self.func(instance, *args, **kwargs)
 
-        # update children paths
-        for language in changed_localized_slugs:
-            localized_url_path = build_localized_fieldname('url_path', language)
-            old_url_path = getattr(old_record, localized_url_path)
-            new_url_path = getattr(instance, localized_url_path)
-            _localized_update_descendant_url_paths(instance, old_url_path, new_url_path, language)
+        # update children localized paths if any language had it slug changed
+        if changed_localized_slugs:
+            _new_update_descendant_url_paths(old_record, instance)
 
         return result
 
