@@ -516,3 +516,23 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertIn(models.TestSlugPage1Subclass, WagtailTranslator._patched_models)
         self.assertNotIn('tests_testslugpage1subclass', WagtailTranslator._page_fields_tables)
         self.assertNotIn('wagtailcore_page', WagtailTranslator._page_fields_tables)
+
+    def test_fetch_translation_records(self):
+        """
+        Assert that saved translation fields are retrieved correctly
+        See: https://github.com/infoportugal/wagtail-modeltranslation/issues/103#issuecomment-352006610
+        """
+        page = models.StreamFieldPanelPage.objects.create(title_de='Fetch DE', title_en='Fetch EN',
+                                                          slug_de='fetch_de', slug_en='fetch_en',
+                                                          body_de=[('text', 'fetch de')], body_en=[('text', 'fetch en')],
+                                                          depth=1, path='0007')
+        page.save()
+
+        page_db = models.StreamFieldPanelPage.objects.get(id=page.id)
+
+        self.assertEqual(page_db.title_de, 'Fetch DE')
+        self.assertEqual(page_db.slug_de, 'fetch_de')
+        self.assertEqual(str(page_db.body_de), '<div class="block-text">fetch de</div>')
+        self.assertEqual(page_db.title_en, 'Fetch EN')
+        self.assertEqual(page_db.slug_en, 'fetch_en')
+        self.assertEqual(str(page_db.body_en), '<div class="block-text">fetch en</div>')
