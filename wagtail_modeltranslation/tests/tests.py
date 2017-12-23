@@ -581,6 +581,74 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(grandchild2.url_path_de, '/child/child2/grandchild2/')
         self.assertEqual(grandchild2.url_path_en, '/child_en/child2/grandchild2/')
 
+    def test_set_url_path_non_translated_descendants(self):
+        """
+        Assert set_url_path works correctly when a Page with untranslated children
+        has its translated slug changed.
+        """
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root untranslated',},
+            'children': {
+                'child': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child untranslated'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 untranslated'},
+                            'children': {
+                                'grandgrandchild': {
+                                    'model': models.TestSlugPage1,
+                                    'kwargs': {'title': 'grandgrandchild untranslated'},
+                                },
+                            },
+                        },
+                        'grandchild2': {
+                            'model': models.TestSlugPage2,
+                            'kwargs': {'title': 'grandchild2 untranslated'},
+                        },
+                    },
+                },
+            },
+        }
+        page_factory.get_page_tree(site_pages)
+
+        # Revert grandchild1 and grandgrandchild url_path_en to their initial untranslated states
+        # to simulate pages that haven't been translated yet
+        models.TestSlugPage1.objects.filter(slug_de__in=['grandchild1-untranslated', 'grandgrandchild-untranslated'])\
+            .rewrite(False).update(slug_en=None, url_path_en=None)
+
+        # re-fetch to pick up latest from DB
+        grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
+        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.slug_en, None)
+        self.assertEqual(grandchild1.url_path_en, None)
+        grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
+        self.assertEqual(grandgrandchild.url_path_de,
+                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+        self.assertEqual(grandgrandchild.slug_en, None)
+        self.assertEqual(grandgrandchild.url_path_en, None)
+
+        trans_real.activate('en')
+
+        child = site_pages['children']['child']['instance']
+        child.slug_en = 'child-translated'
+        child.save()
+
+        self.assertEqual(child.url_path_de, '/child-untranslated/')
+        self.assertEqual(child.url_path_en, '/child-translated/')
+
+        grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
+        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_en, '/child-translated/grandchild1-untranslated/')
+
+        grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
+        self.assertEqual(grandgrandchild.url_path_de,
+                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+        self.assertEqual(grandgrandchild.url_path_en,
+                         '/child-translated/grandchild1-untranslated/grandgrandchild-untranslated/')
+
     def test_fetch_translation_records(self):
         """
         Assert that saved translation fields are retrieved correctly
