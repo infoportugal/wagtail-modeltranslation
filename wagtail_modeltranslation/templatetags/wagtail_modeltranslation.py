@@ -12,7 +12,7 @@ from wagtail.wagtailcore.models import Page
 
 from modeltranslation.settings import DEFAULT_LANGUAGE
 
-from wagtail_modeltranslation.contextlib import use_language
+from ..contextlib import use_language
 
 register = template.Library()
 
