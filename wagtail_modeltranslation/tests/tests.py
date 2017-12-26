@@ -5,6 +5,7 @@ import django
 from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
+from django.http import HttpRequest
 from django.test import TestCase, TransactionTestCase
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
@@ -370,7 +371,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
                 },
             },
         }
-        site = page_factory.get_page_tree(site_pages)
+        site = page_factory.create_page_tree(site_pages)
 
         request_mock = request_factory.get('/')
         setattr(request_mock, 'site', site)
@@ -612,7 +613,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
                 },
             },
         }
-        page_factory.get_page_tree(site_pages)
+        page_factory.create_page_tree(site_pages)
 
         # Revert grandchild1 and grandgrandchild url_path_en to their initial untranslated states
         # to simulate pages that haven't been translated yet
@@ -668,3 +669,56 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(page_db.title_en, 'Fetch EN')
         self.assertEqual(page_db.slug_en, 'fetch_en')
         self.assertEqual(str(page_db.body_en), '<div class="block-text">fetch en</div>')
+
+    def check_route_request(self, root_page, components, expected_page):
+        request = HttpRequest()
+        request.path = '/' + '/'.join(components) + '/'
+        (found_page, args, kwargs) = root_page.route(request, components)
+        self.assertEqual(found_page, expected_page)
+
+    def test_request_routing(self):
+        """
+        Assert .route works for translated slugs
+        """
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root routing', },
+            'children': {
+                'child1': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child1 routing', 'slug_de': 'routing-de-01', 'slug_en': 'routing-en-01'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 routing',
+                                       'slug_de': 'routing-de-0101', 'slug_en': 'routing-en-0101'},
+                        },
+                    },
+                },
+                'child2': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child2 routing', 'slug': 'routing-de-02'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 routing', 'slug': 'routing-de-0201'},
+                        },
+                    },
+                },
+            },
+        }
+        page_factory.create_page_tree(site_pages)
+
+        root_page = site_pages['instance']
+        page_0101 = site_pages['children']['child1']['children']['grandchild1']['instance']
+        page_0201 = site_pages['children']['child2']['children']['grandchild1']['instance']
+
+        self.check_route_request(root_page, ['routing-de-01', 'routing-de-0101'], page_0101)
+        self.check_route_request(root_page, ['routing-de-02', 'routing-de-0201'], page_0201)
+
+        trans_real.activate('en')
+
+        # assert translated slugs fetch the correct page
+        self.check_route_request(root_page, ['routing-en-01', 'routing-en-0101'], page_0101)
+        # in the absence of translated slugs assert the default ones work
+        self.check_route_request(root_page, ['routing-de-02', 'routing-de-0201'], page_0201)
