@@ -5,9 +5,7 @@ from wagtail_modeltranslation.tests.models import TestRootPage, TestSlugPage1, T
     PatchTestSnippet, FieldPanelPage, ImageChooserPanelPage, FieldRowPanelPage, MultiFieldPanelPage, InlinePanelPage, \
     FieldPanelSnippet, ImageChooserPanelSnippet, FieldRowPanelSnippet, MultiFieldPanelSnippet, PageInlineModel, \
     BaseInlineModel, StreamFieldPanelPage, StreamFieldPanelSnippet, SnippetInlineModel, InlinePanelSnippet, \
-    TestSlugPage1Subclass
-
-from wagtail.wagtailcore.models import Page
+    TestSlugPage1Subclass, RoutablePageTest
 
 
 # Wagtail Models
@@ -107,3 +105,8 @@ class InlinePanelModelTranslationOptions(TranslationOptions):
 
 
 translator.register(InlinePanelSnippet, InlinePanelModelTranslationOptions)
+
+
+@register(RoutablePageTest)
+class RoutablePageTestTranslationOptions(TranslationOptions):
+    fields = ()

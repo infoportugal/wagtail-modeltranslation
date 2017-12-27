@@ -4,7 +4,6 @@ import logging
 import types
 
 from django.core.exceptions import ValidationError, FieldDoesNotExist
-from django.core.urlresolvers import reverse
 from django.db import transaction, connection
 from django.http import Http404
 from django.utils.translation import trans_real
@@ -17,7 +16,7 @@ from wagtail.contrib.settings.views import get_setting_edit_handler
 from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-from wagtail.wagtailcore.models import Page, Site
+from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField, StreamValue
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -107,9 +106,6 @@ class WagtailTranslator(object):
         # OVERRIDE PAGE METHODS
         model.set_url_path = _new_set_url_path
         model.route = _new_route
-        model.get_site_root_paths = _new_get_site_root_paths
-        model.relative_url = _new_relative_url
-        model.url = _new_url
         _patch_clean(model)
 
         if not model.save.__name__.startswith('localized'):
@@ -277,7 +273,7 @@ def _new_route(self, request, path_components):
 
         subpages = self.get_children()
         for page in subpages:
-            if page.specific.slug == child_slug:
+            if page.slug == child_slug:
                 return page.specific.route(request, remaining_components)
         raise Http404
 
@@ -287,61 +283,6 @@ def _new_route(self, request, path_components):
             return RouteResult(self)
         else:
             raise Http404
-
-
-@staticmethod
-def _new_get_site_root_paths():
-    """
-    Return a list of (root_path, root_url) tuples, most specific path first -
-    used to translate url_paths into actual URLs with hostnames
-
-    Same method as Site.get_site_root_paths() but without cache
-
-    TODO: remake this method with cache and think of his integration in
-    Site.get_site_root_paths()
-    """
-    result = [
-        (site.id, site.root_page.specific.url_path, site.root_url)
-        for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
-    ]
-
-    return result
-
-
-def _new_relative_url(self, current_site):
-    """
-    Return the 'most appropriate' URL for this page taking into account the site we're currently on;
-    a local URL if the site matches, or a fully qualified one otherwise.
-    Return None if the page is not routable.
-
-    Override for using custom get_site_root_paths() instead of
-    Site.get_site_root_paths()
-    """
-    for (id, root_path, root_url) in self.get_site_root_paths():
-        if self.url_path.startswith(root_path):
-            return ('' if current_site.id == id else root_url) + reverse('wagtail_serve',
-                                                                         args=(self.specific.url_path[len(root_path):],))
-
-
-@property
-def _new_url(self):
-    """
-    Return the 'most appropriate' URL for referring to this page from the pages we serve,
-    within the Wagtail backend and actual website templates;
-    this is the local URL (starting with '/') if we're only running a single site
-    (i.e. we know that whatever the current page is being served from, this link will be on the
-    same domain), and the full URL (with domain) if not.
-    Return None if the page is not routable.
-
-    Override for using custom get_site_root_paths() instead of
-    Site.get_site_root_paths()
-    """
-    root_paths = self.get_site_root_paths()
-
-    for (id, root_path, root_url) in root_paths:
-        if self.url_path.startswith(root_path):
-            return ('' if len(root_paths) == 1 else root_url) + reverse(
-                'wagtail_serve', args=(self.url_path[len(root_path):],))
 
 
 def _validate_slugs(page):
@@ -358,7 +299,7 @@ def _validate_slugs(page):
     # Save the current active language
     current_language = get_language()
 
-    siblings = page.get_siblings(inclusive=False).specific()
+    siblings = page.get_siblings(inclusive=False)
 
     errors = {}
 
@@ -371,7 +312,7 @@ def _validate_slugs(page):
 
         siblings_slugs = [sibling.slug for sibling in siblings]
 
-        if page.specific.slug in siblings_slugs:
+        if page.slug in siblings_slugs:
             errors[build_localized_fieldname('slug', language)] = _("This slug is already in use")
 
     # Re-enable the original language

@@ -10,7 +10,7 @@ class PageFactory(object):
         self.root_path += 1
         return self.root_path
 
-    def get_page_tree(self, nodes=None):
+    def create_page_tree(self, nodes=None):
         """
         Creates a page tree with a dict of page nodes following the below structure:
          {
@@ -28,12 +28,15 @@ class PageFactory(object):
         },
 
         :param nodes: representing a page tree
-        :return:
+        :return: site
         """
         if not nodes:
             return None
 
-        return self.create_instance(nodes)
+        from wagtail.wagtailcore.models import Site
+        root_node = self.create_instance(nodes)
+        site = Site.objects.create(root_page=root_node)
+        return site
 
     def create_instance(self, node, parent=None, order=None):
         if parent:
@@ -51,11 +54,8 @@ class PageFactory(object):
         if parent:
             node_page = parent.add_child(instance=node['model'](*args, **kwargs))
             node_page.save()
-            site = None
         else:
-            from wagtail.wagtailcore.models import Site
             node_page = node['model'].objects.create(*args, **kwargs)
-            site = Site.objects.create(root_page=node_page)
 
         node_page.save_revision().publish()
         node['instance'] = node_page
@@ -63,7 +63,7 @@ class PageFactory(object):
         for n, child in enumerate(node.get('children', {}).values()):
             self.create_instance(child, node_page, n+1)
 
-        return site
+        return node_page
 
 
 page_factory = PageFactory()

@@ -1,6 +1,8 @@
 # coding: utf-8
 from django.db import models
+from django.http import HttpResponse
 from modelcluster.fields import ParentalKey
+from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin, route
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
 from wagtail.wagtailcore import blocks
 from wagtail.wagtailcore.fields import StreamField
@@ -24,8 +26,10 @@ class TestSlugPage1(WagtailPage):
 class TestSlugPage2(WagtailPage):
     pass
 
+
 class TestSlugPage1Subclass(TestSlugPage1):
     pass
+
 
 class PatchTestPage(WagtailPage):
     description = models.CharField(max_length=50)
@@ -193,3 +197,13 @@ class InlinePanelPage(WagtailPage):
     content_panels = [
         InlinePanel('related_page_model')
     ]
+
+
+class RoutablePageTest(RoutablePageMixin, WagtailPage):
+    @route(r'^archive/year/1984/$')
+    def archive_for_1984(self, request):
+        return HttpResponse("we were always at war with eastasia")
+
+    @route(r'^archive/year/(\d+)/$')
+    def archive_by_year(self, request, year):
+        return HttpResponse("ARCHIVE BY YEAR: " + str(year))
