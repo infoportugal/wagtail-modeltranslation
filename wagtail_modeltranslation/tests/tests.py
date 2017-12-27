@@ -705,6 +705,18 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
                         },
                     },
                 },
+                'routable_page': {
+                    'model': models.RoutablePageTest,
+                    'kwargs': {'title': 'Routable Page', 'live': True,
+                               'slug_de': 'routing-de-03', 'slug_en': 'routing-en-03'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 routing',
+                                       'slug_de': 'routing-de-0301', 'slug_en': 'routing-en-0301'},
+                        },
+                    },
+                },
             },
         }
         page_factory.create_page_tree(site_pages)
@@ -712,9 +724,18 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         root_page = site_pages['instance']
         page_0101 = site_pages['children']['child1']['children']['grandchild1']['instance']
         page_0201 = site_pages['children']['child2']['children']['grandchild1']['instance']
+        page_0301 = site_pages['children']['routable_page']['children']['grandchild1']['instance']
 
         self.check_route_request(root_page, ['routing-de-01', 'routing-de-0101'], page_0101)
         self.check_route_request(root_page, ['routing-de-02', 'routing-de-0201'], page_0201)
+
+        # routable page test
+        routable_page = site_pages['children']['routable_page']['instance']
+        view, args, kwargs = routable_page.resolve_subpage('/archive/year/2014/')
+        self.assertEqual(view, routable_page.archive_by_year)
+        self.assertEqual(args, ('2014',))
+        self.assertEqual(kwargs, {})
+        self.check_route_request(root_page, ['routing-de-03', 'routing-de-0301'], page_0301)
 
         trans_real.activate('en')
 
@@ -722,3 +743,9 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.check_route_request(root_page, ['routing-en-01', 'routing-en-0101'], page_0101)
         # in the absence of translated slugs assert the default ones work
         self.check_route_request(root_page, ['routing-de-02', 'routing-de-0201'], page_0201)
+
+        view, args, kwargs = routable_page.resolve_subpage('/archive/year/2014/')
+        self.assertEqual(view, routable_page.archive_by_year)
+        self.assertEqual(args, ('2014',))
+        self.assertEqual(kwargs, {})
+        self.check_route_request(root_page, ['routing-en-03', 'routing-en-0301'], page_0301)
