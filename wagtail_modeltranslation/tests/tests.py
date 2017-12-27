@@ -589,7 +589,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         """
         site_pages = {
             'model': models.TestRootPage,
-            'kwargs': {'title': 'root untranslated',},
+            'kwargs': {'title': 'root untranslated', },
             'children': {
                 'child': {
                     'model': models.TestSlugPage1,
@@ -749,3 +749,65 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(args, ('2014',))
         self.assertEqual(kwargs, {})
         self.check_route_request(root_page, ['routing-en-03', 'routing-en-0301'], page_0301)
+
+    def test_get_url_parts(self):
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root URL parts', },
+            'children': {
+                'child1': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child1 URL parts', 'slug_de': 'url-parts-de-01', 'slug_en': 'url-parts-en-01'},
+                },
+                'child2': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child2 URL parts', 'slug': 'url-parts-de-02'},
+                },
+            },
+        }
+        site = page_factory.create_page_tree(site_pages)
+
+        root_page = site_pages['instance']
+        page_01 = site_pages['children']['child1']['instance']
+        page_02 = site_pages['children']['child2']['instance']
+
+        self.assertEqual(root_page.relative_url(site), '/de/')
+        self.assertEqual(page_01.relative_url(site), '/de/url-parts-de-01/')
+        self.assertEqual(page_02.relative_url(site), '/de/url-parts-de-02/')
+
+        trans_real.activate('en')
+
+        self.assertEqual(root_page.relative_url(site), '/en/')
+        self.assertEqual(page_01.relative_url(site), '/en/url-parts-en-01/')
+        self.assertEqual(page_02.relative_url(site), '/en/url-parts-de-02/')
+
+    def test_url(self):
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root URL', },
+            'children': {
+                'child1': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child1 URL', 'slug_de': 'url-de-01', 'slug_en': 'url-en-01'},
+                },
+                'child2': {
+                    'model': models.TestSlugPage2,
+                    'kwargs': {'title': 'child2 URL', 'slug': 'url-de-02'},
+                },
+            },
+        }
+        page_factory.create_page_tree(site_pages)
+
+        root_page = site_pages['instance']
+        page_01 = site_pages['children']['child1']['instance']
+        page_02 = site_pages['children']['child2']['instance']
+
+        self.assertEqual(root_page.url, '/de/')
+        self.assertEqual(page_01.url, '/de/url-de-01/')
+        self.assertEqual(page_02.url, '/de/url-de-02/')
+
+        trans_real.activate('en')
+
+        self.assertEqual(root_page.url, '/en/')
+        self.assertEqual(page_01.url, '/en/url-en-01/')
+        self.assertEqual(page_02.url, '/en/url-de-02/')
