@@ -88,16 +88,16 @@ To setup the application please follow these steps:
    When the LANGUAGES setting isn't present in ``settings/base.py`` (and neither is ``MODELTRANSLATION_LANGUAGES``), it defaults to Django's  global LANGUAGES setting instead, and there are quite a few languages in the default!
 
 
-2. Create a ``translation.py`` file in your app directory and register ``WagtailTranslationOptions`` for every model you want to translate.
+2. Create a ``translation.py`` file in your app directory and register ``TranslationOptions`` for every model you want to translate.
 
 .. code-block:: console
 
    from .models import foo
-   from wagtail_modeltranslation.translator import WagtailTranslationOptions
+   from modeltranslation.translator import TranslationOptions
    from wagtail_modeltranslation.translation import register
 
    @register(foo)
-   class FooTR(WagtailTranslationOptions):
+   class FooTR(TranslationOptions):
        fields = (
           'body',
        )
@@ -106,4 +106,4 @@ To setup the application please follow these steps:
 3. Run ``python manage.py makemigrations`` followed by ``python manage.py migrate``. This will add extra fields in the database.
 
 
-4. Define the panels for the original fields, as you normally would, as wagtail-modeltranslation would generate the panels for the translated fields.
+4. Define the panels for the original fields, as you normally would, as wagtail-modeltranslation will generate the panels for the translated fields.

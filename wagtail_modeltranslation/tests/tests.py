@@ -55,14 +55,13 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # reload the translation module to register the Page model
                 # and also edit_handlers so any patches made to Page are reapplied
-                from wagtail_modeltranslation import translation as wag_translation, translator as wag_translator
+                from wagtail_modeltranslation import translation as wag_translation
                 from wagtail.wagtailadmin import edit_handlers
                 import sys
                 del cls.cache.all_models['wagtailcore']
                 sys.modules.pop('wagtail_modeltranslation.translation.pagetr', None)
                 sys.modules.pop('wagtail.wagtailcore.models', None)
                 imp.reload(wag_translation)
-                imp.reload(wag_translator)
                 imp.reload(edit_handlers)  # so Page can be repatched by edit_handlers
                 wagtailcore_args = []
                 if django.VERSION < (1, 11):

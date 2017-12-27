@@ -9,14 +9,14 @@ Registering models for translation
 Registering models and their fields used for translation requires the following steps:
 
 1. Create **translation.py** in your app directory.
-2. Define the models you want to use, import wagtail-modeltranslation's **WagtailTranslationOptions** and the django-modeltranslation **register** decorator
+2. Define the models you want to use, import django-modeltranslation's **TranslationOptions** and the django-modeltranslation **register** decorator
 3. Create a translation option class for every model you want to translate and precede the class with the **@register** decorator.
 
 The django-modeltranslation application reads the **translation.py** file in your app directory thereby triggering the registration
 of the translation options found in the file.
 
 A translation option is a class that declares which model fields are needed for translation. The class must derive from
-**wagtail_modeltranslation.translator.WagtailTranslationOptions** and it must provide a **field** attribute storing the list of
+**modeltranslation.translator.TranslationOptions** and it must provide a **field** attribute storing the list of
 field names. The option class must be registered with the **modeltranslation.decorators.register** instance.
 
 To illustrate this let's have a look at a simple example using a **Foo** model. The example only contains an **introduction**
@@ -27,11 +27,11 @@ Instead of a **Foo** model, this could be any Wagtail model class:
 .. code-block:: console
 
    from .models import Foo
-   from wagtail_modeltranslation.translation import WagtailTranslationOptions
+   from modeltranslation.translator import TranslationOptions
    from modeltranslation.decorators import register
 
    @register(Foo)
-   class FooTR(WagtailTranslationOptions):
+   class FooTR(TranslationOptions):
        fields = (
            'introduction',
            'body',
@@ -96,8 +96,8 @@ Committing fields to database
 Modeltranslation supports the migration system introduced by Django 1.7. Besides the normal workflow as described in Django's
 `Migration Docs <https://docs.djangoproject.com/en/1.8/topics/migrations/>`__, you should do a migration whenever one of the following changes have been made to your project:
 
-- Added or removed a language through ``settings.LANGUAGES`` or   ``settings.MODELTRANSLATION LANGUAGES``.
-- Registered or unregistered a field through ``WagtailTranslationOptions``.
+- Added or removed a language through ``settings.LANGUAGES`` or ``settings.MODELTRANSLATION LANGUAGES``.
+- Registered or unregistered a field through ``TranslationOptions``.
 
 It doesn't matter if you are starting a fresh project or change an existing one, it's always:
 
@@ -105,6 +105,8 @@ It doesn't matter if you are starting a fresh project or change an existing one,
    the added or removed fields.
 
 2. ``python manage.py migrate`` to apply the changes.
+
+3. If you've added a new language ``python manage.py sync_page_translation_fields`` to add `Page` translation fields.
 
 
 .. _required_langs:
