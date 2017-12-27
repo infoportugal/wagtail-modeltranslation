@@ -4,7 +4,6 @@ import logging
 import types
 
 from django.core.exceptions import ValidationError, FieldDoesNotExist
-from django.core.urlresolvers import reverse
 from django.db import transaction, connection
 from django.http import Http404
 from django.utils.translation import trans_real
@@ -17,7 +16,7 @@ from wagtail.contrib.settings.views import get_setting_edit_handler
 from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
     MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-from wagtail.wagtailcore.models import Page, Site
+from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField, StreamValue
 from wagtail.wagtailcore.url_routing import RouteResult
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -300,7 +299,7 @@ def _validate_slugs(page):
     # Save the current active language
     current_language = get_language()
 
-    siblings = page.get_siblings(inclusive=False).specific()
+    siblings = page.get_siblings(inclusive=False)
 
     errors = {}
 
@@ -313,7 +312,7 @@ def _validate_slugs(page):
 
         siblings_slugs = [sibling.slug for sibling in siblings]
 
-        if page.specific.slug in siblings_slugs:
+        if page.slug in siblings_slugs:
             errors[build_localized_fieldname('slug', language)] = _("This slug is already in use")
 
     # Re-enable the original language
