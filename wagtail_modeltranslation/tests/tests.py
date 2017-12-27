@@ -352,7 +352,11 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         # Make the slug equal to test if the duplicate is detected
         child2.slug_de = 'child'
+        self.assertRaises(ValidationError, child2.clean)
+        child2.slug_de = 'child-2'
 
+        # Make the translated slug equal to test if the duplicate is detected
+        child2.slug_en = 'child-en'
         self.assertRaises(ValidationError, child2.clean)
 
     def test_slugurl_trans(self):
