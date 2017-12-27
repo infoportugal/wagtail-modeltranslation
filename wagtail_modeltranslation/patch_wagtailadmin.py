@@ -277,7 +277,7 @@ def _new_route(self, request, path_components):
 
         subpages = self.get_children()
         for page in subpages:
-            if page.specific.slug == child_slug:
+            if page.slug == child_slug:
                 return page.specific.route(request, remaining_components)
         raise Http404
 
