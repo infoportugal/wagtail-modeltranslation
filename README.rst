@@ -35,6 +35,15 @@ Features
 - StreamFields are now supported!
 
 
+Caveat
+======
+
+:code:`wagtail-modeltranslation` patches Wagtail's :code:`Page` model with translations fields
+:code:`title_xx`, :code:`slug_xx`, :code:`seo_title_xx`, :code:`search_description_xx` and :code:`url_path_xx` where "xx" represents the language code for each translated language. This
+is done without migrations through command :code:`sync_page_translation_fields`. Since :code:`Page` model belongs to
+Wagtail it's within the realm of possibility that one day Wagtail may add a conflicting field to :code:`Page` thus interfering with :code:`wagtail-modeltranslation`.
+
+
 Quick start
 ===========
 
