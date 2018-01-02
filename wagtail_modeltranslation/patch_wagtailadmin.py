@@ -5,6 +5,7 @@ import types
 
 from django.core.exceptions import ValidationError, FieldDoesNotExist
 from django.db import transaction, connection
+from django.db.models import Q
 from django.http import Http404
 from django.utils.translation import trans_real
 from django.utils.translation import ugettext_lazy as _
@@ -376,6 +377,7 @@ def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, lan
 
 def _new_update_descendant_url_paths(old_record, page):
     # update children paths, must be done for all languages to ensure fallbacks are applied
+    languages_changed = []
     default_localized_url_path = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
     for language in mt_settings.AVAILABLE_LANGUAGES:
         localized_url_path = build_localized_fieldname('url_path', language)
@@ -386,17 +388,32 @@ def _new_update_descendant_url_paths(old_record, page):
             # nothing to do
             continue
 
+        languages_changed.append(language)
         _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language)
-        update_untranslated_descendants_url_paths(page, language)
+
+    update_untranslated_descendants_url_paths(page, languages_changed)
 
 
-def update_untranslated_descendants_url_paths(page, language):
-    localized_url_path = build_localized_fieldname('url_path', language)
+def update_untranslated_descendants_url_paths(page, languages_changed):
+    """
+    Updates localized URL Paths for child pages that don't have their localized URL Paths set yet
+    """
+    if not languages_changed:
+        return
+
+    condition = Q()
+    update_fields = []
+    for language in languages_changed:
+        localized_url_path = build_localized_fieldname('url_path', language)
+        condition |= Q(**{localized_url_path: None})
+        update_fields.append(localized_url_path)
+
     # let's restrict the query to children who don't have localized_url_path set yet
-    children = page.get_children().filter(**{localized_url_path: None})
+    children = page.get_children().filter(condition)
     for child in children:
-        _localized_set_url_path(child, page, language)
-        child.save(update_fields=[localized_url_path])  # this will trigger any required saves downstream
+        for language in languages_changed:
+            _localized_set_url_path(child, page, language)
+        child.save(update_fields=update_fields)  # this will trigger any required saves downstream
 
 
 class LocalizedSaveDescriptor(object):
