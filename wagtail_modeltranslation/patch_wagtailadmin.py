@@ -217,6 +217,32 @@ class WagtailTranslator(object):
 # Overridden Page methods adapted to the translated fields
 
 
+def _localized_set_url_path(page, parent, language):
+    """
+    Updates a localized url_path for a given language
+    """
+    localized_slug_field = build_localized_fieldname('slug', language)
+    default_localized_slug_field = build_localized_fieldname('slug', mt_settings.DEFAULT_LANGUAGE)
+    localized_url_path_field = build_localized_fieldname('url_path', language)
+    default_localized_url_path_field = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
+
+    if parent:
+        # Emulate the default behavior of django-modeltranslation to get the slug and url path
+        # for the current language. If the value for the current language is invalid we get the one
+        # for the default fallback language
+        slug = getattr(page, localized_slug_field, None) or \
+               getattr(page, default_localized_slug_field, None) or page.slug
+        parent_url_path = getattr(parent, localized_url_path_field, None) or \
+                          getattr(parent, default_localized_url_path_field, None) or parent.url_path
+
+        setattr(page, localized_url_path_field, parent_url_path + slug + '/')
+
+    else:
+        # a page without a parent is the tree root,
+        # which always has a url_path of '/'
+        setattr(page, localized_url_path_field, '/')
+
+
 def _new_set_url_path(self, parent):
     """
     This method override populates url_path for each specified language.
@@ -224,26 +250,7 @@ def _new_set_url_path(self, parent):
     by page slug.
     """
     for language in mt_settings.AVAILABLE_LANGUAGES:
-        localized_slug_field = build_localized_fieldname('slug', language)
-        default_localized_slug_field = build_localized_fieldname('slug', mt_settings.DEFAULT_LANGUAGE)
-        localized_url_path_field = build_localized_fieldname('url_path', language)
-        default_localized_url_path_field = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
-
-        if parent:
-            # Emulate the default behavior of django-modeltranslation to get the slug and url path
-            # for the current language. If the value for the current language is invalid we get the one
-            # for the default fallback language
-            slug = getattr(self, localized_slug_field, None) or \
-                   getattr(self, default_localized_slug_field, None) or self.slug
-            parent_url_path = getattr(parent, localized_url_path_field, None) or \
-                              getattr(parent, default_localized_url_path_field, None) or parent.url_path
-
-            setattr(self, localized_url_path_field, parent_url_path + slug + '/')
-
-        else:
-            # a page without a parent is the tree root,
-            # which always has a url_path of '/'
-            setattr(self, localized_url_path_field, '/')
+        _localized_set_url_path(self, parent, language)
 
     return self.url_path
 
@@ -388,8 +395,8 @@ def update_untranslated_descendants_url_paths(page, language):
     # let's restrict the query to children who don't have localized_url_path set yet
     children = page.get_children().filter(**{localized_url_path: None})
     for child in children:
-        child.set_url_path(page)
-        child.save()  # this will trigger any required saves downstream
+        _localized_set_url_path(child, page, language)
+        child.save(update_fields=[localized_url_path])  # this will trigger any required saves downstream
 
 
 class LocalizedSaveDescriptor(object):
@@ -405,35 +412,35 @@ class LocalizedSaveDescriptor(object):
             return self.func(instance, *args, **kwargs)
 
         old_record = None
-        changed_localized_slugs = []
-        changed_localized_url_path = False
+        change_url_path = change_descendant_url_path = False
         for language in mt_settings.AVAILABLE_LANGUAGES:
             localized_slug = build_localized_fieldname('slug', language)
-            localized_url_path = build_localized_fieldname('url_path', language)
             # similar logic used in save
             if not ('update_fields' in kwargs and localized_slug not in kwargs['update_fields']):
-                old_record = old_record or instance.__class__.objects.get(id=instance.id)
+                old_record = old_record or Page.objects.get(id=instance.id)
                 if getattr(old_record, localized_slug) != getattr(instance, localized_slug):
-                    changed_localized_slugs.append(language)
-                    continue
+                    change_descendant_url_path = True
+                    if language != get_language():
+                        change_url_path = True
+                        break
 
-                # untranslated pages may have have their url_path_xx changed upstream
-                # when a parent has its slug_xx changed. If that's the case let's
-                # propagate the change to children
-                if not getattr(instance, localized_slug) and \
-                        getattr(old_record, localized_url_path) != getattr(instance, localized_url_path):
-                    changed_localized_url_path = True
+            # Pages may have have their url_path_xx changed upstream when a parent has its url_path changed.
+            # If that's the case let's propagate the change to children
+            if not change_descendant_url_path:
+                localized_url_path = build_localized_fieldname('url_path', language)
+                if not ('update_fields' in kwargs and localized_url_path not in kwargs['update_fields']):
+                    old_record = old_record or Page.objects.get(id=instance.id)
+                    if getattr(old_record, localized_url_path) != getattr(instance, localized_url_path):
+                        change_descendant_url_path = True
 
-        # if any language other than current language had it slug changed
-        # we'll execute set_url_path
-        if len(changed_localized_slugs) > 1 or \
-            (len(changed_localized_slugs) == 1 and changed_localized_slugs[0] != get_language()):
+        # if any language other than current language had it slug changed set_url_path will be executed
+        if change_url_path:
             instance.set_url_path(instance.get_parent())
 
         result = self.func(instance, *args, **kwargs)
 
         # update children localized paths if any language had it slug changed
-        if changed_localized_slugs or changed_localized_url_path:
+        if change_descendant_url_path:
             _new_update_descendant_url_paths(old_record, instance)
 
         return result
