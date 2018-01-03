@@ -814,3 +814,92 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(root_page.url, '/en/')
         self.assertEqual(page_01.url, '/en/url-en-01/')
         self.assertEqual(page_02.url, '/en/url-de-02/')
+
+    def test_set_translation_url_paths_command(self):
+        """
+        Assert set_translation_url_paths management command works correctly
+        """
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root untranslated', },
+            'children': {
+                'child': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child untranslated'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 untranslated'},
+                            'children': {
+                                'grandgrandchild': {
+                                    'model': models.TestSlugPage1,
+                                    'kwargs': {'title': 'grandgrandchild untranslated'},
+                                },
+                            },
+                        },
+                        'grandchild2': {
+                            'model': models.TestSlugPage2,
+                            'kwargs': {'title': 'grandchild2 untranslated'},
+                        },
+                    },
+                },
+                'child2': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child2 translated', 'slug_en': 'child2-translated-en'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 translated', 'slug_en': 'grandchild1-translated-en'},
+                            'children': {
+                                'grandgrandchild': {
+                                    'model': models.TestSlugPage1,
+                                    'kwargs': {'title': 'grandgrandchild1 translated',
+                                               'slug_en': 'grandgrandchild1-translated-en'},
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+        }
+        page_factory.create_page_tree(site_pages)
+
+        # Revert grandchild1 and grandgrandchild url_path_en to their initial untranslated states
+        # to simulate pages that haven't been translated yet
+        models.TestSlugPage1.objects.filter(slug_de__in=['grandchild1-untranslated', 'grandgrandchild-untranslated']) \
+            .rewrite(False).update(slug_en=None, url_path_en=None)
+
+        # re-fetch to pick up latest from DB
+        grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
+        self.assertEqual(grandchild1.url_path_en, None)
+        grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
+        self.assertEqual(grandgrandchild.url_path_en, None)
+
+        # change grandchild2 url_path to corrupt it in order to simulate Wagtail's 0.7 corruption bug:
+        # http://docs.wagtail.io/en/latest/releases/0.8.html#corrupted-url-paths-may-need-fixing
+        models.TestSlugPage2.objects.filter(slug_de__in=['grandchild2-untranslated',]) \
+            .rewrite(False).update(url_path='corrupted', url_path_de='corrupted')
+
+        grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
+        self.assertEqual(grandchild2.__dict__['url_path'], 'corrupted')
+
+        call_command('set_translation_url_paths', verbosity=0)
+
+        grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
+        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_en, '/child-untranslated/grandchild1-untranslated/')
+        grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
+        self.assertEqual(grandgrandchild.url_path_de,
+                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+        self.assertEqual(grandgrandchild.url_path_en,
+                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+        grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
+        self.assertEqual(grandchild2.__dict__['url_path'], '/child-untranslated/grandchild2-untranslated/')
+        self.assertEqual(grandchild2.url_path_de, '/child-untranslated/grandchild2-untranslated/')
+        self.assertEqual(grandchild2.url_path_en, '/child-untranslated/grandchild2-untranslated/')
+
+        grandgrandchild_translated = models.TestSlugPage1.objects.get(slug_de='grandgrandchild1-translated')
+        self.assertEqual(grandgrandchild_translated.url_path_de,
+                         '/child2-translated/grandchild1-translated/grandgrandchild1-translated/')
+        self.assertEqual(grandgrandchild_translated.url_path_en,
+                         '/child2-translated-en/grandchild1-translated-en/grandgrandchild1-translated-en/')
