@@ -7,6 +7,9 @@ from django.core.urlresolvers import resolve
 from django.utils.translation import activate, get_language
 from six import iteritems
 
+from modeltranslation import settings as mt_settings
+
+
 register = template.Library()
 
 
@@ -43,3 +46,39 @@ def change_lang(context, lang=None, *args, **kwargs):
             return translated_url
 
     return ''
+
+
+class GetAvailableLanguagesNode(template.Node):
+    """Get available languages."""
+
+    def __init__(self, variable):
+        self.variable = variable
+
+    def render(self, context):
+        """Rendering."""
+        context[self.variable] = mt_settings.AVAILABLE_LANGUAGES
+        return ''
+
+
+@register.tag('get_available_languages_wmt')
+def do_get_available_languages(unused_parser, token):
+    """
+    Store a list of available languages in the context.
+
+    Usage::
+
+        {% get_available_languages_wmt as languages %}
+        {% for language in languages %}
+        ...
+        {% endfor %}
+
+    This will just pull the MODELTRANSLATION_LANGUAGES (or LANGUAGES) setting
+    from your setting file (or the default settings) and
+    put it into the named variable.
+    """
+    args = token.contents.split()
+    if len(args) != 3 or args[1] != 'as':
+        raise template.TemplateSyntaxError(
+            "'get_available_languages_wmt' requires 'as variable' "
+            "(got %r)" % args)
+    return GetAvailableLanguagesNode(args[2])

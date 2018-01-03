@@ -31,3 +31,7 @@ nosetests.xml
 
 # Sphinx
 _build
+
+# vim
+*~
+*.swp
