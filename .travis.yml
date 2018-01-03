@@ -15,6 +15,6 @@ install:
   - pip install --upgrade -q pip setuptools
   - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then pip install 'Django>=1.8,<1.9'; fi
   - pip install -q $WAGTAIL
-  - pip install -e .
+  - pip install --process-dependency-links -e .
 script:
   - ./runtests.py
