@@ -3,7 +3,7 @@ import copy
 import logging
 import types
 
-from django.core.exceptions import ValidationError, FieldDoesNotExist
+from django.core.exceptions import ValidationError
 from django.db import transaction, connection
 from django.db.models import Q
 from django.http import Http404
@@ -25,7 +25,7 @@ from wagtail.wagtailsearch.index import SearchField
 from wagtail.wagtailsnippets.models import get_snippet_models
 from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, ORIGINAL_SLUG_LANGUAGE
+from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
 logger = logging.getLogger('wagtail.core')
@@ -96,13 +96,6 @@ class WagtailTranslator(object):
             if isinstance(field, StreamField) and field.name in translation_registered_fields:
                 descriptor = getattr(model, field.name)
                 _patch_stream_field_meaningful_value(descriptor)
-
-        # SLUG FIELD PATCHING
-        try:
-            slug_field = model._meta.get_field('slug')
-            _patch_pre_save(slug_field)
-        except FieldDoesNotExist:
-            pass
 
         # OVERRIDE PAGE METHODS
         model.set_url_path = _new_set_url_path
@@ -478,30 +471,6 @@ def _patch_stream_field_meaningful_value(field):
         return old_meaningful_value(self, val, undefined)
 
     field.meaningful_value = meaningful_value.__get__(field)
-
-
-def _patch_pre_save(field):
-    if not ORIGINAL_SLUG_LANGUAGE:
-        return
-
-    if ORIGINAL_SLUG_LANGUAGE == 'default':
-        reference_slug_language = mt_settings.DEFAULT_LANGUAGE
-    else:
-        reference_slug_language = ORIGINAL_SLUG_LANGUAGE
-
-    def pre_save(self, model_instance, add):
-        """
-        Returns slug field's value using the language set by `WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE`
-        just before saving.
-        """
-        current_language = get_language()
-        # using ORIGINAL_SLUG_LANGUAGE makes Page's slug value consistent
-        trans_real.activate(reference_slug_language)
-        value = getattr(model_instance, self.attname)
-        trans_real.activate(current_language)
-        return value
-
-    field.pre_save = pre_save.__get__(field)
 
 
 def patch_wagtail_models():
