@@ -335,7 +335,7 @@ def _new_get_site_root_paths():
     return result
 
 
-def _new_relative_url(self, current_site):
+def _new_relative_url(self, current_site, request=None):
     """
     Return the 'most appropriate' URL for this page taking into account the site we're currently on;
     a local URL if the site matches, or a fully qualified one otherwise.
