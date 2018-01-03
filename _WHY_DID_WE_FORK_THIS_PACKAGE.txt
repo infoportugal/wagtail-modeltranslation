@@ -1,0 +1,2 @@
+* Because we need AbstractEmailForm in WagtailTranslationOptions
+* Because the patched relative_url method needs a request parameter at Wagtail 1.13 or newer
