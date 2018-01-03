@@ -881,7 +881,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
             .rewrite(False).update(url_path='corrupted', url_path_de='corrupted')
 
         grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
-        self.assertEqual(grandchild2.url_path, 'corrupted')
+        self.assertEqual(grandchild2.__dict__['url_path'], 'corrupted')
 
         call_command('set_translation_url_paths', verbosity=0)
 
@@ -894,6 +894,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(grandgrandchild.url_path_en,
                          '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
         grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
+        self.assertEqual(grandchild2.__dict__['url_path'], '/child-untranslated/grandchild2-untranslated/')
         self.assertEqual(grandchild2.url_path_de, '/child-untranslated/grandchild2-untranslated/')
         self.assertEqual(grandchild2.url_path_en, '/child-untranslated/grandchild2-untranslated/')
 

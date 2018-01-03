@@ -1,36 +1,28 @@
 # coding: utf-8
 
-from django.conf import settings
 from django.core.management.base import BaseCommand
+from modeltranslation import settings as mt_settings
+from modeltranslation.utils import build_localized_fieldname
 from wagtail.wagtailcore.models import Page
+from wagtail_modeltranslation.contextlib import use_language
 
 
 class Command(BaseCommand):
-    def set_subtree(self, root, root_path, lang=None):
-        update_fields = ['url_path_' + lang] if hasattr(root.specific, 'url_path_' + lang) else ['url_path']
+    def __init__(self):
+        super(Command, self).__init__()
+        update_fields = ['url_path']
+        for language in mt_settings.AVAILABLE_LANGUAGES:
+            localized_url_path = build_localized_fieldname('url_path', language)
+            update_fields.append(localized_url_path)
+        self.update_fields = update_fields
 
-        if hasattr(root.specific, 'url_path_' + lang):
-            setattr(root.specific, 'url_path_' + lang, root_path)
-        else:
-            setattr(root, 'url_path', root_path)
-
-        if lang == settings.LANGUAGE_CODE:
-            setattr(root, 'url_path', root_path)
-            update_fields.append('url_path')
-        root.specific.save(update_fields=update_fields)
+    def set_subtree(self, root, parent):
+        root.set_url_path(parent)
+        root.save(update_fields=self.update_fields)
         for child in root.get_children():
-            slug = getattr(
-                child.specific, 'slug_' + lang) if hasattr(
-                child.specific, 'slug_' + lang) else getattr(child, 'slug')
-            if not slug or slug == '':
-                slug = getattr(
-                    child.specific, 'slug_' + settings.LANGUAGE_CODE) if hasattr(child.specific,
-                                                                                 'slug_' + settings.LANGUAGE_CODE) and getattr(
-                    child.specific, 'slug_' + settings.LANGUAGE_CODE) else getattr(child, 'slug')
-
-            self.set_subtree(child, root_path + slug + '/', lang)
+            self.set_subtree(child, root)
 
     def handle(self, **options):
-        for node in Page.get_root_nodes():
-            for lang in settings.LANGUAGES:
-                self.set_subtree(node, '/', lang=lang[0])
+        with use_language(mt_settings.DEFAULT_LANGUAGE):
+            for node in Page.get_root_nodes():
+                self.set_subtree(node, None)
