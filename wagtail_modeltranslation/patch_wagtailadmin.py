@@ -345,9 +345,9 @@ def _new_relative_url(self, current_site, request=None):
     Site.get_site_root_paths()
     """
     for (id, root_path, root_url) in self.get_site_root_paths():
-        if self.url_path.startswith(root_path):
-            return ('' if current_site.id == id else root_url) + reverse('wagtail_serve',
-                                                                         args=(self.specific.url_path[len(root_path):],))
+        if self.specific.url_path.startswith(root_path):
+            return ('' if current_site.id == id else root_url) + reverse(
+                'wagtail_serve', args=(self.specific.url_path[len(root_path):],))
 
 
 @property
