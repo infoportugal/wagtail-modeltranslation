@@ -25,6 +25,9 @@ setup(
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
     install_requires=['wagtail(>=1.4)', 'django-modeltranslation(<=0.12.99)'],
+    dependency_links=[
+        "git+ssh://git@github.com/deschler/django-modeltranslation.git@00fc7f1804aaa1b1e37af48e67871080851e14b0#egg=django-modeltranslation-0.12.1"
+    ],
     download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.6rc2.tar.gz',
     classifiers=[
         'Programming Language :: Python',
