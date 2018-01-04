@@ -64,7 +64,6 @@ def runtests():
                 ('en', 'English'),
             ),
             MIDDLEWARE_CLASSES=(),
-            WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE='default',
         )
 
     if django.VERSION >= (1, 7):
