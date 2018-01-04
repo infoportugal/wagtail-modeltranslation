@@ -50,6 +50,7 @@ Contents
    Registering Models
    advanced settings
    template tags
+   management commands
    recommended reading
    releases/index
    AUTHORS
