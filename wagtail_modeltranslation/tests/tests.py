@@ -390,47 +390,6 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(slugurl_trans(context, 'child-slugurl'), '/en/child-slugurl-en/')
         self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/en/child-slugurl-en/')
 
-    def test_original_slug_update(self):
-        from wagtail.wagtailcore.models import Page
-        # save the page in the default language
-        root = models.TestRootPage.objects.create(title='original slug', title_de='originalschnecke', depth=1,
-                                                  path='0002', slug_en='test-slug-en', slug_de='test-slug-de')
-
-        # some control checks, we don't expect any surprises here
-        self.assertEqual(root.slug, 'test-slug-de', 'slug has the wrong value.')
-        self.assertEqual(root.slug_de, 'test-slug-de', 'slug_de has the wrong value.')
-        self.assertEqual(root.slug_en, 'test-slug-en', 'slug_en has the wrong value.')
-
-        # fetches the correct Page using slug
-        page = Page.objects.filter(slug='test-slug-de').first()
-        self.assertEqual(page.specific, root, 'The wrong page was retrieved from DB.')
-
-        trans_real.activate('en')
-
-        # fetches the correct Page using slug using non-default language
-        page = Page.objects.rewrite(False).filter(slug='test-slug-de').first()
-        self.assertEqual(page.specific, root, 'The wrong page was retrieved from DB.')
-
-        # save the page 2 in the non-default language
-        root2 = models.TestRootPage(title='original slug 2', title_de='originalschnecke 2', depth=1, path='0003',
-                                    slug_en='test-slug2-en', slug_de='test-slug2-de')
-        root2.save()
-
-        # sanity checks
-        self.assertEqual(root2.slug, 'test-slug2-en', 'slug has the wrong value.')
-        self.assertEqual(root2.slug_de, 'test-slug2-de', 'slug_de has the wrong value.')
-        self.assertEqual(root2.slug_en, 'test-slug2-en', 'slug_en has the wrong value.')
-
-        # fetches the correct Page using slug using non-default language
-        page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
-        self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
-
-        trans_real.activate('de')
-
-        # fetches the correct Page using slug using default language
-        page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
-        self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
-
     def test_relative_url(self):
         from wagtail.wagtailcore.models import Site
         # Create a test Site with a root page
