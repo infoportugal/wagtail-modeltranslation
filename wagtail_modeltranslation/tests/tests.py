@@ -6,14 +6,16 @@ from django.apps import apps as django_apps
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.test import TestCase, TransactionTestCase
+from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
+from .util import page_factory
 
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
 
 models = translation = None
-
+request_factory = RequestFactory()
 
 class dummy_context_mgr():
     def __enter__(self):
@@ -51,9 +53,20 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 imp.reload(translator)
 
                 # reload the translation module to register the Page model
+                # and also edit_handlers so any patches made to Page are reapplied
                 from wagtail_modeltranslation import translation as wag_translation, translator as wag_translator
+                from wagtail.wagtailadmin import edit_handlers
+                import sys
+                del cls.cache.all_models['wagtailcore']
+                sys.modules.pop('wagtail_modeltranslation.translation.pagetr', None)
+                sys.modules.pop('wagtail.wagtailcore.models', None)
                 imp.reload(wag_translation)
                 imp.reload(wag_translator)
+                imp.reload(edit_handlers)  # so Page can be repatched by edit_handlers
+                wagtailcore_args = []
+                if django.VERSION < (1, 11):
+                    wagtailcore_args = [cls.cache.all_models['wagtailcore']]
+                cls.cache.get_app_config('wagtailcore').import_models(*wagtailcore_args)
 
                 # Reload the patching class to update the imported translator
                 # in order to include the newly registered models
@@ -64,10 +77,12 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 #    have translation fields, but for languages previously defined. We want
                 #    to be sure that 'de' and 'en' are available)
                 del cls.cache.all_models['tests']
-                import sys
                 sys.modules.pop('wagtail_modeltranslation.tests.models', None)
                 sys.modules.pop('wagtail_modeltranslation.tests.translation', None)
-                cls.cache.get_app_config('tests').import_models(cls.cache.all_models['tests'])
+                tests_args = []
+                if django.VERSION < (1, 11):
+                    tests_args = [cls.cache.all_models['tests']]
+                cls.cache.get_app_config('tests').import_models(*tests_args)
 
                 # 4. Autodiscover
                 from modeltranslation.models import handle_translation_registrations
@@ -82,7 +97,10 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
                              database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
 
-                # 7. patch wagtail models
+                # 7. Make sure Page translation fields are created
+                call_command('sync_page_translation_fields', interactive=False, verbosity=0, database=connections[DEFAULT_DB_ALIAS].alias)
+
+                # 8. patch wagtail models
                 from wagtail_modeltranslation.patch_wagtailadmin import patch_wagtail_models
                 patch_wagtail_models()
 
@@ -90,7 +108,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 # tests app has been added into INSTALLED_APPS and loaded
                 # (that's why this is not imported in normal import section)
                 global models, translation
-                from wagtail_modeltranslation.tests import models, translation
+                from wagtail_modeltranslation.tests import models, translation # NOQA
 
     def setUp(self):
         self._old_language = get_language()
@@ -336,12 +354,43 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertRaises(ValidationError, child2.clean)
 
+    def test_slugurl_trans(self):
+        """
+        Assert tag slugurl_trans is immune to user's current language
+        """
+        from wagtail_modeltranslation.templatetags.wagtail_modeltranslation import slugurl_trans
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root slugurl', },
+            'children': {
+                'child': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child slugurl', 'slug': 'child-slugurl', 'slug_en': 'child-slugurl-en'},
+                    'children': {},
+                },
+            },
+        }
+        site = page_factory.get_page_tree(site_pages)
+
+        request_mock = request_factory.get('/')
+        setattr(request_mock, 'site', site)
+        context = {'request': request_mock}
+
+        self.assertEqual(slugurl_trans(context, 'root-slugurl'), '/de/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl'), '/de/child-slugurl/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/de/child-slugurl/')
+
+        trans_real.activate('en')
+
+        self.assertEqual(slugurl_trans(context, 'root-slugurl'), '/en/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl'), '/en/child-slugurl-en/')
+        self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/en/child-slugurl-en/')
+
     def test_original_slug_update(self):
         from wagtail.wagtailcore.models import Page
         # save the page in the default language
-        root = models.TestRootPage(title='original slug', title_de='originalschnecke', depth=1, path='0002',
-                                   slug_en='test-slug-en', slug_de='test-slug-de')
-        root.save()
+        root = models.TestRootPage.objects.create(title='original slug', title_de='originalschnecke', depth=1,
+                                                  path='0002', slug_en='test-slug-en', slug_de='test-slug-de')
 
         # some control checks, we don't expect any surprises here
         self.assertEqual(root.slug, 'test-slug-de', 'slug has the wrong value.')
@@ -355,7 +404,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         trans_real.activate('en')
 
         # fetches the correct Page using slug using non-default language
-        page = Page.objects.filter(slug='test-slug-de').first()
+        page = Page.objects.rewrite(False).filter(slug='test-slug-de').first()
         self.assertEqual(page.specific, root, 'The wrong page was retrieved from DB.')
 
         # save the page 2 in the non-default language
@@ -369,16 +418,14 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(root2.slug_en, 'test-slug2-en', 'slug_en has the wrong value.')
 
         # fetches the correct Page using slug using non-default language
-        page = Page.objects.filter(slug='test-slug2-de').first()
+        page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
         self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
 
         trans_real.activate('de')
 
         # fetches the correct Page using slug using default language
-        page = Page.objects.filter(slug='test-slug2-de').first()
+        page = Page.objects.rewrite(False).filter(slug='test-slug2-de').first()
         self.assertEqual(page.specific, root2, 'The wrong page was retrieved from DB.')
-
-
 
     def test_relative_url(self):
         from wagtail.wagtailcore.models import Site
@@ -452,13 +499,15 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
                          'page.body did not fallback to original language.')
 
     def test_set_url_path(self):
+        """
+        Assert translation URL Paths are correctly set in page and descendants for a slug change and
+        page move operations
+        """
         from wagtail.wagtailcore.models import Site
         # Create a test Site with a root page
-        root = models.TestRootPage(title='url paths', depth=1, path='0006', slug='url-path-slug')
-        root.save()
+        root = models.TestRootPage.objects.create(title='url paths', depth=1, path='0006', slug='url-path-slug')
 
-        site = Site(root_page=root)
-        site.save()
+        Site.objects.create(root_page=root)
 
         # Add children to the root
         child = root.add_child(
@@ -472,11 +521,13 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         )
         grandchild.save()
 
+        # check everything is as expected
         self.assertEqual(child.url_path_de, '/child/')
         self.assertEqual(child.url_path_en, '/child/')
         self.assertEqual(grandchild.url_path_de, '/child/grandchild/')
         self.assertEqual(grandchild.url_path_en, '/child/grandchild/')
 
+        # PAGE SLUG CHANGE
         grandchild.slug_de = 'grandchild1'
         grandchild.save()
 
@@ -496,23 +547,124 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(child.url_path_de, '/child/')
         self.assertEqual(child.url_path_en, '/child_en/')
 
-        # We should retrieve grandchild with the below command:
-        # grandchild_new = models.TestSlugPage1.objects.get(id=grandchild.id)
-        # but it's exhibiting strange behaviour during tests. See:
-        # https://github.com/infoportugal/wagtail-modeltranslation/issues/103#issuecomment-352006610
-        grandchild_new = models.TestSlugPage1._default_manager.raw("""
-            SELECT page_ptr_id, url_path_en, url_path_de FROM {}
-            WHERE page_ptr_id=%s LIMIT 1
-        """.format(models.TestSlugPage1._meta.db_table), [grandchild.page_ptr_id])[0]
+        # Retrieve grandchild from DB:
+        grandchild_new = models.TestSlugPage1.objects.get(id=grandchild.id)
         self.assertEqual(grandchild_new.url_path_en, '/child_en/grandchild1_en/')
         self.assertEqual(grandchild_new.url_path_de, '/child/grandchild1/')
 
+        # Add 2nd child to the root
+        child2 = root.add_child(
+            instance=models.TestSlugPage1(title='child2', slug='child2', depth=2, path='00060002')
+        )
+        child2.save()
 
-    def test_page_fields_tables(self):
-        from wagtail_modeltranslation.patch_wagtailadmin import WagtailTranslator
+        # Add grandchildren
+        grandchild2 = child2.add_child(
+            instance=models.TestSlugPage1(title='grandchild2', slug='grandchild2', depth=3, path='000600020001')
+        )
+        grandchild2.save()
 
-        self.assertIn(models.TestSlugPage1, WagtailTranslator._patched_models)
-        self.assertIn('tests_testslugpage1', WagtailTranslator._page_fields_tables)
-        self.assertIn(models.TestSlugPage1Subclass, WagtailTranslator._patched_models)
-        self.assertNotIn('tests_testslugpage1subclass', WagtailTranslator._page_fields_tables)
-        self.assertNotIn('wagtailcore_page', WagtailTranslator._page_fields_tables)
+        # PAGE MOVE
+        child2.move(child, pos='last-child')
+
+        # re-fetch child2 to confirm db fields have been updated
+        child2 = models.TestSlugPage1.objects.get(id=child2.id)
+
+        self.assertEqual(child2.depth, 3)
+        self.assertEqual(child2.get_parent().id, child.id)
+        self.assertEqual(child2.url_path_de, '/child/child2/')
+        self.assertEqual(child2.url_path_en, '/child_en/child2/')
+
+        # children of child2 should also have been updated
+        grandchild2 = child2.get_children().get(slug='grandchild2').specific
+        self.assertEqual(grandchild2.depth, 4)
+        self.assertEqual(grandchild2.url_path_de, '/child/child2/grandchild2/')
+        self.assertEqual(grandchild2.url_path_en, '/child_en/child2/grandchild2/')
+
+    def test_set_url_path_non_translated_descendants(self):
+        """
+        Assert set_url_path works correctly when a Page with untranslated children
+        has its translated slug changed.
+        """
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root untranslated',},
+            'children': {
+                'child': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child untranslated'},
+                    'children': {
+                        'grandchild1': {
+                            'model': models.TestSlugPage1,
+                            'kwargs': {'title': 'grandchild1 untranslated'},
+                            'children': {
+                                'grandgrandchild': {
+                                    'model': models.TestSlugPage1,
+                                    'kwargs': {'title': 'grandgrandchild untranslated'},
+                                },
+                            },
+                        },
+                        'grandchild2': {
+                            'model': models.TestSlugPage2,
+                            'kwargs': {'title': 'grandchild2 untranslated'},
+                        },
+                    },
+                },
+            },
+        }
+        page_factory.get_page_tree(site_pages)
+
+        # Revert grandchild1 and grandgrandchild url_path_en to their initial untranslated states
+        # to simulate pages that haven't been translated yet
+        models.TestSlugPage1.objects.filter(slug_de__in=['grandchild1-untranslated', 'grandgrandchild-untranslated'])\
+            .rewrite(False).update(slug_en=None, url_path_en=None)
+
+        # re-fetch to pick up latest from DB
+        grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
+        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.slug_en, None)
+        self.assertEqual(grandchild1.url_path_en, None)
+        grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
+        self.assertEqual(grandgrandchild.url_path_de,
+                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+        self.assertEqual(grandgrandchild.slug_en, None)
+        self.assertEqual(grandgrandchild.url_path_en, None)
+
+        trans_real.activate('en')
+
+        child = site_pages['children']['child']['instance']
+        child.slug_en = 'child-translated'
+        child.save()
+
+        self.assertEqual(child.url_path_de, '/child-untranslated/')
+        self.assertEqual(child.url_path_en, '/child-translated/')
+
+        grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
+        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_en, '/child-translated/grandchild1-untranslated/')
+
+        grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
+        self.assertEqual(grandgrandchild.url_path_de,
+                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+        self.assertEqual(grandgrandchild.url_path_en,
+                         '/child-translated/grandchild1-untranslated/grandgrandchild-untranslated/')
+
+    def test_fetch_translation_records(self):
+        """
+        Assert that saved translation fields are retrieved correctly
+        See: https://github.com/infoportugal/wagtail-modeltranslation/issues/103#issuecomment-352006610
+        """
+        page = models.StreamFieldPanelPage.objects.create(title_de='Fetch DE', title_en='Fetch EN',
+                                                          slug_de='fetch_de', slug_en='fetch_en',
+                                                          body_de=[('text', 'fetch de')], body_en=[('text', 'fetch en')],
+                                                          depth=1, path='0007')
+        page.save()
+
+        page_db = models.StreamFieldPanelPage.objects.get(id=page.id)
+
+        self.assertEqual(page_db.title_de, 'Fetch DE')
+        self.assertEqual(page_db.slug_de, 'fetch_de')
+        self.assertEqual(str(page_db.body_de), '<div class="block-text">fetch de</div>')
+        self.assertEqual(page_db.title_en, 'Fetch EN')
+        self.assertEqual(page_db.slug_en, 'fetch_en')
+        self.assertEqual(str(page_db.body_en), '<div class="block-text">fetch en</div>')
