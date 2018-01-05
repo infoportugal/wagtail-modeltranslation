@@ -51,6 +51,7 @@ Contents
    advanced settings
    template tags
    management commands
+   caveats
    recommended reading
    releases/index
    AUTHORS

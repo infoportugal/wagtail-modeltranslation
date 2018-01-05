@@ -14,10 +14,12 @@ Use this template tag to get the url of the current page in another language. Th
     {% load wagtail_modeltranslation %}
     {% change_lang 'pt' %}
 
-slugurl_trans
-===========
+.. _template tags-slugurl_trans:
 
-Use this template tag as a replacement for `slugurl`.
+slugurl_trans
+=============
+
+Use this template tag as a replacement for ``slugurl``.
 
 .. code-block:: django
 
