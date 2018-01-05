@@ -5,10 +5,15 @@ import re
 from django import template
 from django.core.urlresolvers import resolve
 from django.utils.translation import activate, get_language
+
 from six import iteritems
 
+from wagtail.wagtailcore.models import Page
 from modeltranslation import settings as mt_settings
 
+from modeltranslation.settings import DEFAULT_LANGUAGE
+
+from ..contextlib import use_language
 
 register = template.Library()
 
@@ -59,7 +64,27 @@ class GetAvailableLanguagesNode(template.Node):
         context[self.variable] = mt_settings.AVAILABLE_LANGUAGES
         return ''
 
+# Alternative to slugurl which uses chosen or default language for language
+@register.simple_tag(takes_context=True)
+def slugurl_trans(context, slug, language=None):
+    """
+    Examples:
+        {% slugurl_trans 'default_lang_slug' %}
+        {% slugurl_trans 'de_lang_slug' 'de' %}
 
+    Returns the URL for the page that has the given slug.
+    """
+    language = language or DEFAULT_LANGUAGE
+
+    with use_language(language):
+        page = Page.objects.filter(slug=slug).first()
+
+    if page:
+        return page.relative_url(context['request'].site)
+    else:
+        return None
+
+        
 @register.tag('get_available_languages_wmt')
 def do_get_available_languages(unused_parser, token):
     """

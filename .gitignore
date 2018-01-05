@@ -32,6 +32,9 @@ nosetests.xml
 # Sphinx
 _build
 
+# GitEye / Eclipse project file
+/.project
+
 # vim
 *~
 *.swp

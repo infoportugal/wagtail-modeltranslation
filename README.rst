@@ -35,6 +35,16 @@ Features
 - StreamFields are now supported!
 
 
+Caveats
+======
+
+:code:`wagtail-modeltranslation` patches Wagtail's :code:`Page` model with translation fields
+:code:`title_xx`, :code:`slug_xx`, :code:`seo_title_xx`, :code:`search_description_xx` and :code:`url_path_xx` where "xx" represents the language code for each translated language. This
+is done without migrations through command :code:`sync_page_translation_fields`. Since :code:`Page` model belongs to
+Wagtail it's within the realm of possibility that one day Wagtail may add a conflicting field to :code:`Page` thus interfering with :code:`wagtail-modeltranslation`.
+
+Wagtail's :code:`slugurl` tag does not work across languages. :code:`wagtail-modeltranslation` provides a drop-in replacement named :code:`slugurl_trans` which by default takes the slug parameter in the default language.
+
 Quick start
 ===========
 
@@ -47,6 +57,7 @@ Quick start
     INSTALLED_APPS = (
         ...
         'wagtail_modeltranslation',
+        'wagtail_modeltranslation.makemigrations',
     )
 
 3. Add "django.middleware.locale.LocaleMiddleware" to MIDDLEWARE_CLASSES on your settings.py::
@@ -71,18 +82,37 @@ Quick start
 6. Create translation.py inside the root folder of the app where the model you want to translate exists::
 
     from .models import Foo
-    from wagtail_modeltranslation.translator import WagtailTranslationOptions
+    from modeltranslation.translator import TranslationOptions
     from modeltranslation.decorators import register
 
 
     @register(Foo)
-    class FooTR(WagtailTranslationOptions):
+    class FooTR(TranslationOptions):
         fields = (
             'body',
         )
 
-7. Run :code:`python manage.py makemigrations` followed by :code:`python manage.py migrate`
+7. Run :code:`python manage.py makemigrations` followed by :code:`python manage.py migrate` (repeat every time you add a new language)
 
+8. Run :code:`python manage.py sync_page_translation_fields` (repeat every time you add a new language)
+
+9. If you're adding :code:`wagtail-modeltranslation` to an existing site run :code:`python manage.py update_translation_fields`
+
+
+Upgrade considerations (v0.8)
+======================
+
+This version includes breaking changes as some key parts of the app have been re-written:
+
+- The most important change is that ``Page`` is now patched with translation fields.
+- ``WAGTAILMODELTRANSLATION_ORIGINAL_SLUG_LANGUAGE`` setting has been deprecated.
+
+To upgrade to this version you need to:
+
+- Replace the ``WagtailTranslationOptions`` with ``TranslationOption`` in all translation.py files
+- Run :code:`python manage.py sync_page_translation_fields` at least once to create ``Page``'s translation fields
+- Replace any usages of Wagtail's ``{% slugurl ... %}`` for :code:`wagtail-modeltranslation`'s own ``{% slugurl_trans ... %}``
+- While optional it's recommended to add ``'wagtail_modeltranslation.makemigrations'`` to your INSTALLED_APPS. This will override Django's ``makemigrations`` command to avoid creating spurious ``Page`` migrations.
 
 Upgrade considerations (v0.6)
 ======================
