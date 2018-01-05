@@ -1,9 +1,9 @@
 language: python
 python:
   - "2.7"
-  - "3.3"
   - "3.4"
   - "3.5"
+  - "3.6"
 env:
   - WAGTAIL="wagtail>=1.4,<1.5"
   - WAGTAIL="wagtail>=1.5,<1.6"
@@ -11,9 +11,12 @@ env:
   - WAGTAIL="wagtail>=1.7,<1.8"
   - WAGTAIL="wagtail>=1.8,<1.9"
   - WAGTAIL="wagtail>=1.9,<1.10"
+  - WAGTAIL="wagtail>=1.10,<1.11"
+  - WAGTAIL="wagtail>=1.11,<1.12"
+  - WAGTAIL="wagtail>=1.12,<1.13"
+  - WAGTAIL="wagtail>=1.13,<1.14"
 install:
   - pip install --upgrade -q pip setuptools
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then pip install 'Django>=1.8,<1.9'; fi
   - pip install -q $WAGTAIL
   - pip install --process-dependency-links -e .
 script:
