@@ -25,3 +25,15 @@ Use this template tag as a replacement for `slugurl`.
     {% slugurl_trans 'default_lang_slug' %}
     {# or #}
     {% slugurl_trans 'pt_lang_slug' 'pt' %}
+
+get_available_languages_wmt
+===========================
+
+Use this template tag to get the current languages from MODELTRANSLATION_LANGUAGES (or LANGUAGES) from your setting file (or the default settings).
+
+.. code-block:: django
+
+    {% get_available_languages_wmt as languages %}
+    {% for language in languages %}
+    ...
+    {% endfor %}
