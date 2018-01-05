@@ -5,7 +5,8 @@ import types
 
 from django.core.exceptions import ValidationError
 from django.db import transaction, connection
-from django.db.models import Q
+from django.db.models import Q, Value
+from django.db.models.functions import Concat, Substr
 from django.http import Http404
 from django.utils.translation import trans_real
 from django.utils.translation import ugettext_lazy as _
@@ -100,6 +101,7 @@ class WagtailTranslator(object):
         # OVERRIDE PAGE METHODS
         model.set_url_path = _new_set_url_path
         model.route = _new_route
+        model._update_descendant_url_paths = _new_update_descendant_url_paths
         _patch_clean(model)
 
         if not model.save.__name__.startswith('localized'):
@@ -337,38 +339,35 @@ def _patch_clean(model):
     model.clean = clean
 
 
-def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language):
-    localized_url_path = build_localized_fieldname('url_path', language)
+def _new_update_descendant_url_paths(self, old_url_path, new_url_path):
+    return _localized_update_descendant_url_paths(self, old_url_path, new_url_path)
 
-    cursor = connection.cursor()
-    if connection.vendor == 'sqlite':
-        update_statement = """
-            UPDATE wagtailcore_page
-            SET {localized_url_path} = %s || substr({localized_url_path}, %s)
-            WHERE path LIKE %s AND id <> %s
-        """.format(localized_url_path=localized_url_path)
-    elif connection.vendor == 'mysql':
-        update_statement = """
-            UPDATE wagtailcore_page
-            SET {localized_url_path}= CONCAT(%s, substring({localized_url_path}, %s))
-            WHERE path LIKE %s AND id <> %s
-        """.format(localized_url_path=localized_url_path)
-    elif connection.vendor in ('mssql', 'microsoft'):
+
+def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language=None):
+    localized_url_path = 'url_path'
+    if language:
+        localized_url_path = build_localized_fieldname('url_path', language)
+
+    if connection.vendor in ('mssql', 'microsoft'):
+        cursor = connection.cursor()
         update_statement = """
             UPDATE wagtailcore_page
             SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
             WHERE path LIKE %s AND id <> %s
         """.format(localized_url_path=localized_url_path)
+        cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, page.path + '%', page.id])
     else:
-        update_statement = """
-            UPDATE wagtailcore_page
-            SET {localized_url_path} = %s || substring({localized_url_path} from %s)
-            WHERE path LIKE %s AND id <> %s
-        """.format(localized_url_path=localized_url_path)
-    cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, page.path + '%', page.id])
+        (Page.objects
+            .rewrite(False)
+            .filter(path__startswith=page.path)
+            .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
+            .exclude(pk=page.pk)
+            .update(**{localized_url_path: Concat(
+                Value(new_url_path),
+                Substr(localized_url_path, len(old_url_path) + 1))}))
 
 
-def _new_update_descendant_url_paths(old_record, page):
+def _update_translation_descendant_url_paths(old_record, page):
     # update children paths, must be done for all languages to ensure fallbacks are applied
     languages_changed = []
     default_localized_url_path = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
@@ -384,10 +383,10 @@ def _new_update_descendant_url_paths(old_record, page):
         languages_changed.append(language)
         _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language)
 
-    update_untranslated_descendants_url_paths(page, languages_changed)
+    _update_untranslated_descendants_url_paths(page, languages_changed)
 
 
-def update_untranslated_descendants_url_paths(page, languages_changed):
+def _update_untranslated_descendants_url_paths(page, languages_changed):
     """
     Updates localized URL Paths for child pages that don't have their localized URL Paths set yet
     """
@@ -451,7 +450,7 @@ class LocalizedSaveDescriptor(object):
 
         # update children localized paths if any language had it slug changed
         if change_descendant_url_path:
-            _new_update_descendant_url_paths(old_record, instance)
+            _update_translation_descendant_url_paths(old_record, instance)
 
         return result
 
