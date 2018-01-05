@@ -7,9 +7,6 @@ from wagtail.wagtailcore.models import Page
 
 @register(Page)
 class PageTR(TranslationOptions):
-    class Meta:
-        managed = False
-
     fields = (
         'title',
         'slug',
