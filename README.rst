@@ -52,7 +52,7 @@ Quick start
 
     pip install wagtail-modeltranslation
 
-2. Add "wagtail_modeltranslation" to your INSTALLED_APPS setting like this (before all apps that you want to translate)::
+2. Add 'wagtail_modeltranslation' to your ``INSTALLED_APPS`` setting like this (before all apps that you want to translate)::
 
     INSTALLED_APPS = (
         ...
@@ -60,31 +60,32 @@ Quick start
         'wagtail_modeltranslation.makemigrations',
     )
 
-3. Add "django.middleware.locale.LocaleMiddleware" to MIDDLEWARE_CLASSES on your settings.py::
+3. Add 'django.middleware.locale.LocaleMiddleware' to ``MIDDLEWARE`` on your ``settings.py``::
 
-    MIDDLEWARE_CLASSES = (
+    MIDDLEWARE = (
         ...
-        'django.middleware.locale.LocaleMiddleware',
+        'django.middleware.locale.LocaleMiddleware',  # should be after SessionMiddleware and before CommonMiddleware
     )
 
-4. Enable i18n on settings.py::
+4. Enable i18n on ``settings.py``::
 
     USE_I18N = True
 
-5. Define available languages on settings.py::
+5. Define available languages on ``settings.py``::
+
+    from django.utils.translation import gettext_lazy as _
 
     LANGUAGES = (
-        ('pt', u'Português'),
-        ('es', u'Espanhol'),
-        ('fr', u'Francês'),
+        ('pt', _('Portuguese')),
+        ('es', _('Spanish')),
+        ('fr', _('French')),
     )
 
-6. Create translation.py inside the root folder of the app where the model you want to translate exists::
+6. Create ``translation.py`` inside the root folder of the app where the model you want to translate exists::
 
     from .models import Foo
     from modeltranslation.translator import TranslationOptions
     from modeltranslation.decorators import register
-
 
     @register(Foo)
     class FooTR(TranslationOptions):
@@ -92,7 +93,7 @@ Quick start
             'body',
         )
 
-7. Run :code:`python manage.py makemigrations` followed by :code:`python manage.py migrate` (repeat every time you add a new language)
+7. Run :code:`python manage.py makemigrations` followed by :code:`python manage.py migrate` (repeat every time you add a new language or register a new model)
 
 8. Run :code:`python manage.py sync_page_translation_fields` (repeat every time you add a new language)
 
@@ -109,7 +110,7 @@ This version includes breaking changes as some key parts of the app have been re
 
 To upgrade to this version you need to:
 
-- Replace the ``WagtailTranslationOptions`` with ``TranslationOption`` in all translation.py files
+- Replace the ``WagtailTranslationOptions`` with ``TranslationOptions`` in all translation.py files
 - Run :code:`python manage.py sync_page_translation_fields` at least once to create ``Page``'s translation fields
 - Replace any usages of Wagtail's ``{% slugurl ... %}`` for :code:`wagtail-modeltranslation`'s own ``{% slugurl_trans ... %}``
 - While optional it's recommended to add ``'wagtail_modeltranslation.makemigrations'`` to your INSTALLED_APPS. This will override Django's ``makemigrations`` command to avoid creating spurious ``Page`` migrations.
@@ -125,7 +126,7 @@ Most of the changes are related to imports as they change from wagtail-modeltran
 
 To upgrade to this version you need to:
 
-- Replace the ``TranslationOption`` with ``WagtailTranslationOptions`` in all translation.py files
+- Replace the ``TranslationOptions`` with ``WagtailTranslationOptions`` in all translation.py files
 - The import of the register decorator is now ``from modeltranslation.decorators import register``
 - The import of translator is now ``from modeltranslation.translator import translator``
 
