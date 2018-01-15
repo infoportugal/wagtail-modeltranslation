@@ -31,7 +31,7 @@ setup(
     dependency_links=[
         "http://github.com/deschler/django-modeltranslation/tarball/00fc7f1804aaa1b1e37af48e67871080851e14b0#egg=django-modeltranslation-0.12.2"
     ],
-    download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.6rc2.tar.gz',
+    download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.8a1.tar.gz',
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
