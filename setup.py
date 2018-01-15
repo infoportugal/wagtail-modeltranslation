@@ -27,7 +27,7 @@ setup(
         'wagtail_modeltranslation.makemigrations.management.commands'],
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
-    install_requires=['wagtail(>=1.4)', 'django-modeltranslation(>0.12.1)'],
+    install_requires=['wagtail(>=1.4)'],
     dependency_links=[
         "http://github.com/deschler/django-modeltranslation/tarball/00fc7f1804aaa1b1e37af48e67871080851e14b0#egg=django-modeltranslation-0.12.2"
     ],
