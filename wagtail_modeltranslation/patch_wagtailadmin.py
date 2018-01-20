@@ -364,7 +364,7 @@ def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, lan
             .exclude(pk=page.pk)
             .update(**{localized_url_path: Concat(
                 Value(new_url_path),
-                Substr(localized_url_path, len(old_url_path) + 1))}))
+                Substr(localized_url_path, len(old_url_path or []) + 1))}))
 
 
 def _update_translation_descendant_url_paths(old_record, page):
