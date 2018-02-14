@@ -11,7 +11,10 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
-from wagtail import VERSION
+try:
+    from wagtail import VERSION
+except ImportError:
+    VERSION = 1, 6, 3  # assume it's 1.6.3, the latest version without VERSION
 from .util import page_factory
 
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
