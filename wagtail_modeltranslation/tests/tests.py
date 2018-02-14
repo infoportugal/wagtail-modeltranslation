@@ -11,6 +11,7 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
+from wagtail import VERSION
 from .util import page_factory
 
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
@@ -219,11 +220,12 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEquals(child_block[0][0], 'text')
         self.assertIsInstance(child_block[0][1], CharBlock)
 
-        # Original and Default language StreamFields are required
-        self.assertFalse(models.StreamFieldPanelPage.body.field.blank)
-        self.assertTrue(models.StreamFieldPanelPage.body.field.stream_block.required)
-        self.assertFalse(models.StreamFieldPanelPage.body_de.field.blank)
-        self.assertTrue(models.StreamFieldPanelPage.body_de.field.stream_block.required)
+        if VERSION >= (1, 12):
+            # Original and Default language StreamFields are required
+            self.assertFalse(models.StreamFieldPanelPage.body.field.blank)
+            self.assertTrue(models.StreamFieldPanelPage.body.field.stream_block.required)
+            self.assertFalse(models.StreamFieldPanelPage.body_de.field.blank)
+            self.assertTrue(models.StreamFieldPanelPage.body_de.field.stream_block.required)
 
         # Translated StreamField is optional
         self.assertTrue(models.StreamFieldPanelPage.body_en.field.blank)
