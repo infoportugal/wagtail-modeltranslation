@@ -219,6 +219,16 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEquals(child_block[0][0], 'text')
         self.assertIsInstance(child_block[0][1], CharBlock)
 
+        # Original and Default language StreamFields are required
+        self.assertFalse(models.StreamFieldPanelPage.body.field.blank)
+        self.assertTrue(models.StreamFieldPanelPage.body.field.stream_block.required)
+        self.assertFalse(models.StreamFieldPanelPage.body_de.field.blank)
+        self.assertTrue(models.StreamFieldPanelPage.body_de.field.stream_block.required)
+
+        # Translated StreamField is optional
+        self.assertTrue(models.StreamFieldPanelPage.body_en.field.blank)
+        self.assertFalse(models.StreamFieldPanelPage.body_en.field.stream_block.required)
+
     def check_multipanel_patching(self, panels):
         # There are three multifield panels, one for each of the available
         # children panels
