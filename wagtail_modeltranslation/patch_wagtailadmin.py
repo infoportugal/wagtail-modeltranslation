@@ -159,7 +159,8 @@ class WagtailTranslator(object):
             if not original_field.blank and language == mt_settings.DEFAULT_LANGUAGE:
                 localized_field = model._meta.get_field(localized_field_name)
                 localized_field.blank = False
-            elif isinstance(original_field, StreamField):
+            elif isinstance(original_field, StreamField) and \
+                    hasattr(original_field.stream_block, 'required'):  # required was introduced in Wagtail 1.6
                 # otherwise the field is optional and
                 # if it's a StreamField the stream_block need to be changed to non required
                 localized_field = model._meta.get_field(localized_field_name)
