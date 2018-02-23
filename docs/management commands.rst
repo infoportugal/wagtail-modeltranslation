@@ -57,12 +57,29 @@ The ``makemigrations_translation`` Command
 ``wagtail-modeltranslation`` patches Wagtail's ``Page`` model and as consequence Django's original 
 ``makemigrations`` commmand will create migrations for ``Page`` which may create conflicts with 
 other migrations. To circumvent this issue ``makemigrations_translation`` hides any ``Page`` model changes 
-and creates all other migrations as usual. Use this command as an alterntive to Django's own 
+and creates all other migrations as usual. Use this command as an alternative to Django's own 
 ``makemigrations`` or consider using :ref:`management_commands-makemigrations`.
 
 .. code-block:: console
 
     $ python manage.py makemigrations_translation
+
+.. _management_commands-migrate_translation:
+
+The ``migrate_translation`` Command
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. versionadded:: 0.8
+
+Since :ref:`management_commands-makemigrations_translation` hides any ``Page`` model changes, Django's own
+``migrate`` command won't be able to update ``wagtailcore_page`` table with new translation fields. In order to
+correctly update the database schema a combination of ``migrate`` followed by :ref:`sync_page_translation_fields` 
+is usually required. ``migrate_translation`` provides a shortcut to running these two commands. Use this 
+as an alternative to Django's own ``migrate`` or consider using :ref:`management_commands-migrate`.
+
+.. code-block:: console
+
+    $ python manage.py migrate_translation
 
 .. _management_commands-set_translation_url_paths:
 
@@ -109,3 +126,41 @@ this will likely create invalid ``Page`` migrations, do this only if you know wh
 .. code-block:: console
 
     $ python manage.py makemigrations_original
+
+
+.. _management_commands-wagtail_modeltranslation.migrate:
+
+wagtail_modeltranslation.migrate
+---------------------------------
+
+To use ``wagtail_modeltranslation.migrate`` module commands add ``'wagtail_modeltranslation.migrate,'`` 
+to ``INSTALLED_APPS``. This module adds the following management commands.
+
+.. _management_commands-migrate:
+
+The ``migrate`` Command
+~~~~~~~~~~~~~~~~~~~~~~~
+
+This command is a proxy for :ref:`management_commands-migrate_translation`. It has the added benefit of 
+overriding Django's own ``migrate`` saving the need to additionally run :ref:`sync_page_translation_fields`. 
+See `issue #175
+<https://github.com/infoportugal/wagtail-modeltranslation/issues/175#issuecomment-368046055>`_ to understand 
+how this command can be used to create translation fields in a test database.
+
+.. code-block:: console
+
+    $ python manage.py migrate
+
+.. _management_commands-migrate_original:
+
+The ``migrate_original`` Command
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Since Django's ``migrate`` is overriden by ``wagtail-modeltranslation``'s version use 
+``migrate_original`` to run the Django's original ``migrate`` command. Please note 
+this will not update ``wagtailcore_page`` table with new translation fields, use 
+:ref:`sync_page_translation_fields` for that.
+
+.. code-block:: console
+
+    $ python manage.py migrate_original
