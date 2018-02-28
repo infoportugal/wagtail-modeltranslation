@@ -177,7 +177,11 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEquals(len(panels), 2)
 
         # Validate if the created panels are instances of FieldPanel
-        from wagtail.admin.edit_handlers import FieldPanel
+        try:
+            from wagtail.admin.edit_handlers import FieldPanel
+        except ImportError:
+            from wagtail.wagtailadmin.edit_handlers import FieldPanel
+
         self.assertIsInstance(panels[0], FieldPanel)
         self.assertIsInstance(panels[1], FieldPanel)
 
@@ -189,7 +193,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Check if there is one panel per language
         self.assertEquals(len(panels), 2)
 
-        from wagtail.images.edit_handlers import ImageChooserPanel
+        try:
+            from wagtail.images.edit_handlers import ImageChooserPanel
+        except ImportError:
+            from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
         self.assertIsInstance(panels[0], ImageChooserPanel)
         self.assertIsInstance(panels[1], ImageChooserPanel)
 
@@ -201,7 +208,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Check if the fieldrowpanel still exists
         self.assertEqual(len(panels), 1)
 
-        from wagtail.admin.edit_handlers import FieldRowPanel
+        try:
+            from wagtail.admin.edit_handlers import FieldRowPanel
+        except ImportError:
+            from wagtail.wagtailadmin.edit_handlers import FieldRowPanel
         self.assertIsInstance(panels[0], FieldRowPanel)
 
         # Check if the children were correctly patched using the fieldpanel test
@@ -213,7 +223,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Check if there is one panel per language
         self.assertEquals(len(panels), 2)
 
-        from wagtail.admin.edit_handlers import StreamFieldPanel
+        try:
+            from wagtail.admin.edit_handlers import StreamFieldPanel
+        except ImportError:
+            from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
         self.assertIsInstance(panels[0], StreamFieldPanel)
         self.assertIsInstance(panels[1], StreamFieldPanel)
 
@@ -226,7 +239,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertEquals(len(child_block), 1)
 
-        from wagtail.core.blocks import CharBlock
+        try:
+            from wagtail.core.blocks import CharBlock
+        except ImportError:
+            from wagtail.wagtailcore.blocks import CharBlock
         self.assertEquals(child_block[0][0], 'text')
         self.assertIsInstance(child_block[0][1], CharBlock)
 
@@ -246,7 +262,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # children panels
         self.assertEquals(len(panels), 3)
 
-        from wagtail.admin.edit_handlers import MultiFieldPanel
+        try:
+            from wagtail.admin.edit_handlers import MultiFieldPanel
+        except ImportError:
+            from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
         self.assertIsInstance(panels[0], MultiFieldPanel)
         self.assertIsInstance(panels[1], MultiFieldPanel)
         self.assertIsInstance(panels[2], MultiFieldPanel)
@@ -334,7 +353,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         In this test we use the InlinePanelSnippet model because it has all the possible "patchable" fields
         so if the created form has all fields the the form was correctly patched
         """
-        from wagtail.snippets.views.snippets import get_snippet_edit_handler
+        try:
+            from wagtail.snippets.views.snippets import get_snippet_edit_handler
+        except ImportError:
+            from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
         if VERSION[0] < 2:
@@ -356,7 +378,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
             self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
 
     def test_duplicate_slug(self):
-        from wagtail.core.models import Site
+        try:
+            from wagtail.core.models import Site
+        except ImportError:
+            from wagtail.wagtailcore.models import Site
         # Create a test Site with a root page
         root = models.TestRootPage(title='title', depth=1, path='0001', slug_en='slug_en', slug_de='slug_de')
         root.save()
@@ -419,7 +444,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/en/child-slugurl-en/')
 
     def test_relative_url(self):
-        from wagtail.core.models import Site
+        try:
+            from wagtail.core.models import Site
+        except ImportError:
+            from wagtail.wagtailcore.models import Site
         # Create a test Site with a root page
         root = models.TestRootPage(title='title slugurl', depth=1, path='0004',
                                    slug_en='title_slugurl_en', slug_de='title_slugurl_de')
@@ -494,7 +522,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         Assert translation URL Paths are correctly set in page and descendants for a slug change and
         page move operations
         """
-        from wagtail.core.models import Site
+        try:
+            from wagtail.core.models import Site
+        except ImportError:
+            from wagtail.wagtailcore.models import Site
         # Create a test Site with a root page
         root = models.TestRootPage.objects.create(title='url paths', depth=1, path='0006', slug='url-path-slug')
 
