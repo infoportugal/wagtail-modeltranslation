@@ -140,7 +140,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         super(WagtailModeltranslationTest, cls).setUpClass()
 
         # Delete the default wagtail pages from db
-        from wagtail.core.models import Page
+        try:
+            from wagtail.core.models import Page
+        except ImportError:
+            from wagtail.wagtailcore.models import Page
         Page.objects.delete()
 
     def test_page_fields(self):
