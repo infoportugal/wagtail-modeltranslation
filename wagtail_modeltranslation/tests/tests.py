@@ -298,7 +298,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         page_edit_handler = models.InlinePanelPage.get_edit_handler()
 
-        form = page_edit_handler.get_form_class(models.InlinePanelPage)
+        if VERSION[0] < 2:
+            form = page_edit_handler.get_form_class(models.InlinePanelPage)
+        else:
+            form = page_edit_handler.get_form_class()
 
         page_base_fields = ['slug_de', 'slug_en', 'seo_title_de', 'seo_title_en', 'search_description_de',
                             'search_description_en', u'show_in_menus', u'go_live_at', u'expire_at']
@@ -331,7 +334,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         from wagtail.snippets.views.snippets import get_snippet_edit_handler
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
-        form = snippet_edit_handler.get_form_class(models.InlinePanelSnippet)
+        if VERSION[0] < 2:
+            form = snippet_edit_handler.get_form_class(models.InlinePanelSnippet)
+        else:
+            form = snippet_edit_handler.get_form_class()
 
         inline_model_fields = ['field_name_de', 'field_name_en', 'image_chooser_de', 'image_chooser_en',
                                'fieldrow_name_de', 'fieldrow_name_en', 'name_de', 'name_en', 'image_de', 'image_en',
