@@ -9,6 +9,9 @@ matrix:
   - env: WAGTAIL="wagtail>=1.13,<1.14" DB=sqlite
   - env: WAGTAIL="wagtail>=1.13,<1.14" DB=postgres
   - env: WAGTAIL="wagtail>=1.13,<1.14" DB=mysql
+  - env: WAGTAIL="wagtail==2.0" DB=sqlite
+  - env: WAGTAIL="wagtail==2.0" DB=postgres
+  - env: WAGTAIL="wagtail==2.0" DB=mysql
   - python: "3.5"
   - python: "3.4"
   - python: "2.7"
@@ -31,6 +34,9 @@ matrix:
     env: WAGTAIL="wagtail>=1.5,<1.6"
   - python: "3.5"
     env: WAGTAIL="wagtail>=1.4,<1.5"
+  exclude:
+  - python: 2.7
+    env: WAGTAIL="wagtail==2.0"
 before_script:
   - mysql -e 'create database wagtail_modeltranslation;'
   - psql -c 'create database wagtail_modeltranslation;' -U postgres
