@@ -12,7 +12,7 @@ from six import iteritems
 try:
     from wagtail.core import hooks
     from wagtail.core.models import Page
-    from wagtail.core.rich_text import PageLinkHandler
+    from wagtail.core.rich_text.pages import PageLinkHandler
 except ImportError:
     from wagtail.wagtailcore import hooks
     from wagtail.wagtailcore.models import Page
