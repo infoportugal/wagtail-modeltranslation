@@ -11,6 +11,7 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
+from django import VERSION as DJANGO_VERSION
 try:
     from wagtail import VERSION
 except ImportError:
@@ -98,7 +99,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # 5. makemigrations
                 from django.db import connections, DEFAULT_DB_ALIAS
-                if VERSION[0] < 2:
+                if DJANGO_VERSION[0] < 2:
                     from django.db import connections, DEFAULT_DB_ALIAS
                     call_command('makemigrations', verbosity=2, interactive=False,
                                  database=connections[DEFAULT_DB_ALIAS].alias)
