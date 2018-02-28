@@ -5,6 +5,10 @@ import sys
 import django
 from django.conf import settings
 from django.core.management import call_command
+try:
+    from wagtail import VERSION
+except ImportError:
+    VERSION = 1, 6, 3  # assume it's 1.6.3, the latest version without VERSION
 
 
 def runtests():
@@ -32,7 +36,7 @@ def runtests():
 
         # Configure test environment
         import wagtail
-        if wagtail.VERSION[0] < 2:
+        if VERSION[0] < 2:
             WAGTAIL_MODULES = [
                 'wagtail.wagtailcore',
                 'wagtail.wagtailadmin',
