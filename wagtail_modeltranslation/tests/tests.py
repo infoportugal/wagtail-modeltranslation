@@ -101,8 +101,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 call_command('makemigrations', verbosity=2, interactive=False)
 
                 # 6. Syncdb
-                call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
-                             load_initial_data=False)
+                call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True)
 
                 # 7. Make sure Page translation fields are created
                 call_command('sync_page_translation_fields', interactive=False, verbosity=0)
