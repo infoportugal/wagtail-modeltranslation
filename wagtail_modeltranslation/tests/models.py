@@ -74,7 +74,8 @@ class FieldPanelSnippet(models.Model):
 @register_snippet
 class ImageChooserPanelSnippet(models.Model):
     image = models.ForeignKey(
-        'wagtailimages.Image'
+        'wagtailimages.Image',
+        on_delete=models.CASCADE,
     )
 
     panels = [
