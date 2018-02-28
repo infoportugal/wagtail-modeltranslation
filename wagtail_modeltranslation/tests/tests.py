@@ -98,15 +98,14 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # 5. makemigrations
                 from django.db import connections, DEFAULT_DB_ALIAS
-                call_command('makemigrations', verbosity=2, interactive=False,
-                             database=connections[DEFAULT_DB_ALIAS].alias)
+                call_command('makemigrations', verbosity=2, interactive=False)
 
                 # 6. Syncdb
                 call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
-                             database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
+                             load_initial_data=False)
 
                 # 7. Make sure Page translation fields are created
-                call_command('sync_page_translation_fields', interactive=False, verbosity=0, database=connections[DEFAULT_DB_ALIAS].alias)
+                call_command('sync_page_translation_fields', interactive=False, verbosity=0)
 
                 # 8. patch wagtail models
                 from wagtail_modeltranslation.patch_wagtailadmin import patch_wagtail_models
