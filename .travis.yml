@@ -2,16 +2,13 @@ language: python
 python:
   - "3.6"
 env:
-  - WAGTAIL="wagtail>=1.13,<1.14" DB=sqlite
+  - WAGTAIL="wagtail>=2.0,<2.1" DB=sqlite
 matrix:
   include:
   # Latest Wagtail version
-  - env: WAGTAIL="wagtail>=1.13,<1.14" DB=sqlite
-  - env: WAGTAIL="wagtail>=1.13,<1.14" DB=postgres
-  - env: WAGTAIL="wagtail>=1.13,<1.14" DB=mysql
-  - env: WAGTAIL="wagtail==2.0" DB=sqlite
-  - env: WAGTAIL="wagtail==2.0" DB=postgres
-  - env: WAGTAIL="wagtail==2.0" DB=mysql
+  - env: WAGTAIL="wagtail>=2.0,<2.1" DB=sqlite
+  - env: WAGTAIL="wagtail>=2.0,<2.1" DB=postgres
+  - env: WAGTAIL="wagtail>=2.0,<2.1" DB=mysql
   - python: "3.5"
   - python: "3.4"
   - python: "2.7"
