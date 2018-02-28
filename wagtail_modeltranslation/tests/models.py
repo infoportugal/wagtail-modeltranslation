@@ -123,7 +123,7 @@ class MultiFieldPanelSnippet(FieldPanelSnippet, ImageChooserPanelSnippet, FieldR
 class BaseInlineModel(MultiFieldPanelSnippet):
     field_name = models.CharField(max_length=10)
 
-    image_chooser = models.ForeignKey('wagtailimages.Image')
+    image_chooser = models.ForeignKey('wagtailimages.Image', on_delete=models.CASCADE)
 
     fieldrow_name = models.CharField(max_length=10)
 
@@ -159,7 +159,8 @@ class FieldPanelPage(WagtailPage):
 
 class ImageChooserPanelPage(WagtailPage):
     image = models.ForeignKey(
-        'wagtailimages.Image'
+        'wagtailimages.Image',
+        on_delete = models.CASCADE,
     )
 
     content_panels = [
