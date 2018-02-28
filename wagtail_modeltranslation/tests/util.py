@@ -33,7 +33,10 @@ class PageFactory(object):
         if not nodes:
             return None
 
-        from wagtail.wagtailcore.models import Site
+        try:
+            from wagtail.core.models import Site
+        except ImportError:
+            from wagtail.wagtailcore.models import Site
         root_node = self.create_instance(nodes)
         site = Site.objects.create(root_page=root_node)
         return site
