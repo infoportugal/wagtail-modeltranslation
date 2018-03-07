@@ -168,7 +168,7 @@ class FieldRowPanelPage(WagtailPage):
 class StreamFieldPanelPage(WagtailPage):
     body = StreamField([
         ('text', blocks.CharBlock(max_length=10))
-    ])
+    ], blank=False)  # since wagtail 1.12 StreamField's blank defaults to False
 
     content_panels = [
         StreamFieldPanel('body')

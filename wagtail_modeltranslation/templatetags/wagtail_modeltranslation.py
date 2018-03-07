@@ -9,8 +9,9 @@ from django.utils.translation import activate, get_language
 from six import iteritems
 
 from wagtail.wagtailcore.models import Page
-from modeltranslation import settings as mt_settings
+from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
+from modeltranslation import settings as mt_settings
 from modeltranslation.settings import DEFAULT_LANGUAGE
 
 from ..contextlib import use_language
@@ -80,11 +81,10 @@ def slugurl_trans(context, slug, language=None):
         page = Page.objects.filter(slug=slug).first()
 
     if page:
-        return page.relative_url(context['request'].site)
-    else:
-        return None
+        # call pageurl() instead of page.relative_url() here so we get the ``accepts_kwarg`` logic
+        return pageurl(context, page)
 
-        
+
 @register.tag('get_available_languages_wmt')
 def do_get_available_languages(unused_parser, token):
     """
