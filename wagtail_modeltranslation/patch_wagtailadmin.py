@@ -387,7 +387,7 @@ def _update_translation_descendant_url_paths(old_record, page):
         if old_url_path == new_url_path:
             # nothing to do
             continue
-        
+
         languages_changed.append(language)
         _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language)
 
