@@ -55,7 +55,9 @@ def change_lang(context, lang=None, *args, **kwargs):
             translated_url = '/' + lang + '/' + path_components[0] + '/'
             if request.GET:
                 translated_url += '?'
-                for key, value in iteritems(request.GET):
+                for count, (key, value) in enumerate(iteritems(request.GET)):
+                    if count != 0:
+                        translated_url += "&"
                     translated_url += key + '=' + value
             return translated_url
 
