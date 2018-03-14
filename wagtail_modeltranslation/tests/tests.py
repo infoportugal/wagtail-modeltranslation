@@ -11,6 +11,7 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
+from django import VERSION as DJANGO_VERSION
 try:
     from wagtail import VERSION
 except ImportError:
@@ -97,16 +98,13 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 handle_translation_registrations()
 
                 # 5. makemigrations
-                from django.db import connections, DEFAULT_DB_ALIAS
-                call_command('makemigrations', verbosity=2, interactive=False,
-                             database=connections[DEFAULT_DB_ALIAS].alias)
+                call_command('makemigrations', verbosity=2, interactive=False)
 
                 # 6. Syncdb
-                call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
-                             database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
+                call_command('migrate', verbosity=0, interactive=False, run_syncdb=True)
 
                 # 7. Make sure Page translation fields are created
-                call_command('sync_page_translation_fields', interactive=False, verbosity=0, database=connections[DEFAULT_DB_ALIAS].alias)
+                call_command('sync_page_translation_fields', interactive=False, verbosity=0)
 
                 # 8. patch wagtail models
                 from wagtail_modeltranslation.patch_wagtailadmin import patch_wagtail_models
