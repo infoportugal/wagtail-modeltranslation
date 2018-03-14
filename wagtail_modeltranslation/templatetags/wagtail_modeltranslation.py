@@ -3,13 +3,21 @@
 import re
 
 from django import template
-from django.core.urlresolvers import resolve
 from django.utils.translation import activate, get_language
+
+try:
+    from django.core.urlresolvers import resolve
+except ImportError:
+    from django.urls import resolve
 
 from six import iteritems
 
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
+try:
+    from wagtail.core.models import Page
+    from wagtail.core.templatetags.wagtailcore_tags import pageurl
+except ImportError:
+    from wagtail.wagtailcore.models import Page
+    from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
 from modeltranslation import settings as mt_settings
 from modeltranslation.settings import DEFAULT_LANGUAGE

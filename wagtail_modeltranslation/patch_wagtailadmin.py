@@ -15,19 +15,30 @@ from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
-from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
-from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
-    MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailcore.fields import StreamField, StreamValue
-from wagtail.wagtailcore.url_routing import RouteResult
-from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
-from wagtail.wagtailsearch.index import SearchField
-from wagtail.wagtailsnippets.models import get_snippet_models
-from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
-
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
+try:
+    from wagtail.contrib.routable_page.models import RoutablePageMixin
+    from wagtail.admin.edit_handlers import FieldPanel, \
+        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
+    from wagtail.core.models import Page
+    from wagtail.core.fields import StreamField, StreamValue
+    from wagtail.core.url_routing import RouteResult
+    from wagtail.images.edit_handlers import ImageChooserPanel
+    from wagtail.search.index import SearchField
+    from wagtail.snippets.models import get_snippet_models
+    from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
+except ImportError:
+    from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
+    from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
+        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
+    from wagtail.wagtailcore.models import Page
+    from wagtail.wagtailcore.fields import StreamField, StreamValue
+    from wagtail.wagtailcore.url_routing import RouteResult
+    from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+    from wagtail.wagtailsearch.index import SearchField
+    from wagtail.wagtailsnippets.models import get_snippet_models
+    from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
 logger = logging.getLogger('wagtail.core')
 

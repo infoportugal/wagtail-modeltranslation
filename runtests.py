@@ -5,6 +5,10 @@ import sys
 import django
 from django.conf import settings
 from django.core.management import call_command
+try:
+    from wagtail import VERSION
+except ImportError:
+    VERSION = 1, 6, 3  # assume it's 1.6.3, the latest version without VERSION
 
 
 def runtests():
@@ -31,14 +35,9 @@ def runtests():
             })
 
         # Configure test environment
-        settings.configure(
-            DATABASES=DATABASES,
-            INSTALLED_APPS=(
-                'django.contrib.contenttypes',
-                'django.contrib.auth',
-                'taggit',
-                'rest_framework',
-
+        import wagtail
+        if VERSION[0] < 2:
+            WAGTAIL_MODULES = [
                 'wagtail.wagtailcore',
                 'wagtail.wagtailadmin',
                 'wagtail.wagtaildocs',
@@ -52,13 +51,41 @@ def runtests():
                 'wagtail.wagtailsites',
                 'wagtail.contrib.settings',
                 'wagtail.contrib.wagtailapi',
+            ]
+            WAGTAIL_CORE = 'wagtail.wagtailcore'
+        else:
+            WAGTAIL_MODULES = [
+                'wagtail.core',
+                'wagtail.admin',
+                'wagtail.documents',
+                'wagtail.snippets',
+                'wagtail.users',
+                'wagtail.images',
+                'wagtail.embeds',
+                'wagtail.search',
+                'wagtail.contrib.redirects',
+                'wagtail.contrib.forms',
+                'wagtail.sites',
+                'wagtail.contrib.settings',
+                'wagtail.api'
+            ]
+            WAGTAIL_CORE = 'wagtail.core'
 
+            
+        settings.configure(
+            DATABASES=DATABASES,
+            INSTALLED_APPS=[
+                'django.contrib.contenttypes',
+                'django.contrib.auth',
+                'taggit',
+                'rest_framework'] +
+                WAGTAIL_MODULES + [
                 'wagtail_modeltranslation.makemigrations',
                 'wagtail_modeltranslation',
-            ),
+            ],
             # remove wagtailcore from serialization as translation columns have not been created at this point
             # (which causes OperationalError: no such column)
-            TEST_NON_SERIALIZED_APPS=['wagtail.wagtailcore'],
+            TEST_NON_SERIALIZED_APPS=[WAGTAIL_CORE],
             ROOT_URLCONF=None,  # tests override urlconf, but it still needs to be defined
             LANGUAGES=(
                 ('en', 'English'),

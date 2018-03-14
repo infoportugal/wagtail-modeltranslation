@@ -9,9 +9,14 @@ from django.http import QueryDict
 from django.utils.html import format_html, format_html_join, escape
 from django.views.decorators.csrf import csrf_exempt
 from six import iteritems
-from wagtail.wagtailcore import hooks
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailcore.rich_text import PageLinkHandler
+try:
+    from wagtail.core import hooks
+    from wagtail.core.models import Page
+    from wagtail.core.rich_text.pages import PageLinkHandler
+except ImportError:
+    from wagtail.wagtailcore import hooks
+    from wagtail.wagtailcore.models import Page
+    from wagtail.wagtailcore.rich_text import PageLinkHandler
 
 
 @hooks.register('insert_editor_js')
