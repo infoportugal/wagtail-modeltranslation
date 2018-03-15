@@ -3,7 +3,7 @@ from setuptools import setup
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.8',
+    version='0.8.1',
     description='Translates Wagtail CMS models using a registration approach.',
     long_description=(
         'The modeltranslation application can be used to translate dynamic '

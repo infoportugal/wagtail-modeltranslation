@@ -1,6 +1,6 @@
 Metadata-Version: 1.0
 Name: wagtail-modeltranslation
-Version: 0.6.0rc1
+Version: 0.8.1
 Summary: Translates Wagtail CMS models using a registration approach.
 Home-page: https://github.com/infoportugal/wagtail-modeltranslation
 Author: InfoPortugal S.A.
