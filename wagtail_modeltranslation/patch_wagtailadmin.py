@@ -374,7 +374,7 @@ def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, lan
             SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
             WHERE path LIKE %s AND id <> %s
         """.format(localized_url_path=localized_url_path)
-        cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, page.path + '%', page.id])
+        cursor.execute(update_statement, [new_url_path, (len(old_url_path) if old_url_path else 0) + 1, page.path + '%', page.id])
     else:
         (Page.objects
             .rewrite(False)
@@ -383,7 +383,7 @@ def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, lan
             .exclude(pk=page.pk)
             .update(**{localized_url_path: Concat(
                 Value(new_url_path),
-                Substr(localized_url_path, len(old_url_path) + 1))}))
+                Substr(localized_url_path, (len(old_url_path) if old_url_path else 0) + 1))}))
 
 
 def _update_translation_descendant_url_paths(old_record, page):
