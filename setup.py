@@ -31,7 +31,7 @@ setup(
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
     install_requires=[
-        'wagtail(>=1.4,<2)', 'django-modeltranslation(>=0.12.2)'],
+        'wagtail(>=1.4,<2.1)', 'django-modeltranslation(>=0.12.2)', 'django(<2)'],
     download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.8.tar.gz',
     classifiers=[
         'Programming Language :: Python',
