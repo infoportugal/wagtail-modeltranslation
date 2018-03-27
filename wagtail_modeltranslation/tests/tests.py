@@ -3,6 +3,7 @@ import imp
 
 import django
 from django.apps import apps as django_apps
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.http import HttpRequest
@@ -121,6 +122,9 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
     def setUp(self):
         self._old_language = get_language()
         trans_real.activate('de')
+
+        # ensure we have a fresh site cache
+        cache.delete('wagtail_site_root_paths')
 
     def tearDown(self):
         trans_real.activate(self._old_language)
@@ -643,12 +647,12 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         # re-fetch to pick up latest from DB
         grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
-        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_de, '/root-untranslated/child-untranslated/grandchild1-untranslated/')
         self.assertEqual(grandchild1.slug_en, None)
         self.assertEqual(grandchild1.url_path_en, None)
         grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
         self.assertEqual(grandgrandchild.url_path_de,
-                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+                         '/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
         self.assertEqual(grandgrandchild.slug_en, None)
         self.assertEqual(grandgrandchild.url_path_en, None)
 
@@ -658,18 +662,18 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         child.slug_en = 'child-translated'
         child.save()
 
-        self.assertEqual(child.url_path_de, '/child-untranslated/')
-        self.assertEqual(child.url_path_en, '/child-translated/')
+        self.assertEqual(child.url_path_de, '/root-untranslated/child-untranslated/')
+        self.assertEqual(child.url_path_en, '/root-untranslated/child-translated/')
 
         grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
-        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
-        self.assertEqual(grandchild1.url_path_en, '/child-translated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_de, '/root-untranslated/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_en, '/root-untranslated/child-translated/grandchild1-untranslated/')
 
         grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
         self.assertEqual(grandgrandchild.url_path_de,
-                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+                         '/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
         self.assertEqual(grandgrandchild.url_path_en,
-                         '/child-translated/grandchild1-untranslated/grandgrandchild-untranslated/')
+                         '/root-untranslated/child-translated/grandchild1-untranslated/grandgrandchild-untranslated/')
 
     def test_fetch_translation_records(self):
         """
@@ -904,20 +908,20 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         call_command('set_translation_url_paths', verbosity=0)
 
         grandchild1 = models.TestSlugPage1.objects.get(slug_de='grandchild1-untranslated')
-        self.assertEqual(grandchild1.url_path_de, '/child-untranslated/grandchild1-untranslated/')
-        self.assertEqual(grandchild1.url_path_en, '/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_de, '/root-untranslated/child-untranslated/grandchild1-untranslated/')
+        self.assertEqual(grandchild1.url_path_en, '/root-untranslated/child-untranslated/grandchild1-untranslated/')
         grandgrandchild = models.TestSlugPage1.objects.get(slug_de='grandgrandchild-untranslated')
         self.assertEqual(grandgrandchild.url_path_de,
-                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+                         '/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
         self.assertEqual(grandgrandchild.url_path_en,
-                         '/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
+                         '/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
         grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
-        self.assertEqual(grandchild2.__dict__['url_path'], '/child-untranslated/grandchild2-untranslated/')
-        self.assertEqual(grandchild2.url_path_de, '/child-untranslated/grandchild2-untranslated/')
-        self.assertEqual(grandchild2.url_path_en, '/child-untranslated/grandchild2-untranslated/')
+        self.assertEqual(grandchild2.__dict__['url_path'], '/root-untranslated/child-untranslated/grandchild2-untranslated/')
+        self.assertEqual(grandchild2.url_path_de, '/root-untranslated/child-untranslated/grandchild2-untranslated/')
+        self.assertEqual(grandchild2.url_path_en, '/root-untranslated/child-untranslated/grandchild2-untranslated/')
 
         grandgrandchild_translated = models.TestSlugPage1.objects.get(slug_de='grandgrandchild1-translated')
         self.assertEqual(grandgrandchild_translated.url_path_de,
-                         '/child2-translated/grandchild1-translated/grandgrandchild1-translated/')
+                         '/root-untranslated/child2-translated/grandchild1-translated/grandgrandchild1-translated/')
         self.assertEqual(grandgrandchild_translated.url_path_en,
-                         '/child2-translated-en/grandchild1-translated-en/grandgrandchild1-translated-en/')
+                         '/root-untranslated/child2-translated-en/grandchild1-translated-en/grandgrandchild1-translated-en/')
