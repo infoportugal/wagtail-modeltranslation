@@ -35,6 +35,9 @@ _build
 # GitEye / Eclipse project file
 /.project
 
+# PyCharm
+/.idea
+
 # vim
 *~
 *.swp
