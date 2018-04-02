@@ -837,6 +837,38 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(page_01.url, '/en/url-en-01/')
         self.assertEqual(page_02.url, '/en/url-de-02/')
 
+    def test_root_page_slug(self):
+        site_pages = {
+            'model': models.TestRootPage,
+            'kwargs': {'title': 'root URL', 'slug_de': 'root-de', 'slug_en': 'root-en'},
+            'children': {
+                'child1': {
+                    'model': models.TestSlugPage1,
+                    'kwargs': {'title': 'child1 URL', 'slug_de': 'url-de-01', 'slug_en': 'url-en-01'},
+                },
+                'child2': {
+                    'model': models.TestSlugPage2,
+                    'kwargs': {'title': 'child2 URL', 'slug': 'url-de-02'},
+                },
+            },
+        }
+        page_factory.create_page_tree(site_pages)
+
+        wagtail_page_01 = site_pages['children']['child1']['instance']
+        wagtail_page_02 = site_pages['children']['child2']['instance']
+
+        self.assertEqual(wagtail_page_01.url, '/de/url-de-01/')
+        self.assertEqual(wagtail_page_01.url_path, '/root-de/url-de-01/')
+        self.assertEqual(wagtail_page_02.url, '/de/url-de-02/')
+        self.assertEqual(wagtail_page_02.url_path, '/root-de/url-de-02/')
+
+        trans_real.activate('en')
+
+        self.assertEqual(wagtail_page_01.url, '/en/url-en-01/')
+        self.assertEqual(wagtail_page_01.url_path, '/root-en/url-en-01/')
+        self.assertEqual(wagtail_page_02.url, '/en/url-de-02/')
+        self.assertEqual(wagtail_page_02.url_path, '/root-en/url-de-02/')
+
     def test_set_translation_url_paths_command(self):
         """
         Assert set_translation_url_paths management command works correctly
