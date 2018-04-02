@@ -3,6 +3,7 @@ import copy
 import logging
 import types
 
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction, connection
 from django.db.models import Q, Value
@@ -21,7 +22,7 @@ try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-    from wagtail.core.models import Page
+    from wagtail.core.models import Page, Site
     from wagtail.core.fields import StreamField, StreamValue
     from wagtail.core.url_routing import RouteResult
     from wagtail.images.edit_handlers import ImageChooserPanel
@@ -32,7 +33,7 @@ except ImportError:
     from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
     from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-    from wagtail.wagtailcore.models import Page
+    from wagtail.wagtailcore.models import Page, Site
     from wagtail.wagtailcore.fields import StreamField, StreamValue
     from wagtail.wagtailcore.url_routing import RouteResult
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -112,6 +113,7 @@ class WagtailTranslator(object):
         # OVERRIDE PAGE METHODS
         model.set_url_path = _new_set_url_path
         model.route = _new_route
+        model._get_site_root_paths = _new_get_site_root_paths
         model._update_descendant_url_paths = _new_update_descendant_url_paths
         _patch_clean(model)
 
@@ -305,6 +307,25 @@ def _new_route(self, request, path_components):
             return RouteResult(self)
         else:
             raise Http404
+
+
+def _new_get_site_root_paths(self, request=None):
+    """
+    Return ``Site.get_site_root_paths()``, using the cached copy on the request object if available
+    and if is of the same language.
+    """
+    # if we have a request, use that to cache site_root_paths; otherwise, use self
+    current_language = get_language()
+    cache_object = request if request else self
+    if hasattr(cache_object, '_wagtail_cached_site_root_paths_language') \
+            and cache_object._wagtail_cached_site_root_paths_language == current_language:
+        return cache_object._wagtail_cached_site_root_paths
+    else:
+        cache.delete('wagtail_site_root_paths')
+        cache_object._wagtail_cached_site_root_paths_language = current_language
+        cache_object._wagtail_cached_site_root_paths = Site.get_site_root_paths()
+
+    return cache_object._wagtail_cached_site_root_paths
 
 
 def _validate_slugs(page):
