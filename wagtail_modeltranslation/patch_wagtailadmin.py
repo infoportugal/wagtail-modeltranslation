@@ -11,6 +11,7 @@ from django.db.models.functions import Concat, Substr
 from django.http import Http404
 from django.utils.translation import trans_real
 from django.utils.translation import ugettext_lazy as _
+from functools import wraps
 from modeltranslation import settings as mt_settings
 from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
@@ -113,7 +114,10 @@ class WagtailTranslator(object):
         # OVERRIDE PAGE METHODS
         model.set_url_path = _new_set_url_path
         model.route = _new_route
-        model._get_site_root_paths = _new_get_site_root_paths
+        try:
+            model._get_site_root_paths = _get_site_root_paths_decorator(model._get_site_root_paths)
+        except AttributeError:
+            model.get_url_parts = _get_site_root_paths_decorator(model.get_url_parts)
         model._update_descendant_url_paths = _new_update_descendant_url_paths
         _patch_clean(model)
 
@@ -309,25 +313,6 @@ def _new_route(self, request, path_components):
             raise Http404
 
 
-def _new_get_site_root_paths(self, request=None):
-    """
-    Return ``Site.get_site_root_paths()``, using the cached copy on the request object if available
-    and if is of the same language.
-    """
-    # if we have a request, use that to cache site_root_paths; otherwise, use self
-    current_language = get_language()
-    cache_object = request if request else self
-    if hasattr(cache_object, '_wagtail_cached_site_root_paths_language') \
-            and cache_object._wagtail_cached_site_root_paths_language == current_language:
-        return cache_object._wagtail_cached_site_root_paths
-    else:
-        cache.delete('wagtail_site_root_paths')
-        cache_object._wagtail_cached_site_root_paths_language = current_language
-        cache_object._wagtail_cached_site_root_paths = Site.get_site_root_paths()
-
-    return cache_object._wagtail_cached_site_root_paths
-
-
 def _validate_slugs(page):
     """
     Determine whether the given slug is available for use on a child page of
@@ -446,6 +431,27 @@ def _update_untranslated_descendants_url_paths(page, languages_changed):
         for language in languages_changed:
             _localized_set_url_path(child, page, language)
         child.save(update_fields=update_fields)  # this will trigger any required saves downstream
+
+
+def _get_site_root_paths_decorator(func):
+    """
+    Resets cached site_root_paths if language is different than cached value
+    """
+    @wraps(func)
+    def wrapper(self, *args, **kwargs):
+        current_language = get_language()
+        request = args[0] if len(args) > 0 else None
+        cache_object = request if request else self
+        try:
+            if cache_object._wagtail_cached_site_root_paths_language != current_language:
+                cache.delete('wagtail_site_root_paths')
+                del cache_object._wagtail_cached_site_root_paths
+                cache_object._wagtail_cached_site_root_paths_language = current_language
+        except AttributeError:
+            cache_object._wagtail_cached_site_root_paths_language = current_language
+
+        return func(self, *args, **kwargs)
+    return wrapper
 
 
 class LocalizedSaveDescriptor(object):
