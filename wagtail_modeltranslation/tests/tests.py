@@ -124,7 +124,8 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
         trans_real.activate('de')
 
         # ensure we have a fresh site cache
-        cache.delete('wagtail_site_root_paths')
+        for language in mt_settings.AVAILABLE_LANGUAGES:
+            cache.delete('wagtail_site_root_paths_{}'.format(language))
 
     def tearDown(self):
         trans_real.activate(self._old_language)
@@ -850,24 +851,45 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
                     'model': models.TestSlugPage2,
                     'kwargs': {'title': 'child2 URL', 'slug': 'url-de-02'},
                 },
+                'child3': {
+                    'model': models.TestSlugPage2,
+                    'kwargs': {'title': 'child3 URL', 'slug': 'url-de-03'},
+                },
             },
         }
         page_factory.create_page_tree(site_pages)
+        request = HttpRequest()
 
+        site_root_page = site_pages['instance']
         wagtail_page_01 = site_pages['children']['child1']['instance']
         wagtail_page_02 = site_pages['children']['child2']['instance']
+        wagtail_page_03 = site_pages['children']['child3']['instance']
 
         self.assertEqual(wagtail_page_01.url, '/de/url-de-01/')
         self.assertEqual(wagtail_page_01.url_path, '/root-de/url-de-01/')
-        self.assertEqual(wagtail_page_02.url, '/de/url-de-02/')
-        self.assertEqual(wagtail_page_02.url_path, '/root-de/url-de-02/')
+        if VERSION >= (1, 11):
+            self.assertEqual(wagtail_page_02.get_url(request=request), '/de/url-de-02/')  # with request
 
         trans_real.activate('en')
 
         self.assertEqual(wagtail_page_01.url, '/en/url-en-01/')
         self.assertEqual(wagtail_page_01.url_path, '/root-en/url-en-01/')
-        self.assertEqual(wagtail_page_02.url, '/en/url-de-02/')
-        self.assertEqual(wagtail_page_02.url_path, '/root-en/url-de-02/')
+        if VERSION >= (1, 11):
+            self.assertEqual(wagtail_page_02.get_url(request=request), '/en/url-de-02/')
+
+        trans_real.activate('de')
+
+        # new request after changing language
+        self.assertEqual(wagtail_page_03.url, '/de/url-de-03/')
+        if VERSION >= (1, 11):
+            self.assertEqual(wagtail_page_01.get_url(request=HttpRequest()), '/de/url-de-01/')
+
+        # URL should not be broken after updating the root_page (ensure the cache is evicted)
+        self.assertEqual(wagtail_page_01.url, '/de/url-de-01/')
+        site_root_page.slug = 'new-root-de'
+        site_root_page.save()
+        wagtail_page_01_new = site_root_page.get_children().get(id=wagtail_page_01.id)
+        self.assertEqual(wagtail_page_01_new.url, '/de/url-de-01/')
 
     def test_set_translation_url_paths_command(self):
         """
