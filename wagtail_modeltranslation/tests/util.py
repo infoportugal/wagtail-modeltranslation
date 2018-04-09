@@ -1,5 +1,3 @@
-
-
 class PageFactory(object):
 
     def __init__(self, initial_path=0):
@@ -33,12 +31,24 @@ class PageFactory(object):
         if not nodes:
             return None
 
+        from .models import TestRootPage
         try:
             from wagtail.core.models import Site
         except ImportError:
             from wagtail.wagtailcore.models import Site
-        root_node = self.create_instance(nodes)
-        site = Site.objects.create(root_page=root_node)
+
+        # add a top root node to mimic Wagtail's real behaviour
+        all_nodes = {
+            'model': TestRootPage,
+            'kwargs': {'title': 'Root', 'slug': 'root', },
+            'children': {
+                'site_root': nodes,
+            },
+        }
+        self.create_instance(all_nodes)
+
+        site_root_node = nodes['instance']
+        site = Site.objects.create(root_page=site_root_node, hostname='localhost', port=80, is_default_site=True)
         return site
 
     def create_instance(self, node, parent=None, order=None):

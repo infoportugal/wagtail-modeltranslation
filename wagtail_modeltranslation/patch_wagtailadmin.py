@@ -3,7 +3,9 @@ import copy
 import logging
 import types
 
+from django.core.cache import cache
 from django.core.exceptions import ValidationError
+from django.core.urlresolvers import reverse
 from django.db import transaction, connection
 from django.db.models import Q, Value
 from django.db.models.functions import Concat, Substr
@@ -15,13 +17,11 @@ from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
-from wagtail_modeltranslation.utils import compare_class_tree_depth
 try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-    from wagtail.core.models import Page
+    from wagtail.core.models import Page, Site
     from wagtail.core.fields import StreamField, StreamValue
     from wagtail.core.url_routing import RouteResult
     from wagtail.images.edit_handlers import ImageChooserPanel
@@ -32,13 +32,22 @@ except ImportError:
     from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
     from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-    from wagtail.wagtailcore.models import Page
+    from wagtail.wagtailcore.models import Page, Site
     from wagtail.wagtailcore.fields import StreamField, StreamValue
     from wagtail.wagtailcore.url_routing import RouteResult
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
     from wagtail.wagtailsearch.index import SearchField
     from wagtail.wagtailsnippets.models import get_snippet_models
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
+try:
+    from wagtail.core.utils import WAGTAIL_APPEND_SLASH
+except ImportError:
+    try:
+        from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
+    except ImportError:
+        WAGTAIL_APPEND_SLASH = True  # Wagtail<1.5
+from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
+from wagtail_modeltranslation.utils import compare_class_tree_depth
 
 logger = logging.getLogger('wagtail.core')
 
@@ -113,6 +122,9 @@ class WagtailTranslator(object):
         model.set_url_path = _new_set_url_path
         model.route = _new_route
         model._update_descendant_url_paths = _new_update_descendant_url_paths
+        if not hasattr(model, '_get_site_root_paths'):
+            model.get_url_parts = _new_get_url_parts  # Wagtail<1.11
+        model._get_site_root_paths = _new_get_site_root_paths
         _patch_clean(model)
 
         if not model.save.__name__.startswith('localized'):
@@ -386,6 +398,57 @@ def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, lan
                 Substr(localized_url_path, len(old_url_path) + 1))}))
 
 
+def _localized_site_get_site_root_paths():
+    """
+    Localized version of ``Site.get_site_root_paths()``
+    """
+    current_language = get_language()
+    cache_key = 'wagtail_site_root_paths_{}'.format(current_language)
+    result = cache.get(cache_key)
+
+    if result is None:
+        result = [
+            (site.id, site.root_page.url_path, site.root_url)
+            for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
+        ]
+        cache.set(cache_key, result, 3600)
+
+    return result
+
+
+def _new_get_site_root_paths(self, request=None):
+    """
+    Return localized site_root_paths, using the cached copy on the
+    request object if available and if language is the same.
+    """
+    # if we have a request, use that to cache site_root_paths; otherwise, use self
+    current_language = get_language()
+    cache_object = request if request else self
+    if not hasattr(cache_object, '_wagtail_cached_site_root_paths_language') or \
+            cache_object._wagtail_cached_site_root_paths_language != current_language:
+        cache_object._wagtail_cached_site_root_paths_language = current_language
+        cache_object._wagtail_cached_site_root_paths = _localized_site_get_site_root_paths()
+
+    return cache_object._wagtail_cached_site_root_paths
+
+
+def _new_get_url_parts(self, request=None):
+    """
+    For Wagtail<1.11 ``Page.get_url_parts()`` is patched so it uses ``self._get_site_root_paths(request)``
+    """
+    for (site_id, root_path, root_url) in self._get_site_root_paths(request):
+        if self.url_path.startswith(root_path):
+            page_path = reverse('wagtail_serve', args=(self.url_path[len(root_path):],))
+
+            # Remove the trailing slash from the URL reverse generates if
+            # WAGTAIL_APPEND_SLASH is False and we're not trying to serve
+            # the root path
+            if not WAGTAIL_APPEND_SLASH and page_path != '/':
+                page_path = page_path.rstrip('/')
+
+            return (site_id, root_url, page_path)
+
+
 def _update_translation_descendant_url_paths(old_record, page):
     # update children paths, must be done for all languages to ensure fallbacks are applied
     languages_changed = []
@@ -470,6 +533,11 @@ class LocalizedSaveDescriptor(object):
         # update children localized paths if any language had it slug changed
         if change_descendant_url_path:
             _update_translation_descendant_url_paths(old_record, instance)
+
+        # Check if this is a root page of any sites and clear the 'wagtail_site_root_paths_XX' key if so
+        if Site.objects.filter(root_page=instance).exists():
+            for language in mt_settings.AVAILABLE_LANGUAGES:
+                cache.delete('wagtail_site_root_paths_{}'.format(language))
 
         return result
 
