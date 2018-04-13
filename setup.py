@@ -1,9 +1,24 @@
 #!/usr/bin/env python
+import re
+from builtins import RuntimeError
+
+import os
 from setuptools import setup
+
+def get_version(*file_paths):
+    filename = os.path.join(os.path.dirname(__file__), *file_paths)
+    version_file = open(filename).read()
+    version_match = re.search(r"^__version__ = ['\"]([^'\"]*)['\"]", version_file, re.M)
+    if version_match:
+        return version_match.group(1)
+    raise RuntimeError('Unable to find version string.')
+
+
+version = get_version("wagtail_modeltranslation", "__init__.py")
 
 setup(
     name='wagtail-modeltranslation',
-    version='0.8.1',
+    version=version,
     description='Translates Wagtail CMS models using a registration approach.',
     long_description=(
         'The modeltranslation application can be used to translate dynamic '
