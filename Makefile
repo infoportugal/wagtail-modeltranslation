@@ -29,12 +29,14 @@ release: clean ## package and upload a release (working dir must be clean)
 		echo "1 - new major version"; \
 		echo "2 - new minor version"; \
 		echo "3 - patch"; \
+		echo "4 - keep the current version"; \
 		echo ""; \
 		read yn; \
 		case $$yn in \
 			1 ) bumpversion major; break;; \
 			2 ) bumpversion minor; break;; \
 			3 ) bumpversion patch; break;; \
+			4 ) break;; \
 			* ) echo "Please answer 1-3.";; \
 		esac \
 	done
