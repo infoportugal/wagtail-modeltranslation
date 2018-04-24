@@ -12,10 +12,7 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
-try:
-    from wagtail import VERSION
-except ImportError:
-    VERSION = 1, 6, 3  # assume it's 1.6.3, the latest version without VERSION
+from wagtail import VERSION
 from .util import page_factory
 
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
@@ -47,8 +44,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
         if not WagtailModeltranslationTransactionTestBase.synced:
             # In order to perform only one syncdb
             WagtailModeltranslationTransactionTestBase.synced = True
-            mgr = (override_settings(**TEST_SETTINGS) if django.VERSION < (1, 8)
-                   else dummy_context_mgr())
+            mgr = dummy_context_mgr()
             with mgr:
                 # 1. Reload translation in case USE_I18N was False
                 from django.utils import translation as dj_trans
@@ -324,7 +320,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         page_edit_handler = models.InlinePanelPage.get_edit_handler()
 
-        if VERSION[0] < 2:
+        if VERSION < (2,):
             form = page_edit_handler.get_form_class(models.InlinePanelPage)
         else:
             form = page_edit_handler.get_form_class()
@@ -363,7 +359,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
             from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
-        if VERSION[0] < 2:
+        if VERSION < (2,):
             form = snippet_edit_handler.get_form_class(models.InlinePanelSnippet)
         else:
             form = snippet_edit_handler.get_form_class()
