@@ -45,7 +45,7 @@ setup(
         'wagtail_modeltranslation.migrate.management.commands'],
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
-    install_requires=['Django<2.0', 'wagtail>=1.4', 'django-modeltranslation>=0.12.2'],
+    install_requires=['wagtail>=1.4', 'django-modeltranslation>=0.13b1'],
     download_url='https://github.com/infoportugal/wagtail-modeltranslation/archive/v0.8.tar.gz',
     classifiers=[
         'Programming Language :: Python',
