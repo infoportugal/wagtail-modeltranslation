@@ -100,7 +100,7 @@ function toggleLocale(locale, state) {
 
 var default_locale = `en`;
 var localisedElements = buildSets();
-var locales = Object.keys(localisedElements);
+var locales = Object.keys(localisedElements).sort();
 
 // If there are no locale sets, then there is
 // no locale field picker to build, either.
