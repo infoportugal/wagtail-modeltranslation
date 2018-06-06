@@ -1,4 +1,4 @@
-ul.objects li.object.l10n-hidden {
+form .l10n-hidden {
     display: none;
 }
 
@@ -46,6 +46,6 @@ div.locale-picker ul.locales li.locale button.locale-toggle {
   max-height: 2em;
 }
 
-div.locale-picker ul.locales li.locale button.locale-toggle.active {
+div.locale-picker ul.locales li.locale button.locale-toggle.showing-locale {
   background-color: #43b1b0;
 }
