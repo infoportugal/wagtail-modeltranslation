@@ -3,7 +3,7 @@ $(document).ready(function () {
     if (!$('body').hasClass('page-is-live')) {
         var slugFollowsTitle = false;
 
-        $.each(langs, function (idx, lang_code) {
+        $.each(wagtailModelTranslations.languages, function (idx, lang_code) {
             lang_code = lang_code.replace("-", "_");
             $('#id_title_' + lang_code).on('focus', function () {
                 /* slug should only follow the title field if its value matched the title's value at the time of focus */

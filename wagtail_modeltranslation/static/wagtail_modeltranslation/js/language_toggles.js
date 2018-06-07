@@ -29,10 +29,11 @@ function filterForLocale(index, element) {
       locale = code.replace(/[ \[\]]/g,'');
 
   // Verify this is a known locale and not a fluke,
-  // using the global "langs" variable, which is an
+  // using the global "wagtailModelTranslations.languages"
+  // variable, which is an
   // array of all language codes specified in the
   // settings.LANGUAGES variable for Django.
-  if (langs.indexOf(locale) === -1) return;
+  if (wagtailModelTranslations.languages.indexOf(locale) === -1) return;
 
   // We do our show/hiding based on list items,
   // otherwise we're just "emptying" a list item

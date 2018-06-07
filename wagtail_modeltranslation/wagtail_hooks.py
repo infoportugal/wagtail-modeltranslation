@@ -33,9 +33,16 @@ def translated_slugs():
     for lang in settings.LANGUAGES:
         lang_codes.append("'%s'" % lang[0])
 
-    js_languages = "<script>var langs=[%s];</script>" % (", ".join(lang_codes))
+    js_languages = """
+    <script>
+        wagtailModelTranslations = {{
+            languages: [{languages}],
+            defaultLanguage: '{language_code}',
+        }};
+    </script>
+    """.format(languages=", ".join(lang_codes), language_code=settings.LANGUAGE_CODE)
 
-    return format_html(js_languages) + js_includes
+    return js_languages + js_includes
 
 
 @hooks.register('insert_global_admin_js')
@@ -46,14 +53,14 @@ def language_toggles():
     click to show/hide all those fields.
     """
 
-    js_files = ['js/language_toggles.js']
+    js_files = ['wagtail_modeltranslation/js/language_toggles.js']
 
     js_includes = format_html_join(
         '\n', '<script src="{0}{1}"></script>',
         ((settings.STATIC_URL, filename) for filename in js_files)
     )
 
-    css_files = ['css/language_toggles.css']
+    css_files = ['wagtail_modeltranslation/css/language_toggles.css']
 
     css_includes = format_html_join(
         '\n', '<link rel="stylesheet" href="{0}{1}">',
