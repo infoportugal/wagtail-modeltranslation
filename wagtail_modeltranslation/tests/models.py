@@ -52,8 +52,12 @@ class PatchTestPage(WagtailPage):
 
 
 @register_snippet
-class PatchTestSnippet(models.Model):
+class PatchTestSnippetNoPanels(models.Model):
     name = models.CharField(max_length=10)
+
+
+@register_snippet
+class PatchTestSnippet(PatchTestSnippetNoPanels):
 
     panels = [
         FieldPanel('name')
