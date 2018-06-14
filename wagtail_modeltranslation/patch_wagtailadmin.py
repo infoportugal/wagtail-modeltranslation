@@ -22,7 +22,7 @@ try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
-        extract_panel_definitions_from_model_class
+        extract_panel_definitions_from_model_class, ObjectList
     from wagtail.core.models import Page, Site
     from wagtail.core.fields import StreamField, StreamValue
     from wagtail.core.url_routing import RouteResult
@@ -34,7 +34,7 @@ except ImportError:
     from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
     from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
-        extract_panel_definitions_from_model_class
+        extract_panel_definitions_from_model_class, ObjectList
     from wagtail.wagtailcore.models import Page, Site
     from wagtail.wagtailcore.fields import StreamField, StreamValue
     from wagtail.wagtailcore.url_routing import RouteResult
@@ -141,7 +141,6 @@ class WagtailTranslator(object):
         elif hasattr(model, 'panels'):
             model.panels = self._patch_panels(model.panels)
         else:
-            from wagtail.wagtailadmin.edit_handlers import ObjectList
             panels = extract_panel_definitions_from_model_class(model)
             translation_registered_fields = translator.get_options_for_model(model).fields
             panels = filter(lambda field: field.field_name not in translation_registered_fields, panels)
