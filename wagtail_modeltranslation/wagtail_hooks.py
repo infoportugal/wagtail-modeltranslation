@@ -7,6 +7,7 @@ from django.conf.urls import url
 from django.http import HttpResponse
 from django.http import QueryDict
 from django.utils.html import format_html, format_html_join, escape
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from six import iteritems
 try:
@@ -38,9 +39,14 @@ def translated_slugs():
         wagtailModelTranslations = {{
             languages: [{languages}],
             defaultLanguage: '{language_code}',
+            viewEditString: '{view_edit_string}',
         }};
     </script>
-    """.format(languages=", ".join(lang_codes), language_code=settings.LANGUAGE_CODE)
+    """.format(
+        languages=", ".join(lang_codes),
+        language_code=settings.LANGUAGE_CODE
+        view_edit_string=_('View / edit fields for')
+    )
 
     return js_languages + js_includes
 

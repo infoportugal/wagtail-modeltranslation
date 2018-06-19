@@ -78,7 +78,7 @@ function buildSets() {
  * visibility for each locale's fields.
  */
 function buildLocaleToggler() {
-  var bar = $(`<div class="locale-picker"><h2>View/edit fields for:</h2></div>`);
+  var bar = $(`<div class="locale-picker"><h2>${wagtailModelTranslations.viewEditString}</h2></div>`);
   var ul = $(`<ul class="locales"></ul>`);
   bar.append(ul);
 
@@ -121,7 +121,7 @@ function toggleLocale(locale, state) {
   });
 }
 
-var default_locale = `en`;
+var default_locale = wagtailModelTranslations.defaultLanguage;
 var localisedElements = {};
 var columnCSS = [`field-col`];
 for (var i=1; i<=12; i++) { columnCSS.push(`col${i}`); }
