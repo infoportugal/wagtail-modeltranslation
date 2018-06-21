@@ -44,7 +44,7 @@ def translated_slugs():
     </script>
     """.format(
         languages=", ".join(lang_codes),
-        language_code=settings.LANGUAGE_CODE
+        language_code=settings.LANGUAGE_CODE,
         view_edit_string=_('View / edit fields for')
     )
 
