@@ -70,9 +70,8 @@ function filterForLocale(index, element) {
  * will always stay visible.
  */
 function buildSets() {
-  $(`li.object, div.field`, topLevel).each( filterForLocale );
+  $(`li.object:not(.multi-field), div.field`, topLevel).each( filterForLocale );
 }
-
 /**
  * Build a locale picker bar, with buttons that toggle
  * visibility for each locale's fields.
