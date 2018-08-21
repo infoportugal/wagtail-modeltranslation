@@ -46,7 +46,7 @@ except ImportError:
         from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
     except ImportError:
         WAGTAIL_APPEND_SLASH = True  # Wagtail<1.5
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
+from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
 logger = logging.getLogger('wagtail.core')
@@ -119,16 +119,17 @@ class WagtailTranslator(object):
                 _patch_stream_field_meaningful_value(descriptor)
 
         # OVERRIDE PAGE METHODS
-        model.set_url_path = _new_set_url_path
-        model.route = _new_route
-        model._update_descendant_url_paths = _new_update_descendant_url_paths
-        if not hasattr(model, '_get_site_root_paths'):
-            model.get_url_parts = _new_get_url_parts  # Wagtail<1.11
-        model._get_site_root_paths = _new_get_site_root_paths
-        _patch_clean(model)
+        if TRANSLATE_SLUGS:
+            model.set_url_path = _new_set_url_path
+            model.route = _new_route
+            model._update_descendant_url_paths = _new_update_descendant_url_paths
+            if not hasattr(model, '_get_site_root_paths'):
+                model.get_url_parts = _new_get_url_parts  # Wagtail<1.11
+            model._get_site_root_paths = _new_get_site_root_paths
+            _patch_clean(model)
 
-        if not model.save.__name__.startswith('localized'):
-            setattr(model, 'save', LocalizedSaveDescriptor(model.save))
+            if not model.save.__name__.startswith('localized'):
+                setattr(model, 'save', LocalizedSaveDescriptor(model.save))
 
     def _patch_other_models(self, model):
         if hasattr(model, 'edit_handler'):
