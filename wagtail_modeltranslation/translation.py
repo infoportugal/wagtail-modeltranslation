@@ -9,18 +9,16 @@ except ImportError:
     from wagtail.wagtailcore.models import Page
 
 
-fields = (
-    'title',
-    'seo_title',
-    'search_description',
-)
-if settings.TRANSLATE_SLUGS:
-    fields += (
-        'slug',
-        'url_path',
-    )
-
 
 @register(Page)
 class PageTR(TranslationOptions):
-    fields = fields
+    fields = (
+        'title',
+        'seo_title',
+        'search_description',
+    )
+    if settings.TRANSLATE_SLUGS:
+        fields += (
+            'slug',
+            'url_path',
+        )
