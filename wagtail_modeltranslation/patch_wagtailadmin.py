@@ -5,7 +5,10 @@ import types
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+try:
+    from django.core.urlresolvers import reverse
+except ImportError:
+    from django.urls import reverse
 from django.db import transaction, connection
 from django.db.models import Q, Value
 from django.db.models.functions import Concat, Substr
