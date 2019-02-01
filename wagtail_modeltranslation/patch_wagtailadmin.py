@@ -47,7 +47,7 @@ except ImportError:
     from wagtail.wagtailsearch.index import SearchField
     from wagtail.wagtailsnippets.models import get_snippet_models
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS
+from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
 logger = logging.getLogger('wagtail.core')
