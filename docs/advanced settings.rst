@@ -28,3 +28,15 @@ This setting behaves as the above but should be used for panels that are compose
 .. code-block:: python
 
     WAGTAILMODELTRANSLATION_CUSTOM_COMPOSED_PANELS = ['app_x.module_y.PanelZ']
+
+
+``WAGTAILMODELTRANSLATION_TRANSLATE_SLUGS``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``True``
+
+This setting makes slug and url_path localized. If True, each page will have a slug and url_path per language.
+
+.. code-block:: python
+
+    WAGTAILMODELTRANSLATION_TRANSLATE_SLUGS = True

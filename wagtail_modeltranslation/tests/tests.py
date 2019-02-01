@@ -303,6 +303,8 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
     def test_snippet_patching(self):
         self.check_fieldpanel_patching(panels=models.FieldPanelSnippet.panels)
+        self.check_panels_patching(models.FieldPanelSnippet, ['name_de', 'name_en'])
+
         self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelSnippet.panels)
         self.check_fieldrowpanel_patching(panels=models.FieldRowPanelSnippet.panels)
         self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelSnippet.panels)
@@ -311,6 +313,24 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # In spite of the model being the InlinePanelSnippet the panels are patch on the related model
         # which is the SnippetInlineModel
         self.check_inlinepanel_patching(panels=models.SnippetInlineModel.panels)
+
+        # Case we don't define panels on snippet
+        self.check_panels_patching(models.PatchTestSnippetNoPanels, ['name_de', 'name_en'])
+
+    def check_panels_patching(self, model, model_fields):
+        patched_edit_handler = get_snippet_edit_handler(model)
+
+        if VERSION[0] < 2:
+            form = patched_edit_handler.get_form_class(model)
+        else:
+            form = patched_edit_handler.get_form_class()
+
+        try:
+            # python 3
+            self.assertEqual(model_fields, list(form.base_fields.keys()))
+        except AttributeError:
+            # python 2.7
+            self.assertItemsEqual(model_fields, form.base_fields.keys())
 
     def test_page_form(self):
         """
@@ -353,10 +373,6 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         In this test we use the InlinePanelSnippet model because it has all the possible "patchable" fields
         so if the created form has all fields the the form was correctly patched
         """
-        try:
-            from wagtail.snippets.views.snippets import get_snippet_edit_handler
-        except ImportError:
-            from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
         if VERSION < (2,):

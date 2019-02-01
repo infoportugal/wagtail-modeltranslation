@@ -20,10 +20,12 @@ from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
+
 try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
-        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
+        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
+        extract_panel_definitions_from_model_class, ObjectList
     from wagtail.core.models import Page, Site
     from wagtail.core.fields import StreamField, StreamValue
     from wagtail.core.url_routing import RouteResult
@@ -35,7 +37,8 @@ try:
 except ImportError:
     from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
     from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
-        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
+        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
+        extract_panel_definitions_from_model_class, ObjectList
     from wagtail.wagtailcore.models import Page, Site
     from wagtail.wagtailcore.fields import StreamField, StreamValue
     from wagtail.wagtailcore.url_routing import RouteResult
@@ -117,16 +120,17 @@ class WagtailTranslator(object):
                 _patch_stream_field_meaningful_value(descriptor)
 
         # OVERRIDE PAGE METHODS
-        model.set_url_path = _new_set_url_path
-        model.route = _new_route
-        model._update_descendant_url_paths = _new_update_descendant_url_paths
-        if not hasattr(model, '_get_site_root_paths'):
-            model.get_url_parts = _new_get_url_parts  # Wagtail<1.11
-        model._get_site_root_paths = _new_get_site_root_paths
-        _patch_clean(model)
+        if TRANSLATE_SLUGS:
+            model.set_url_path = _new_set_url_path
+            model.route = _new_route
+            model._update_descendant_url_paths = _new_update_descendant_url_paths
+            if not hasattr(model, '_get_site_root_paths'):
+                model.get_url_parts = _new_get_url_parts  # Wagtail<1.11
+            model._get_site_root_paths = _new_get_site_root_paths
+            _patch_clean(model)
 
-        if not model.save.__name__.startswith('localized'):
-            setattr(model, 'save', LocalizedSaveDescriptor(model.save))
+            if not model.save.__name__.startswith('localized'):
+                setattr(model, 'save', LocalizedSaveDescriptor(model.save))
 
     def _patch_other_models(self, model):
         if hasattr(model, 'edit_handler'):
@@ -135,11 +139,13 @@ class WagtailTranslator(object):
                 tab.children = self._patch_panels(tab.children)
         elif hasattr(model, 'panels'):
             model.panels = self._patch_panels(model.panels)
-
-        if model in get_snippet_models() and model in SNIPPET_EDIT_HANDLERS:
-            del SNIPPET_EDIT_HANDLERS[model]
         else:
-            get_setting_edit_handler.cache_clear()
+            panels = extract_panel_definitions_from_model_class(model)
+            translation_registered_fields = translator.get_options_for_model(model).fields
+            panels = filter(lambda field: field.field_name not in translation_registered_fields, panels)
+            edit_handler = ObjectList(panels)
+
+            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model)
 
     def _patch_panels(self, panels_list, related_model=None):
         """

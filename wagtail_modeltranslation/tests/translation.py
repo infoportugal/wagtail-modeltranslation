@@ -1,12 +1,29 @@
 # coding: utf-8
-from modeltranslation.translator import translator, register, TranslationOptions
+from modeltranslation.translator import (TranslationOptions, register,
+                                         translator)
 
-from wagtail_modeltranslation.tests.models import TestRootPage, TestSlugPage1, TestSlugPage2, PatchTestPage, \
-    PatchTestSnippet, FieldPanelPage, ImageChooserPanelPage, FieldRowPanelPage, MultiFieldPanelPage, InlinePanelPage, \
-    FieldPanelSnippet, ImageChooserPanelSnippet, FieldRowPanelSnippet, MultiFieldPanelSnippet, PageInlineModel, \
-    BaseInlineModel, StreamFieldPanelPage, StreamFieldPanelSnippet, SnippetInlineModel, InlinePanelSnippet, \
-    TestSlugPage1Subclass, RoutablePageTest
-
+from wagtail_modeltranslation.tests.models import (BaseInlineModel,
+                                                   FieldPanelPage,
+                                                   FieldPanelSnippet,
+                                                   FieldRowPanelPage,
+                                                   FieldRowPanelSnippet,
+                                                   ImageChooserPanelPage,
+                                                   ImageChooserPanelSnippet,
+                                                   InlinePanelPage,
+                                                   InlinePanelSnippet,
+                                                   MultiFieldPanelPage,
+                                                   MultiFieldPanelSnippet,
+                                                   PageInlineModel,
+                                                   PatchTestPage,
+                                                   PatchTestSnippet,
+                                                   PatchTestSnippetNoPanels,
+                                                   RoutablePageTest,
+                                                   SnippetInlineModel,
+                                                   StreamFieldPanelPage,
+                                                   StreamFieldPanelSnippet,
+                                                   TestRootPage, TestSlugPage1,
+                                                   TestSlugPage1Subclass,
+                                                   TestSlugPage2)
 
 # Wagtail Models
 
@@ -35,11 +52,14 @@ class PatchTestPageTranslationOptions(TranslationOptions):
     fields = ('description',)
 
 
-class PatchTestSnippetTranslationOptions(TranslationOptions):
+@register(PatchTestSnippetNoPanels)
+class PatchTestSnippetNoPanelsTranslationOptions(TranslationOptions):
     fields = ('name',)
 
 
-translator.register(PatchTestSnippet, PatchTestSnippetTranslationOptions)
+@register(PatchTestSnippet)
+class PatchTestSnippetTranslationOptions(TranslationOptions):
+    pass
 
 
 # Panel Patching Models
