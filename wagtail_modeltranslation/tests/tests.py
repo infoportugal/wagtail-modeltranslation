@@ -12,6 +12,10 @@ from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
+try:
+    from wagtail.snippets.views.snippets import get_snippet_edit_handler
+except ImportError:
+    from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
 from wagtail import VERSION
 from .util import page_factory
 
