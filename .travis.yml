@@ -1,6 +1,6 @@
 language: python
 python:
-  - "3.7"
+  - "3.6"
 env:
   - WAGTAIL="wagtail>=2.4,<2.5" DB=sqlite
 matrix:
