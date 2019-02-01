@@ -29,6 +29,8 @@ matrix:
     env: WAGTAIL="wagtail>=1.12,<1.13"
   - python: "3.6"
     env: WAGTAIL="wagtail>=1.12,<1.13"
+addons:
+  postgresql: "9.4"
 before_script:
   - mysql -e 'create database wagtail_modeltranslation;'
   - psql -c 'create database wagtail_modeltranslation;' -U postgres
