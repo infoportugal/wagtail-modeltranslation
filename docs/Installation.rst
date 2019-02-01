@@ -48,6 +48,7 @@ To setup the application please follow these steps:
                 ...
                 'wagtail_modeltranslation',
                 'wagtail_modeltranslation.makemigrations',
+                'wagtail_modeltranslation.migrate',
             )
 
     - Add 'django.middleware.locale.LocaleMiddleware' to ``MIDDLEWARE`` (``MIDDLEWARE_CLASSES`` before django 1.10).
