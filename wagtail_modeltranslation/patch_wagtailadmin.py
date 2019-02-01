@@ -5,7 +5,10 @@ import types
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.core.urlresolvers import reverse
+try:
+    from django.urls import reverse
+except ImportError:
+    from django.core.urlresolvers import reverse
 from django.db import transaction, connection
 from django.db.models import Q, Value
 from django.db.models.functions import Concat, Substr
@@ -26,6 +29,7 @@ try:
     from wagtail.core.models import Page, Site
     from wagtail.core.fields import StreamField, StreamValue
     from wagtail.core.url_routing import RouteResult
+    from wagtail.core.utils import WAGTAIL_APPEND_SLASH
     from wagtail.images.edit_handlers import ImageChooserPanel
     from wagtail.search.index import SearchField
     from wagtail.snippets.models import get_snippet_models
@@ -38,17 +42,11 @@ except ImportError:
     from wagtail.wagtailcore.models import Page, Site
     from wagtail.wagtailcore.fields import StreamField, StreamValue
     from wagtail.wagtailcore.url_routing import RouteResult
+    from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
     from wagtail.wagtailsearch.index import SearchField
     from wagtail.wagtailsnippets.models import get_snippet_models
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
-try:
-    from wagtail.core.utils import WAGTAIL_APPEND_SLASH
-except ImportError:
-    try:
-        from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
-    except ImportError:
-        WAGTAIL_APPEND_SLASH = True  # Wagtail<1.5
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
