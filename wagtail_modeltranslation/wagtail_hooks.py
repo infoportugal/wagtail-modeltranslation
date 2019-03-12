@@ -2,13 +2,16 @@
 
 import json
 
+from six import iteritems
+
 from django.conf import settings
 from django.conf.urls import url
-from django.http import HttpResponse
-from django.http import QueryDict
-from django.utils.html import format_html, format_html_join, escape
+from django.http import HttpResponse, QueryDict
+from django.utils.html import escape, format_html, format_html_join
 from django.views.decorators.csrf import csrf_exempt
-from six import iteritems
+from wagtail_modeltranslation import settings as wmt_settings
+from modeltranslation import settings as mt_settings
+
 try:
     from wagtail.core import hooks
     from wagtail.core.models import Page
@@ -33,7 +36,17 @@ def translated_slugs():
     for lang in settings.LANGUAGES:
         lang_codes.append("'%s'" % lang[0])
 
-    js_languages = "<script>var langs=[%s];</script>" % (", ".join(lang_codes))
+    js_languages = """
+<script>
+    var langs=[{langs}];
+    var default_lang='{default_lang}';
+    var translate_slugs={translate_slugs};
+</script>
+    """.format(
+        langs=", ".join(lang_codes),
+        default_lang=mt_settings.DEFAULT_LANGUAGE,
+        translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false'
+    )
 
     return format_html(js_languages) + js_includes
 
