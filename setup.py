@@ -45,7 +45,7 @@ setup(
         'wagtail_modeltranslation.migrate.management.commands'],
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js']},
-    install_requires=['wagtail>=1.12', 'django-modeltranslation>=0.13b1'],
+    install_requires=['wagtail>=1.12', 'django-modeltranslation>=0.13'],
     classifiers=[
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.7',
