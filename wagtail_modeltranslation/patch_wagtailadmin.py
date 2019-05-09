@@ -459,7 +459,7 @@ def _update_translation_descendant_url_paths(old_record, page):
     default_localized_url_path = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
     for language in mt_settings.AVAILABLE_LANGUAGES:
         localized_url_path = build_localized_fieldname('url_path', language)
-        old_url_path = getattr(old_record, localized_url_path) or getattr(old_record, default_localized_url_path)
+        old_url_path = getattr(old_record, localized_url_path) or getattr(old_record, default_localized_url_path) or ''
         new_url_path = getattr(page, localized_url_path) or getattr(page, default_localized_url_path)
 
         if old_url_path == new_url_path:
