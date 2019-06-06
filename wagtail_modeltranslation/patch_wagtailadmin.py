@@ -18,7 +18,6 @@ from django.utils.translation import ugettext_lazy as _
 from modeltranslation import settings as mt_settings
 from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
-from wagtail.contrib.settings.models import BaseSetting
 
 try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
@@ -31,7 +30,6 @@ try:
     from wagtail.core.utils import WAGTAIL_APPEND_SLASH
     from wagtail.images.edit_handlers import ImageChooserPanel
     from wagtail.search.index import SearchField
-    from wagtail.snippets.models import get_snippet_models
     from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
 except ImportError:
     from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
@@ -44,7 +42,6 @@ except ImportError:
     from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
     from wagtail.wagtailsearch.index import SearchField
-    from wagtail.wagtailsnippets.models import get_snippet_models
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
@@ -572,5 +569,4 @@ def patch_wagtail_models():
     registered_models.sort(key=compare_class_tree_depth)
 
     for model_class in registered_models:
-        if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):
-            WagtailTranslator(model_class)
+        WagtailTranslator(model_class)
