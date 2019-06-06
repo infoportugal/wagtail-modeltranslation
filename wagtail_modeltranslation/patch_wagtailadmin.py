@@ -18,6 +18,7 @@ from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
 from wagtail.contrib.settings.views import get_setting_edit_handler
 try:
+    from modelcluster.models import ClusterableModel
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
@@ -569,5 +570,5 @@ def patch_wagtail_models():
     registered_models.sort(key=compare_class_tree_depth)
 
     for model_class in registered_models:
-        if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting):
+        if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting) or issubclass(model_class, ClusterableModel):
             WagtailTranslator(model_class)
