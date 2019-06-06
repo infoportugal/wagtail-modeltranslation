@@ -7,7 +7,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.core.urlresolvers import reverse
 from django.db import transaction, connection
-from django.db.models import Q, Value
+from django.db.models import Q, Value, Model
 from django.db.models.functions import Concat, Substr
 from django.http import Http404
 from django.utils.translation import trans_real
@@ -22,7 +22,7 @@ try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-    from wagtail.core.models import Page, Site
+    from wagtail.core.models import Page, Site, Orderable
     from wagtail.core.fields import StreamField, StreamValue
     from wagtail.core.url_routing import RouteResult
     from wagtail.images.edit_handlers import ImageChooserPanel
@@ -33,7 +33,7 @@ except ImportError:
     from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
     from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel
-    from wagtail.wagtailcore.models import Page, Site
+    from wagtail.wagtailcore.models import Page, Site, Orderable
     from wagtail.wagtailcore.fields import StreamField, StreamValue
     from wagtail.wagtailcore.url_routing import RouteResult
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
@@ -570,5 +570,6 @@ def patch_wagtail_models():
     registered_models.sort(key=compare_class_tree_depth)
 
     for model_class in registered_models:
-        if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting) or issubclass(model_class, ClusterableModel):
+        if issubclass(model_class, Page) or model_class in get_snippet_models() or issubclass(model_class, BaseSetting) \
+        or issubclass(model_class, ClusterableModel) or issubclass(model_class, Model) or issubclass(model_class, Orderable):
             WagtailTranslator(model_class)
