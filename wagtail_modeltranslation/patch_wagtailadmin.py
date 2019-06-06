@@ -19,7 +19,6 @@ from modeltranslation import settings as mt_settings
 from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.contrib.settings.models import BaseSetting
-from wagtail.contrib.settings.views import get_setting_edit_handler
 
 try:
     from wagtail.contrib.routable_page.models import RoutablePageMixin
@@ -262,9 +261,9 @@ def _localized_set_url_path(page, parent, language):
         # for the current language. If the value for the current language is invalid we get the one
         # for the default fallback language
         slug = getattr(page, localized_slug_field, None) or \
-               getattr(page, default_localized_slug_field, None) or page.slug
+            getattr(page, default_localized_slug_field, None) or page.slug
         parent_url_path = getattr(parent, localized_url_path_field, None) or \
-                          getattr(parent, default_localized_url_path_field, None) or parent.url_path
+            getattr(parent, default_localized_url_path_field, None) or parent.url_path
 
         setattr(page, localized_url_path_field, parent_url_path + slug + '/')
 
