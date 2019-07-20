@@ -7,6 +7,7 @@ from six import iteritems
 from django.conf import settings
 from django.conf.urls import url
 from django.http import HttpResponse, QueryDict
+from django.templatetags.static import static
 from django.utils.html import escape, format_html, format_html_join
 from django.views.decorators.csrf import csrf_exempt
 from wagtail_modeltranslation import settings as wmt_settings
@@ -28,9 +29,9 @@ def translated_slugs():
         'wagtail_modeltranslation/js/wagtail_translated_slugs.js',
     ]
 
-    js_includes = format_html_join('\n', '<script src="{0}{1}"></script>', (
-        (settings.STATIC_URL, filename) for filename in js_files)
-                                   )
+    js_includes = format_html_join('\n', '<script src="{0}"></script>', (
+        (static(filename),) for filename in js_files)
+    )
 
     lang_codes = []
     for lang in settings.LANGUAGES:
@@ -123,18 +124,17 @@ def streamfields_translation_copy():
         'wagtail_modeltranslation/js/copy_stream_fields.js',
     ]
 
-    js_includes = format_html_join('\n', '<script src="{0}{1}"></script>', (
-        (settings.STATIC_URL, filename) for filename in js_files)
-                                   )
+    js_includes = format_html_join('\n', '<script src="{0}"></script>', (
+        (static(filename),) for filename in js_files)
+    )
 
     return js_includes
 
 
 @hooks.register('insert_editor_css')
 def modeltranslation_page_editor_css():
-    return format_html('<link rel="stylesheet" href="'
-                       + settings.STATIC_URL
-                       + 'wagtail_modeltranslation/css/page_editor_modeltranslation.css" >')
+    filename = 'wagtail_modeltranslation/css/page_editor_modeltranslation.css'
+    return format_html('<link rel="stylesheet" href="{}" >'.format(static(filename)))
 
 
 @hooks.register('register_rich_text_link_handler')
