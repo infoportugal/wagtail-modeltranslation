@@ -8,7 +8,12 @@ $(document).ready(function(){
 		//Current Field with all content
 		var currentStreamField = allStreamFields[i];
 		//Current Field header
-		var header = $(currentStreamField).children('h2')[0];
+    var header;
+    if(versionCompare(WAGTAIL_VERSION,'2.6.0')===-1){
+      header = $(currentStreamField).children('h2')[0];
+    } else {
+      header = $(currentStreamField).children('.title-wrapper')[0];
+    }
 		//Search for the input field so that we can get is id to know the field's name.
 		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
 		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
@@ -22,7 +27,7 @@ $(document).ready(function(){
 			if (fieldLang != langs[j]) {
 				var currentFieldID = fieldName + '_' + fieldLang;
 				var targetFieldID = fieldName + '_' + langs [j];
-				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
+				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
 			};
 		};
 	};

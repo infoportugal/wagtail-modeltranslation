@@ -17,10 +17,12 @@ try:
     from wagtail.core import hooks
     from wagtail.core.models import Page
     from wagtail.core.rich_text.pages import PageLinkHandler
+    from wagtail.core import __version__ as WAGTAIL_VERSION
 except ImportError:
     from wagtail.wagtailcore import hooks
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailcore.rich_text import PageLinkHandler
+    from wagtail.wagtailcore import __version__ as WAGTAIL_VERSION
 
 
 @hooks.register('insert_editor_js')
@@ -121,6 +123,7 @@ def streamfields_translation_copy():
 
     # includes the javascript file in the html file
     js_files = [
+        'wagtail_modeltranslation/js/version_compare.js',
         'wagtail_modeltranslation/js/copy_stream_fields.js',
     ]
 
@@ -128,7 +131,12 @@ def streamfields_translation_copy():
         (static(filename),) for filename in js_files)
     )
 
-    return js_includes
+    js_wagtail_version = """
+<script>
+    var WAGTAIL_VERSION='{wagtail_version}';
+</script>
+    """.format(wagtail_version=WAGTAIL_VERSION)
+    return format_html(js_wagtail_version) + js_includes
 
 
 @hooks.register('insert_editor_css')
