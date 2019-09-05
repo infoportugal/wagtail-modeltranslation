@@ -1,34 +1,41 @@
 language: python
 python:
-  - "3.6"
+  - "3.7"
 env:
-  - WAGTAIL="wagtail>=2.4,<2.5" DB=sqlite
+  - WAGTAIL="wagtail>=2.6,<2.7" DB=sqlite
 matrix:
   include:
   # Latest Wagtail version
-  - env: WAGTAIL="wagtail>=2.4,<2.5" DB=sqlite
-  - env: WAGTAIL="wagtail>=2.4,<2.5" DB=postgres
-  - env: WAGTAIL="wagtail>=2.4,<2.5" DB=mysql
+  - env: WAGTAIL="wagtail>=2.6,<2.7" DB=postgres
+  - env: WAGTAIL="wagtail>=2.6,<2.7" DB=mysql
+  - python: "3.7"
   - python: "3.6"
   - python: "3.5"
   - python: "3.4"
   # Past Wagtail versions
-  - python: "3.6"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.5,<2.6"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.4,<2.5"
+  - python: "3.7"
     env: WAGTAIL="wagtail>=2.3,<2.4"
-  - python: "3.6"
+  - python: "3.7"
     env: WAGTAIL="wagtail>=2.2,<2.3"
-  - python: "3.6"
+  - python: "3.7"
     env: WAGTAIL="wagtail>=2.1,<2.2"
-  - python: "3.6"
+  - python: "3.7"
     env: WAGTAIL="wagtail>=2.0,<2.1"
   - python: "2.7"  # Wagtail 1.13 was the latest tested against 2.7
     env: WAGTAIL="wagtail>=1.13,<1.14"
-  - python: "3.6"
+  - python: "3.7"
     env: WAGTAIL="wagtail>=1.13,<1.14"
   - python: "2.7"
     env: WAGTAIL="wagtail>=1.12,<1.13"
-  - python: "3.6"
+  - python: "3.7"
     env: WAGTAIL="wagtail>=1.12,<1.13"
+services:
+  - mysql
+  - postgresql
 addons:
   postgresql: "9.4"
 before_script:
