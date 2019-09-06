@@ -4,9 +4,15 @@ from django import forms
 from django.conf import settings
 from django.utils.translation import ugettext as _
 from django.utils.translation import ugettext_lazy, ungettext
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailadmin import widgets
-from wagtail.wagtailadmin.forms import CopyForm
+
+try:
+    from wagtail.core.models import Page
+    from wagtail.admin import widgets
+    from wagtail.admin.forms import CopyForm
+except ImportError:
+    from wagtail.wagtailcore.models import Page
+    from wagtail.wagtailadmin import widgets
+    from wagtail.wagtailadmin.forms import CopyForm
 
 
 class PatchedCopyForm(CopyForm):
@@ -65,6 +71,7 @@ class PatchedCopyForm(CopyForm):
                 )
 
     def clean(self):
+        print('test')
         cleaned_data = super(CopyForm, self).clean()
 
         # Make sure the slug isn't already in use
@@ -98,5 +105,5 @@ class PatchedCopyForm(CopyForm):
             )
 
         return cleaned_data
-     
+
 

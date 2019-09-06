@@ -2,37 +2,34 @@
 
 import json
 
-from django.shortcuts import render, redirect
-
+from django.core.exceptions import PermissionDenied
+from six import iteritems
 from django.conf import settings
 from django.conf.urls import url
 from django.http import HttpResponse, QueryDict
+from django.shortcuts import redirect, render
 from django.utils.html import escape, format_html, format_html_join
-from django.views.decorators.csrf import csrf_exempt
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy, ungettext
+from django.views.decorators.csrf import csrf_exempt
+from wagtail_modeltranslation import settings as wmt_settings
+from modeltranslation import settings as mt_settings
+
+from .patch_wagtailadmin_forms import PatchedCopyForm
 
 try:
     from wagtail.core import hooks
     from wagtail.core.models import Page
     from wagtail.core.rich_text.pages import PageLinkHandler
+    from wagtail.admin import messages
+    from wagtail.admin.views.pages import get_valid_next_url_from_request
+
 except ImportError:
     from wagtail.wagtailcore import hooks
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailcore.rich_text import PageLinkHandler
+    from wagtail.wagtailadmin import messages
+    from wagtail.wagtailadmin.views.pages import get_valid_next_url_from_request
 
-from wagtail.wagtailadmin import messages
-
-from .patch_wagtailadmin_forms import PatchedCopyForm
-
-# Required for PatchedCopyForm
-
-# TODO: Already in wagtail, replace with proper import
-def get_valid_next_url_from_request(request):
-    next_url = request.POST.get('next') or request.GET.get('next')
-    if not next_url or not is_safe_url(url=next_url, host=request.get_host()):
-        return ''
-    return next_url
 
 @hooks.register('insert_editor_js')
 def translated_slugs():
@@ -173,6 +170,7 @@ def register_localized_page_link_handler():
 
     return ('page', LocalizedPageLinkHandler)
 
+
 @hooks.register('before_copy_page')
 def before_copy_page(request, page):
     parent_page = page.get_parent()
@@ -217,7 +215,8 @@ def before_copy_page(request, page):
             if form.cleaned_data.get('copy_subpages'):
                 messages.success(
                     request,
-                    _("Page '{0}' and {1} subpages copied.").format(page.get_admin_display_title(), new_page.get_descendants().count())
+                    _("Page '{0}' and {1} subpages copied.").format(
+                        page.get_admin_display_title(), new_page.get_descendants().count())
                 )
             else:
                 messages.success(request, _("Page '{0}' copied.").format(page.get_admin_display_title()))
@@ -237,4 +236,3 @@ def before_copy_page(request, page):
         'form': form,
         'next': next_url
     })
-        
