@@ -2,8 +2,9 @@
 
 from django import forms
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
-from django.utils.translation import ugettext_lazy, ungettext
+from django.utils.translation import ungettext
 
 try:
     from wagtail.core.models import Page
@@ -71,39 +72,36 @@ class PatchedCopyForm(CopyForm):
                 )
 
     def clean(self):
-        print('test')
         cleaned_data = super(CopyForm, self).clean()
 
         # Make sure the slug isn't already in use
-        #slug = cleaned_data.get('new_slug')
+        # slug = cleaned_data.get('new_slug')
 
         # New parent page given in form or parent of source, if parent_page is empty
         parent_page = cleaned_data.get('new_parent_page') or self.page.get_parent()
 
         # check if user is allowed to create a page at given location.
         if not parent_page.permissions_for_user(self.user).can_add_subpage():
-            self._errors['new_parent_page'] = self.error_class([
-                _("You do not have permission to copy to page \"%(page_title)s\"") % {'page_title': parent_page.get_admin_display_title()}
-            ])
+            raise ValidationError({
+                'new_parent_page': _("You do not have permission to copy to page \"%(page_title)s\"") % {'page_title': parent_page.get_admin_display_title()}
+            })
 
         # Count the pages with the same slug within the context of our copy's parent page
         for code, name in settings.LANGUAGES:
-            locale_slug = "slug_{}".format(code)
+            locale_slug = "new_slug_{}".format(code)
             slug = cleaned_data.get(locale_slug)
 
-            if slug and parent_page.get_children().filter(slug=slug).count():
-                self._errors['new_slug'] = self.error_class(
-                    [_("This slug is already in use within the context of its parent page \"%s\"" % parent_page)]
-                )
-                # The slug is no longer valid, hence remove it from cleaned_data
-                del cleaned_data['new_slug']
+            param = 'slug_' + code
+            query = {param: slug}
+            if slug and parent_page.get_children().filter(**query).count():
+                raise ValidationError({
+                    locale_slug: _("This slug is already in use within the context of its parent page \"%s\"" % parent_page)
+                })
 
         # Don't allow recursive copies into self
         if cleaned_data.get('copy_subpages') and (self.page == parent_page or parent_page.is_descendant_of(self.page)):
-            self._errors['new_parent_page'] = self.error_class(
-                [_("You cannot copy a page into itself when copying subpages")]
-            )
+            raise ValidationError({
+                'new_parent_page': _("You cannot copy a page into itself when copying subpages")
+            })
 
         return cleaned_data
-
-
