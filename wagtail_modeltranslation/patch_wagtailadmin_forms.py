@@ -9,7 +9,7 @@ from django.utils.translation import ungettext
 try:
     from wagtail.core.models import Page
     from wagtail.admin import widgets
-    from wagtail.admin.forms import CopyForm
+    from wagtail.admin.forms.pages import CopyForm
 except ImportError:
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailadmin import widgets
