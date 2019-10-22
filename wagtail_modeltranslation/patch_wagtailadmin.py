@@ -141,7 +141,7 @@ class WagtailTranslator(object):
             panels = filter(lambda field: field.field_name not in translation_registered_fields, panels)
             edit_handler = ObjectList(panels)
 
-            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model)
+            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to(model=model)
 
     def _patch_panels(self, panels_list, related_model=None):
         """
