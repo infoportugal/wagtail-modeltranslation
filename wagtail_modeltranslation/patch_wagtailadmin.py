@@ -45,6 +45,7 @@ except ImportError:
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
+from wagtail import VERSION
 
 logger = logging.getLogger('wagtail.core')
 
@@ -140,8 +141,11 @@ class WagtailTranslator(object):
             translation_registered_fields = translator.get_options_for_model(model).fields
             panels = filter(lambda field: field.field_name not in translation_registered_fields, panels)
             edit_handler = ObjectList(panels)
+            if VERSION < (2, 5):
+                SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model)
+            else:
+                SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to(model=model)
 
-            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model)
 
     def _patch_panels(self, panels_list, related_model=None):
         """
