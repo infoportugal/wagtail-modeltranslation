@@ -45,7 +45,7 @@ except ImportError:
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
-from wagtail import version
+from wagtail import VERSION
 
 logger = logging.getLogger('wagtail.core')
 
