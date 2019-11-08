@@ -22,6 +22,7 @@ Contributors
 * Raphael Grill
 * Tom Dyson
 * Tim Tan
+* Benedikt Willi
 
 
 .. _Django-modeltranslation: https://github.com/deschler/django-modeltranslation

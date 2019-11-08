@@ -7,27 +7,47 @@ $(document).ready(function(){
 	for (var i = 0; i < allStreamFields.length; i++) {
 		//Current Field with all content
 		var currentStreamField = allStreamFields[i];
-		//Current Field header
+		//Current field header
     var header;
-    if(versionCompare(WAGTAIL_VERSION,'2.6.0')===-1){
+    //Current field name
+    var fieldLang = "";
+    //Current field language
+    var fieldName = "";
+    if(versionCompare(WAGTAIL_VERSION,'2.6.0', {zeroExtend: true})===-1){
+      // Wagtail < 2.6 
       header = $(currentStreamField).children('h2')[0];
-    } else {
+      //Search for the input field so that we can get is id to know the field's name.
+      let streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
+      let fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+      let lastUnderscore = fieldInfos.lastIndexOf("_");
+      fieldName = fieldInfos.substring(0, lastUnderscore);
+      fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+    } else if(versionCompare(WAGTAIL_VERSION,'2.7.0', {zeroExtend: true})===-1){
+      // Wagtail < 2.7 
       header = $(currentStreamField).children('.title-wrapper')[0];
+      //Search for the input field so that we can get is id to know the field's name.
+      let streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
+      let fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+      let lastUnderscore = fieldInfos.lastIndexOf("_");
+      fieldName = fieldInfos.substring(0, lastUnderscore);
+      fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+    } else {
+      // Wagtail >= 2.7 
+      header = $(currentStreamField).children('.title-wrapper')[0];
+      //Search for the input field so that we can get is id to know the field's name.
+      let streamFieldDiv = $(currentStreamField).find('.field-content')[0];
+      let fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+      let lastUnderscore = fieldInfos.lastIndexOf("_");
+      fieldName = fieldInfos.substring(0, lastUnderscore);
+      fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
     }
-		//Search for the input field so that we can get is id to know the field's name.
-		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
-    var lastUnderscore = fieldInfos.lastIndexOf("_");
-    var fieldName = fieldInfos.substring(0, lastUnderscore);
-    var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
 		//The cycle to create the buttons for copy each language field
-		var copyContentString = 'Copy content from';
-		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
+		header.innerHTML += '<div class="translation-field-copy-wrapper">Copy content from: </div>';
 		for (var j = 0; j < langs.length; j++) {
 			if (fieldLang != langs[j]) {
 				var currentFieldID = fieldName + '_' + fieldLang;
 				var targetFieldID = fieldName + '_' + langs [j];
-				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
+				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += `<button class="button translation-field-copy" current-lang-code="${currentFieldID}" data-lang-code="${targetFieldID}">${langs[j]}</button>`;
 			};
 		};
 	};
@@ -60,11 +80,11 @@ function requestCopyField(originID, targetID) {
 	})
 	.done(function(data) {
 		/* Put the html data in the targetID field */
-		var wrapperDiv = $("#"+targetID+"-count").parents('.input')[0];
+		var wrapperDiv = $(`#${targetID}-count`).parents('.input')[0];
 		$(wrapperDiv).html(data);
 	})
 	.fail(function(error) {
-		console.log("wagtail-modeltranslation error: %s", error.responseText);
+		console.log(`wagtail-modeltranslation error: ${error.responseText}`);
 	})
 
 }
