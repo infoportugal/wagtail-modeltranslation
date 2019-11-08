@@ -8,20 +8,20 @@
  * @param {object} [options] Optional flags that affect comparison behavior:
  * <ul>
  *     <li>
- *         <tt>lexicographical: true</tt> compares each part of the version strings lexicographically instead of
+ *         <tt>lexicographical: false</tt> compares each part of the version strings lexicographically instead of
  *         naturally; this allows suffixes such as "b" or "dev" but will cause "1.10" to be considered smaller than
  *         "1.2".
  *     </li>
  *     <li>
- *         <tt>zeroExtend: true</tt> changes the result if one version string has less parts than the other. In
+ *         <tt>zeroExtend: false</tt> changes the result if one version string has less parts than the other. In
  *         this case the shorter string will be padded with "zero" parts instead of being considered smaller.
  *     </li>
  * </ul>
  * @returns {number|NaN}
  * <ul>
  *    <li>0 if the versions are equal</li>
- *    <li>a negative integer iff v1 < v2</li>
- *    <li>a positive integer iff v1 > v2</li>
+ *    <li>a negative integer (-1) if v1 < v2</li>
+ *    <li>a positive integer (1) if v1 > v2</li>
  *    <li>NaN if either version string is in the wrong format</li>
  * </ul>
  *
