@@ -17,27 +17,27 @@ $(document).ready(function(){
       // Wagtail < 2.6 
       header = $(currentStreamField).children('h2')[0];
       //Search for the input field so that we can get is id to know the field's name.
-      let streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-      let fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
-      let lastUnderscore = fieldInfos.lastIndexOf("_");
+      var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
+      var fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+      var lastUnderscore = fieldInfos.lastIndexOf("_");
       fieldName = fieldInfos.substring(0, lastUnderscore);
       fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
     } else if(versionCompare(WAGTAIL_VERSION,'2.7.0', {zeroExtend: true})===-1){
       // Wagtail < 2.7 
       header = $(currentStreamField).children('.title-wrapper')[0];
       //Search for the input field so that we can get is id to know the field's name.
-      let streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-      let fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
-      let lastUnderscore = fieldInfos.lastIndexOf("_");
+      var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
+      var fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+      var lastUnderscore = fieldInfos.lastIndexOf("_");
       fieldName = fieldInfos.substring(0, lastUnderscore);
       fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
     } else {
       // Wagtail >= 2.7 
       header = $(currentStreamField).children('.title-wrapper')[0];
       //Search for the input field so that we can get is id to know the field's name.
-      let streamFieldDiv = $(currentStreamField).find('.field-content')[0];
-      let fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
-      let lastUnderscore = fieldInfos.lastIndexOf("_");
+      var streamFieldDiv = $(currentStreamField).find('.field-content')[0];
+      var fieldInfos = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+      var lastUnderscore = fieldInfos.lastIndexOf("_");
       fieldName = fieldInfos.substring(0, lastUnderscore);
       fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
     }
@@ -47,7 +47,7 @@ $(document).ready(function(){
 			if (fieldLang != langs[j]) {
 				var currentFieldID = fieldName + '_' + fieldLang;
 				var targetFieldID = fieldName + '_' + langs [j];
-				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += `<button class="button translation-field-copy" current-lang-code="${currentFieldID}" data-lang-code="${targetFieldID}">${langs[j]}</button>`;
+				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="' + currentFieldID + '" data-lang-code="' + targetFieldID + '">' + langs[j] + '</button>';
 			};
 		};
 	};
@@ -80,11 +80,11 @@ function requestCopyField(originID, targetID) {
 	})
 	.done(function(data) {
 		/* Put the html data in the targetID field */
-		var wrapperDiv = $(`#${targetID}-count`).parents('.input')[0];
+		var wrapperDiv = $('#' + targetID + '-count').parents('.input')[0];
 		$(wrapperDiv).html(data);
 	})
 	.fail(function(error) {
-		console.log(`wagtail-modeltranslation error: ${error.responseText}`);
+		console.log('wagtail-modeltranslation error: ' + error.responseText);
 	})
 
 }
