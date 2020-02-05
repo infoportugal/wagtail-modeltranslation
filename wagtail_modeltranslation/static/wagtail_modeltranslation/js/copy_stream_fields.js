@@ -23,11 +23,11 @@ $(document).ready(function(){
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
 		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
-		for (var j = 0; j < langs.length; j++) {
-			if (fieldLang != langs[j]) {
+		for (var j = 0; j < wagtailModelTranslations.languages.length; j++) {
+			if (fieldLang != wagtailModelTranslations.languages[j]) {
 				var currentFieldID = fieldName + '_' + fieldLang;
-				var targetFieldID = fieldName + '_' + langs [j];
-				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+langs[j]+'</button>';
+				var targetFieldID = fieldName + '_' + wagtailModelTranslations.languages [j];
+				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+wagtailModelTranslations.languages[j]+'</button>';
 			};
 		};
 	};

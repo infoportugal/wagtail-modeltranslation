@@ -48,18 +48,45 @@ def translated_slugs():
         lang_codes.append("'%s'" % lang[0])
 
     js_languages = """
-<script>
-    var langs=[{langs}];
-    var default_lang='{default_lang}';
-    var translate_slugs={translate_slugs};
-</script>
+    <script>
+        wagtailModelTranslations = {{
+            languages: [{languages}],
+            defaultLanguage: '{language_code}',
+            viewEditString: '{view_edit_string}',
+        }};
+    </script>
     """.format(
-        langs=", ".join(lang_codes),
-        default_lang=mt_settings.DEFAULT_LANGUAGE,
-        translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false'
+        languages=", ".join(lang_codes),
+        language_code=settings.LANGUAGE_CODE,
+        view_edit_string=_('View / edit fields for')
     )
 
-    return format_html(js_languages) + js_includes
+    return js_languages + js_includes
+
+
+@hooks.register('insert_editor_js')
+def language_toggles():
+    """
+    On any admin page, try to load the l10n code that aggregates
+    fieldsets per locale, then gives it a button that you can
+    click to show/hide all those fields.
+    """
+
+    js_files = ['wagtail_modeltranslation/js/language_toggles.js']
+
+    js_includes = format_html_join(
+        '\n', '<script src="{0}{1}"></script>',
+        ((settings.STATIC_URL, filename) for filename in js_files)
+    )
+
+    css_files = ['wagtail_modeltranslation/css/language_toggles.css']
+
+    css_includes = format_html_join(
+        '\n', '<link rel="stylesheet" href="{0}{1}">',
+        ((settings.STATIC_URL, filename) for filename in css_files)
+    )
+
+    return js_includes + css_includes
 
 
 ###############################################################################
