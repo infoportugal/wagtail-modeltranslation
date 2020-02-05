@@ -5,10 +5,7 @@ import sys
 import django
 from django.conf import settings
 from django.core.management import call_command
-try:
-    from wagtail import VERSION
-except ImportError:
-    VERSION = 1, 6, 3  # assume it's 1.6.3, the latest version without VERSION
+from wagtail import VERSION
 
 
 def runtests():
@@ -36,7 +33,7 @@ def runtests():
 
         # Configure test environment
         import wagtail
-        if VERSION[0] < 2:
+        if VERSION < (2,):
             WAGTAIL_MODULES = [
                 'wagtail.wagtailcore',
                 'wagtail.wagtailadmin',
@@ -71,7 +68,7 @@ def runtests():
             ]
             WAGTAIL_CORE = 'wagtail.core'
 
-            
+
         settings.configure(
             DATABASES=DATABASES,
             INSTALLED_APPS=[
@@ -93,8 +90,7 @@ def runtests():
             MIDDLEWARE_CLASSES=(),
         )
 
-    if django.VERSION >= (1, 7):
-        django.setup()
+    django.setup()
     failures = call_command(
         'test', 'wagtail_modeltranslation', interactive=False, failfast=False, verbosity=2)
 

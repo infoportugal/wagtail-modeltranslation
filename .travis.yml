@@ -1,47 +1,50 @@
 language: python
 python:
-  - "3.6"
+  - "3.7"
 env:
-  - WAGTAIL="wagtail>=2.0,<2.1" DB=sqlite
+  - WAGTAIL="wagtail>=2.6,<2.7" DB=sqlite
 matrix:
   include:
   # Latest Wagtail version
-  - env: WAGTAIL="wagtail>=2.0,<2.1" DB=sqlite
-  - env: WAGTAIL="wagtail>=2.0,<2.1" DB=postgres
-  - env: WAGTAIL="wagtail>=2.0,<2.1" DB=mysql
+  - env: WAGTAIL="wagtail>=2.6,<2.7" DB=postgres
+  - env: WAGTAIL="wagtail>=2.6,<2.7" DB=mysql
+  - python: "3.7"
+  - python: "3.6"
   - python: "3.5"
   - python: "3.4"
   # Past Wagtail versions
-  - python: "3.6"
-    env: WAGTAIL="wagtail>=1.13,<1.14"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.5,<2.6"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.4,<2.5"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.3,<2.4"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.2,<2.3"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.1,<2.2"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=2.0,<2.1"
   - python: "2.7"  # Wagtail 1.13 was the latest tested against 2.7
     env: WAGTAIL="wagtail>=1.13,<1.14"
-  - python: "3.6"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=1.13,<1.14"
+  - python: "2.7"
     env: WAGTAIL="wagtail>=1.12,<1.13"
-  - python: "3.6"
-    env: WAGTAIL="wagtail>=1.11,<1.12"
-  - python: "3.6"
-    env: WAGTAIL="wagtail>=1.10,<1.11"
-  - python: "3.5"
-    env: WAGTAIL="wagtail>=1.9,<1.10"
-  - python: "3.3" # Wagtail 1.9 was the latest tested against 3.3
-    env: WAGTAIL="wagtail>=1.9,<1.10"
-  - python: "3.5"
-    env: WAGTAIL="wagtail>=1.8,<1.9"
-  - python: "3.5"
-    env: WAGTAIL="wagtail>=1.6,<1.7"
-  - python: "3.5"
-    env: WAGTAIL="wagtail>=1.5,<1.6"
-  - python: "3.5"
-    env: WAGTAIL="wagtail>=1.4,<1.5"
+  - python: "3.7"
+    env: WAGTAIL="wagtail>=1.12,<1.13"
+services:
+  - mysql
+  - postgresql
+addons:
+  postgresql: "9.4"
 before_script:
   - mysql -e 'create database wagtail_modeltranslation;'
   - psql -c 'create database wagtail_modeltranslation;' -U postgres
 install:
   - pip install --upgrade -q pip setuptools
   - if [[ $DB == mysql ]] && [[ ${TRAVIS_PYTHON_VERSION:0:1} == "2" ]]; then pip install -q mysql-python; elif [[ $DB == mysql ]] && [[ ${TRAVIS_PYTHON_VERSION:0:1} == "3" ]]; then pip install -q mysqlclient; fi
-  - if [[ $DB == postgres ]]; then pip install -q psycopg2; fi
-  - if [[ $TRAVIS_PYTHON_VERSION == '3.3' ]]; then pip install 'Django>=1.8,<1.9'; fi
+  - if [[ $DB == postgres ]]; then pip install -q 'psycopg2-binary<2.8'; fi
   - pip install $WAGTAIL
   - pip install -e .
 script:

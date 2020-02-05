@@ -13,9 +13,10 @@ from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
 from modeltranslation import settings as mt_settings, translator
 try:
-    from wagtail import VERSION
+    from wagtail.snippets.views.snippets import get_snippet_edit_handler
 except ImportError:
-    VERSION = 1, 6, 3  # assume it's 1.6.3, the latest version without VERSION
+    from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
+from wagtail import VERSION
 from .util import page_factory
 
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
@@ -47,8 +48,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
         if not WagtailModeltranslationTransactionTestBase.synced:
             # In order to perform only one syncdb
             WagtailModeltranslationTransactionTestBase.synced = True
-            mgr = (override_settings(**TEST_SETTINGS) if django.VERSION < (1, 8)
-                   else dummy_context_mgr())
+            mgr = dummy_context_mgr()
             with mgr:
                 # 1. Reload translation in case USE_I18N was False
                 from django.utils import translation as dj_trans
@@ -99,15 +99,14 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
 
                 # 5. makemigrations
                 from django.db import connections, DEFAULT_DB_ALIAS
-                call_command('makemigrations', verbosity=2, interactive=False,
-                             database=connections[DEFAULT_DB_ALIAS].alias)
+                call_command('makemigrations', verbosity=2, interactive=False)
 
                 # 6. Syncdb
-                call_command('migrate', verbosity=0, migrate=False, interactive=False, run_syncdb=True,
-                             database=connections[DEFAULT_DB_ALIAS].alias, load_initial_data=False)
+                call_command('migrate', verbosity=0, interactive=False, run_syncdb=True,
+                             database=connections[DEFAULT_DB_ALIAS].alias)
 
                 # 7. Make sure Page translation fields are created
-                call_command('sync_page_translation_fields', interactive=False, verbosity=0, database=connections[DEFAULT_DB_ALIAS].alias)
+                call_command('sync_page_translation_fields', interactive=False, verbosity=0)
 
                 # 8. patch wagtail models
                 from wagtail_modeltranslation.patch_wagtailadmin import patch_wagtail_models
@@ -308,6 +307,8 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
     def test_snippet_patching(self):
         self.check_fieldpanel_patching(panels=models.FieldPanelSnippet.panels)
+        self.check_panels_patching(models.FieldPanelSnippet, ['name_de', 'name_en'])
+
         self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelSnippet.panels)
         self.check_fieldrowpanel_patching(panels=models.FieldRowPanelSnippet.panels)
         self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelSnippet.panels)
@@ -317,6 +318,24 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # which is the SnippetInlineModel
         self.check_inlinepanel_patching(panels=models.SnippetInlineModel.panels)
 
+        # Case we don't define panels on snippet
+        self.check_panels_patching(models.PatchTestSnippetNoPanels, ['name_de', 'name_en'])
+
+    def check_panels_patching(self, model, model_fields):
+        patched_edit_handler = get_snippet_edit_handler(model)
+
+        if VERSION[0] < 2:
+            form = patched_edit_handler.get_form_class(model)
+        else:
+            form = patched_edit_handler.get_form_class()
+
+        try:
+            # python 3
+            self.assertEqual(model_fields, list(form.base_fields.keys()))
+        except AttributeError:
+            # python 2.7
+            self.assertItemsEqual(model_fields, form.base_fields.keys())
+
     def test_page_form(self):
         """
         In this test we use the InlinePanelPage model because it has all the possible "patchable" fields
@@ -325,7 +344,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         page_edit_handler = models.InlinePanelPage.get_edit_handler()
 
-        if VERSION[0] < 2:
+        if VERSION < (2,):
             form = page_edit_handler.get_form_class(models.InlinePanelPage)
         else:
             form = page_edit_handler.get_form_class()
@@ -358,13 +377,9 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         In this test we use the InlinePanelSnippet model because it has all the possible "patchable" fields
         so if the created form has all fields the the form was correctly patched
         """
-        try:
-            from wagtail.snippets.views.snippets import get_snippet_edit_handler
-        except ImportError:
-            from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
-        if VERSION[0] < 2:
+        if VERSION < (2,):
             form = snippet_edit_handler.get_form_class(models.InlinePanelSnippet)
         else:
             form = snippet_edit_handler.get_form_class()

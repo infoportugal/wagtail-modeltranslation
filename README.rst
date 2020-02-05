@@ -58,6 +58,7 @@ Quick start
         ...
         'wagtail_modeltranslation',
         'wagtail_modeltranslation.makemigrations',
+        'wagtail_modeltranslation.migrate',
     )
 
 3. Add 'django.middleware.locale.LocaleMiddleware' to ``MIDDLEWARE`` on your ``settings.py``::

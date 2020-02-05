@@ -7,7 +7,7 @@ Installation
 Requirements
 ============
 
-* Wagtail >= 1.4
+* Wagtail >= 1.12
 
 
 
@@ -48,6 +48,7 @@ To setup the application please follow these steps:
                 ...
                 'wagtail_modeltranslation',
                 'wagtail_modeltranslation.makemigrations',
+                'wagtail_modeltranslation.migrate',
             )
 
     - Add 'django.middleware.locale.LocaleMiddleware' to ``MIDDLEWARE`` (``MIDDLEWARE_CLASSES`` before django 1.10).
@@ -88,7 +89,7 @@ To setup the application please follow these steps:
 
         To learn more about preparing Wagtail for Internationalisation check the `Wagtail i18n docs <http://docs.wagtail.io/en/latest/advanced_topics/i18n/>`_.
 
-2. Create a ``translation.py`` file in your app directory and register ``TranslationOptions`` for every model you want to translate.
+2. Create a ``translation.py`` file in your app directory and register ``TranslationOptions`` for every model you want to translate and for all subclasses of Page model.
 
     .. code-block:: console
 
