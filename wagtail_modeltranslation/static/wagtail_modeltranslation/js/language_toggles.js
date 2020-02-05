@@ -35,6 +35,9 @@ function filterForLocale(index, element) {
   // settings.LANGUAGES variable for Django.
   if (wagtailModelTranslations.languages.indexOf(locale) === -1) return;
 
+  // Check if it's a LI for inlines
+  if ($(element).has('ul.multiple').length) return;
+
   // We do our show/hiding based on list items,
   // otherwise we're just "emptying" a list item
   // while leaving its spacing CSS intact.
@@ -69,9 +72,37 @@ function filterForLocale(index, element) {
  * with the note that unlocalised content (such as images)
  * will always stay visible.
  */
-function buildSets() {
-  $(`li.object:not(.multi-field), div.field`, topLevel).each( filterForLocale );
+function buildSets(topElement) {
+  $(`li.object:not(.multi-field), div.field`, topElement).each( filterForLocale );
 }
+
+/**
+ * Gets all selected locales as array of strings
+ */
+function getSelectedLocales() {
+  var selectedLocales = [];
+  $('.showing-locale').each(function() {
+    selectedLocales.push($(this).text());
+  });
+  return selectedLocales;
+}
+
+/**
+ * Adds event listeners on click for inlines.
+*/
+$('a[id^=id_][id$=-ADD]').click(e => {
+  e.preventDefault();
+  // get the ul where all inlines will be added
+  ulForms = $(e.currentTarget).parent().siblings('ul.multiple')[0];
+  // register new fields in sets
+  buildSets(ulForms);
+  // remove visibility class for selected locales
+  selectedLocales = getSelectedLocales();
+  selectedLocales.forEach( locale => {
+    toggleLocale(locale, true);
+  });
+});
+
 /**
  * Build a locale picker bar, with buttons that toggle
  * visibility for each locale's fields.
@@ -127,7 +158,7 @@ for (var i=1; i<=12; i++) { columnCSS.push(`col${i}`); }
 
 // Build the sets that track which fields
 // belong to which language code.
-buildSets();
+buildSets(topLevel);
 
 var locales = Object.keys(localisedElements).sort();
 
