@@ -51,7 +51,7 @@ def translated_slugs():
     return js_languages + js_includes
 
 
-@hooks.register('insert_global_admin_js')
+@hooks.register('insert_editor_js')
 def language_toggles():
     """
     On any admin page, try to load the l10n code that aggregates
