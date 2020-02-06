@@ -4,8 +4,8 @@ $(document).ready(function(){
 	var allStreamFields = $('li.stream-field');
 
 	// Setup regex to find field name and fild lang
-	var langOpts = wagtailModelTranslations.languages.join('|');
-	var reExpression = "(.+)?_(" + langOpts + "){1}".replace('-', '_');
+	var langOpts = wagtailModelTranslations.languages.join('|').replace(/-/g, '_');
+	var reExpression = "(.+)?_(" + langOpts + "){1}";
 	var re = new RegExp(reExpression, "g");
 
 	/* Iterate all stream fields, put the copy buttons in each one.*/
@@ -22,9 +22,9 @@ $(document).ready(function(){
 		//Search for the input field so that we can get is id to know the field's name.
 		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
 		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
-		// extract field name and fild lang from regex, return if not match
-		var match = re.exec(fieldInfos);
-		if (match === null) return;
+		// extract field name and fild lang from regex, continue if not match
+		var match = Array.from(fieldInfos.matchAll(re)).flat();
+		if (match.length === 0) continue;
 		var fieldName = match[1];
 		var fieldLang = match[2];
 
