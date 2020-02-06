@@ -13,7 +13,6 @@ from django.utils.html import escape, format_html, format_html_join
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
 from wagtail_modeltranslation import settings as wmt_settings
-from modeltranslation import settings as mt_settings
 
 from .patch_wagtailadmin_forms import PatchedCopyForm
 
@@ -53,12 +52,14 @@ def translated_slugs():
             languages: [{languages}],
             defaultLanguage: '{language_code}',
             viewEditString: '{view_edit_string}',
+            translate_slugs: '{translate_slugs}',
         }};
     </script>
     """.format(
         languages=", ".join(lang_codes),
         language_code=settings.LANGUAGE_CODE,
-        view_edit_string=_('View / edit fields for')
+        view_edit_string=_('View / edit fields for'),
+        translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false'
     )
 
     return js_languages + js_includes
