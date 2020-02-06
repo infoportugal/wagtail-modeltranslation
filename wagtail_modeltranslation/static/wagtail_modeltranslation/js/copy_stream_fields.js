@@ -19,7 +19,9 @@ $(document).ready(function(){
 		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
     var lastUnderscore = fieldInfos.lastIndexOf("_");
     var fieldName = fieldInfos.substring(0, lastUnderscore);
-    var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+		var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
+		// validate this is a translated stream field by checking if last part is a lang code
+		if (wagtailModelTranslations.languages.indexOf(fieldLang) === -1) continue;
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
 		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
@@ -45,7 +47,12 @@ $(document).ready(function(){
 function requestCopyField(originID, targetID) {
 	/* Get the originID field and convert him to json string */
 	var serializedForm = $("#page-edit-form").serializeArray();
-	var serializedOriginField = $.grep(serializedForm, function(obj){return obj.name.indexOf(originID) >= 0;});
+	var serializedOriginField = $.grep(
+		serializedForm,
+		function(obj){
+			return obj.name.indexOf(originID) >= 0;
+		}
+	);
 	var jsonString = JSON.stringify(serializedOriginField);
 
 	/*
@@ -53,7 +60,8 @@ function requestCopyField(originID, targetID) {
 	 * with the id's changed to targetID
 	 */
 	$.ajax({
-		url: 'copy_translation_content',
+		url: 'copy_translation_content/',
+		headers: { "X-CSRFToken": Cookies.get('csrftoken') },
 		type: 'POST',
 		dataType: 'json',
 		data: {'origin_field_name': originID, 'target_field_name': targetID, 'serializedOriginField': jsonString},
