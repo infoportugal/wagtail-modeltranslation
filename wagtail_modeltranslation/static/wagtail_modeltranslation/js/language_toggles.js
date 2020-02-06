@@ -22,7 +22,7 @@ if (topLevel.attr(`class`) && topLevel.attr(`class`).indexOf(`search`) > -1) {
  */
 function filterForLocale(index, element) {
   var tc = element.textContent;
-  var res = tc.match(/ \[\w\w\]/);
+  var res = tc.match(/ \[\w\w(-\w\w)?\]/);
   if (res === null) return;
 
   var code = res[0],
