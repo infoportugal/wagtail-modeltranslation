@@ -3,6 +3,11 @@ $(document).ready(function(){
 	//All the stream fields with all his content
 	var allStreamFields = $('li.stream-field');
 
+	// Setup regex to find field name and fild lang
+	var langOpts = wagtailModelTranslations.languages.join('|');
+	var reExpression = "(.+)?_(" + langOpts + "){1}".replace('-', '_');
+	var re = new RegExp(reExpression, "g");
+
 	/* Iterate all stream fields, put the copy buttons in each one.*/
 	for (var i = 0; i < allStreamFields.length; i++) {
 		//Current Field with all content
@@ -17,18 +22,20 @@ $(document).ready(function(){
 		//Search for the input field so that we can get is id to know the field's name.
 		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
 		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
-    var lastUnderscore = fieldInfos.lastIndexOf("_");
-    var fieldName = fieldInfos.substring(0, lastUnderscore);
-		var fieldLang = fieldInfos.substring(lastUnderscore + 1, fieldInfos.length);
-		// validate this is a translated stream field by checking if last part is a lang code
-		if (wagtailModelTranslations.languages.indexOf(fieldLang) === -1) continue;
+		// extract field name and fild lang from regex, return if not match
+		var match = re.exec(fieldInfos);
+		if (match === null) return;
+		var fieldName = match[1];
+		var fieldLang = match[2];
+
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
 		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
 		for (var j = 0; j < wagtailModelTranslations.languages.length; j++) {
-			if (fieldLang != wagtailModelTranslations.languages[j]) {
+			currentLangCode = wagtailModelTranslations.languages[j].replace('-', '_');
+			if (fieldLang != currentLangCode) {
 				var currentFieldID = fieldName + '_' + fieldLang;
-				var targetFieldID = fieldName + '_' + wagtailModelTranslations.languages [j];
+				var targetFieldID = fieldName + '_' + currentLangCode;
 				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+wagtailModelTranslations.languages[j]+'</button>';
 			};
 		};
