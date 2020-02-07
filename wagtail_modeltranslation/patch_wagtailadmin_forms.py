@@ -6,6 +6,8 @@ from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
 
+from modeltranslation.utils import build_localized_fieldname
+
 try:
     from wagtail.core.models import Page
     from wagtail.admin import widgets
@@ -24,15 +26,13 @@ class PatchedCopyForm(CopyForm):
         can_publish = kwargs.pop('can_publish')
         super(CopyForm, self).__init__(*args, **kwargs)
 
-        #self.fields['new_title'] = forms.CharField(initial=self.page.title, label=_("New title"))
         for code, name in settings.LANGUAGES:
-            locale_title = "new_title_{}".format(code)
+            locale_title = "new_{}".format(build_localized_fieldname('title', code))
             locale_label = "{} [{}]".format(_("New title"), code)
             self.fields[locale_title] = forms.CharField(initial=self.page.title, label=locale_label)
 
-        #self.fields['new_slug'] = forms.SlugField(initial=self.page.slug, label=_("New slug"))
         for code, name in settings.LANGUAGES:
-            locale_title = "new_slug_{}".format(code)
+            locale_title = "new_{}".format(build_localized_fieldname('slug', code))
             locale_label = "{} [{}]".format(_("New slug"), code)
             self.fields[locale_title] = forms.SlugField(initial=self.page.slug, label=locale_label)
 
@@ -88,10 +88,10 @@ class PatchedCopyForm(CopyForm):
 
         # Count the pages with the same slug within the context of our copy's parent page
         for code, name in settings.LANGUAGES:
-            locale_slug = "new_slug_{}".format(code)
+            locale_slug = "new_{}".format(build_localized_fieldname('slug', code))
             slug = cleaned_data.get(locale_slug)
 
-            param = 'slug_' + code
+            param = build_localized_fieldname('slug', code)
             query = {param: slug}
             if slug and parent_page.get_children().filter(**query).count():
                 raise ValidationError({

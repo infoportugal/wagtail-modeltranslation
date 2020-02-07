@@ -2,16 +2,18 @@
 
 import json
 
-from django.core.exceptions import PermissionDenied
-from six import iteritems
 from django.conf import settings
 from django.conf.urls import url
+from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, QueryDict
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.utils.html import escape, format_html, format_html_join
 from django.utils.translation import ugettext as _
 from django.views.decorators.csrf import csrf_exempt
+from six import iteritems
+
+from modeltranslation.utils import build_localized_fieldname
 from wagtail_modeltranslation import settings as wmt_settings
 
 from .patch_wagtailadmin_forms import PatchedCopyForm
@@ -233,8 +235,8 @@ def before_copy_page(request, page):
 
             update_attrs = {}
             for code, name in settings.LANGUAGES:
-                slug = "slug_{}".format(code)
-                title = "title_{}".format(code)
+                slug = build_localized_fieldname('slug', code)
+                title = build_localized_fieldname('title', code)
                 update_attrs[slug] = form.cleaned_data["new_{}".format(slug)]
                 update_attrs[title] = form.cleaned_data["new_{}".format(title)]
 
