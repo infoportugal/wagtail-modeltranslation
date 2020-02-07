@@ -10,23 +10,17 @@ $(document).ready(function(){
 
 	/* Iterate all stream fields, put the copy buttons in each one.*/
 	for (var i = 0; i < allStreamFields.length; i++) {
-		//Current Field with all content
+		// Current Field with all content
 		var currentStreamField = allStreamFields[i];
-		//Current Field header
-    var header;
-    if(versionCompare(WAGTAIL_VERSION,'2.6.0')===-1){
-      header = $(currentStreamField).children('h2')[0];
-    } else {
-      header = $(currentStreamField).children('.title-wrapper')[0];
-    }
-		//Search for the input field so that we can get is id to know the field's name.
-		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-		var fieldInfos = $(streamFieldDiv).children('input')[0].id.split('-')[0];
+		// Current Field header
+    var header = getStreamFieldHeader(currentStreamField);
+		// Extract fieldName and fieldLang
+		var inputId = extractInputId(currentStreamField);
 		// extract field name and fild lang from regex, continue if not match
-		var match = Array.from(fieldInfos.matchAll(re)).flat();
-		if (match.length === 0) continue;
-		var fieldName = match[1];
-		var fieldLang = match[2];
+		var fieldInfo = Array.from(inputId.matchAll(re)).flat();
+		if (fieldInfo.length === 0) continue;
+		var fieldName = fieldInfo[1];
+		var fieldLang = fieldInfo[2];
 
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
@@ -49,6 +43,26 @@ $(document).ready(function(){
 		requestCopyField(lang, currentLang);
 	});
 });
+
+/* Get header */
+function getStreamFieldHeader(currentStreamField) {
+	if(versionCompare(WAGTAIL_VERSION,'2.6.0', {zeroExtend:true})>=0){
+		return $(currentStreamField).children('.title-wrapper')[0];
+	}
+	return $(currentStreamField).children('h2')[0];
+}
+
+function extractInputId(currentStreamField) {
+	//Search for the input field so that we can get is id to know the field's name.
+	if(versionCompare(WAGTAIL_VERSION,'2.7.0', {zeroExtend:true})>=0){
+		var streamFieldDiv = $(currentStreamField).find('.field-content')[0];
+		var inputId = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+	} else {
+		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
+		var inputId = $(streamFieldDiv).children('input')[0].id.split('-')[0];
+	}
+	return inputId;
+}
 
 /* Copy the content of originID field to the targetID field */
 function requestCopyField(originID, targetID) {
