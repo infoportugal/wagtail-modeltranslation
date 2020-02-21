@@ -31,7 +31,7 @@ register = template.Library()
 
 # CHANGE LANGUAGE
 @register.simple_tag(takes_context=True)
-def change_lang(context, lang=None, *args, **kwargs):
+def change_lang(context, lang=None, page=None, *args, **kwargs):
     current_language = get_language()
 
     if 'request' in context and lang and current_language:
@@ -41,9 +41,6 @@ def change_lang(context, lang=None, *args, **kwargs):
 
         # means that is an wagtail page object
         if match.url_name == 'wagtail_serve':
-            path_components = [component for component in non_prefixed_path.split('/') if component]
-            page, args, kwargs = request.site.root_page.specific.route(request, path_components)
-
             activate(lang)
             translated_url = page.url
             activate(current_language)
