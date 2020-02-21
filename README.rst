@@ -101,8 +101,13 @@ Quick start
 9. If you're adding :code:`wagtail-modeltranslation` to an existing site run :code:`python manage.py update_translation_fields`
 
 
+Upgrade considerations (v0.10.8)
+================================
+
+- Template tag ``change_lang`` now needs a second parameter, ``page``
+
 Upgrade considerations (v0.8)
-======================
+=============================
 
 This version includes breaking changes as some key parts of the app have been re-written:
 
@@ -117,7 +122,7 @@ To upgrade to this version you need to:
 - While optional it's recommended to add ``'wagtail_modeltranslation.makemigrations'`` to your INSTALLED_APPS. This will override Django's ``makemigrations`` command to avoid creating spurious ``Page`` migrations.
 
 Upgrade considerations (v0.6)
-======================
+=============================
 
 This version has some important changes as there was a refactoring to include django-modeltranslation as a dependency instead of
 duplicating their code in our version. This allow us to focus on Wagtail admin integration features as django-modeltranslation is

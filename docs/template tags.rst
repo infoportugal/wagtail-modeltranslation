@@ -7,12 +7,12 @@ Template Tags
 change_lang
 ===========
 
-Use this template tag to get the url of the current page in another language. The only parameter of this template tag is the language code the we want to get the url. Below is an example where we want to get the url of the current page in portuguese.
+Use this template tag to get the url of the given page in another language. The parameteres of this template tag are the language code and page object. Below is an example where we want to get the url of the current page in portuguese.
 
 .. code-block:: django
 
     {% load wagtail_modeltranslation %}
-    {% change_lang 'pt' %}
+    {% change_lang 'pt' page %}
 
 .. _template tags-slugurl_trans:
 

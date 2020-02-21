@@ -47,3 +47,6 @@ _build
 
 # pyenv
 .python-version
+
+# mac
+.DS_Store

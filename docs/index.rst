@@ -55,4 +55,3 @@ Contents
    recommended reading
    releases/index
    AUTHORS
-   CHANGELOG
