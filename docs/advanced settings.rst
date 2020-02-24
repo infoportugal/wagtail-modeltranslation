@@ -40,3 +40,15 @@ This setting makes slug and url_path localized. If True, each page will have a s
 .. code-block:: python
 
     WAGTAILMODELTRANSLATION_TRANSLATE_SLUGS = True
+
+
+``WAGTAILMODELTRANSLATION_LOCALE_PICKER``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``True``
+
+This setting injects a locale picker in the editor interface, so that only selected locale fields are shown.
+
+.. code-block:: python
+
+    WAGTAILMODELTRANSLATION_LOCALE_PICKER = True
