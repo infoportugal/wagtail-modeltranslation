@@ -12,11 +12,21 @@ from modeltranslation.utils import build_localized_fieldname
 try:
     from wagtail.core.models import Page
     from wagtail.admin import widgets
-    from wagtail.admin.forms import CopyForm, WagtailAdminPageForm
+    from wagtail.admin.forms import WagtailAdminPageForm
 except ImportError:
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailadmin import widgets
-    from wagtail.wagtailadmin.forms import CopyForm, WagtailAdminPageForm
+    from wagtail.wagtailadmin.forms import WagtailAdminPageForm
+
+try:
+    from wagtail.admin.forms.pages import CopyForm
+except ImportError:
+    # wagtail>=2.0,<2.3
+    try:
+        from wagtail.admin.forms import CopyForm
+    except ImportError:
+        # wagtail<2.0
+        from wagtail.wagtailadmin.forms import CopyForm
 
 
 class PatchedCopyForm(CopyForm):
