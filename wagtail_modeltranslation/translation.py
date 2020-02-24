@@ -9,7 +9,6 @@ except ImportError:
     from wagtail.wagtailcore.models import Page
 
 
-
 @register(Page)
 class PageTR(TranslationOptions):
     fields = (

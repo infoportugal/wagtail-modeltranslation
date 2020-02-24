@@ -3,19 +3,21 @@
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
+from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
-
 from modeltranslation.utils import build_localized_fieldname
 
 try:
     from wagtail.core.models import Page
     from wagtail.admin import widgets
     from wagtail.admin.forms.pages import CopyForm
+    from wagtail.admin.forms import WagtailAdminPageForm
 except ImportError:
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailadmin import widgets
     from wagtail.wagtailadmin.forms import CopyForm
+    from wagtail.wagtailadmin.forms import WagtailAdminPageForm
 
 
 class PatchedCopyForm(CopyForm):
@@ -83,7 +85,11 @@ class PatchedCopyForm(CopyForm):
         # check if user is allowed to create a page at given location.
         if not parent_page.permissions_for_user(self.user).can_add_subpage():
             raise ValidationError({
-                'new_parent_page': _("You do not have permission to copy to page \"%(page_title)s\"") % {'page_title': parent_page.get_admin_display_title()}
+                'new_parent_page': _(
+                    "You do not have permission to copy to page \"%(page_title)s\""
+                ) % {
+                    'page_title': parent_page.get_admin_display_title()
+                }
             })
 
         # Count the pages with the same slug within the context of our copy's parent page
@@ -95,7 +101,9 @@ class PatchedCopyForm(CopyForm):
             query = {param: slug}
             if slug and parent_page.get_children().filter(**query).count():
                 raise ValidationError({
-                    locale_slug: _("This slug is already in use within the context of its parent page \"%s\"" % parent_page)
+                    locale_slug: _(
+                        "This slug is already in use within the context of its parent page \"%s\"" % parent_page
+                    )
                 })
 
         # Don't allow recursive copies into self
@@ -103,5 +111,38 @@ class PatchedCopyForm(CopyForm):
             raise ValidationError({
                 'new_parent_page': _("You cannot copy a page into itself when copying subpages")
             })
+
+        return cleaned_data
+
+
+class WagtailFixedAdminPageForm(WagtailAdminPageForm):
+    """
+    Validate unicity of the slugs in every language. Take fallbacks into account.
+    """
+
+    def clean(self):
+        cleaned_data = super().clean()
+
+        # We follow the same logic as
+        # `wagtail_modeltranslation.patch_wagtailadmin._validate_slugs`,
+        # but we make sure that it work with new Page instances.
+
+        siblings = self.parent_page.get_children()
+        if self.instance.pk:
+            siblings = siblings.not_page(self.instance)
+
+        for code, name in settings.LANGUAGES:
+            field_name = build_localized_fieldname("slug", code)
+            slug_value = self.cleaned_data.get(field_name, None)
+            if slug_value is None:
+                continue
+
+            with translation.override(code):
+                siblings_slugs = [sibling.slug for sibling in siblings]
+                if slug_value in siblings_slugs:
+                    self.add_error(
+                        field_name,
+                        forms.ValidationError(_("This slug is already in use")),
+                    )
 
         return cleaned_data
