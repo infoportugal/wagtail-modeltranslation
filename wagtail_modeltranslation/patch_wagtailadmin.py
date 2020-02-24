@@ -119,6 +119,7 @@ class WagtailTranslator(object):
         # OVERRIDE PAGE METHODS
         if TRANSLATE_SLUGS:
             model.set_url_path = _new_set_url_path
+            model.route = _new_route
             model._update_descendant_url_paths = _new_update_descendant_url_paths
             if not hasattr(model, '_get_site_root_paths'):
                 model.get_url_parts = _new_get_url_parts  # Wagtail<1.11
@@ -283,6 +284,43 @@ def _new_set_url_path(self, parent):
         _localized_set_url_path(self, parent, language)
 
     return self.url_path
+
+
+def _new_route(self, request, path_components):
+    """
+    Rewrite route method in order to handle languages fallbacks
+    """
+    # copied from wagtail/contrib/wagtailroutablepage/models.py mixin ##
+    # Override route when Page is also RoutablePage
+    if isinstance(self, RoutablePageMixin):
+        if self.live:
+            try:
+                path = '/'
+                if path_components:
+                    path += '/'.join(path_components) + '/'
+
+                view, args, kwargs = self.resolve_subpage(path)
+                return RouteResult(self, args=(view, args, kwargs))
+            except Http404:
+                pass
+
+    if path_components:
+        # request is for a child of this page
+        child_slug = path_components[0]
+        remaining_components = path_components[1:]
+
+        subpages = self.get_children()
+        for page in subpages:
+            if page.slug == child_slug:
+                return page.specific.route(request, remaining_components)
+        raise Http404
+
+    else:
+        # request is for this very page
+        if self.live:
+            return RouteResult(self)
+        else:
+            raise Http404
 
 
 def _validate_slugs(page):
