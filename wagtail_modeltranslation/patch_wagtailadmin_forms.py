@@ -6,6 +6,7 @@ from django.core.exceptions import ValidationError
 from django.utils import translation
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
+from django.utils.translation import activate, get_language
 from modeltranslation.utils import build_localized_fieldname
 
 try:
@@ -93,18 +94,22 @@ class PatchedCopyForm(CopyForm):
             })
 
         # Count the pages with the same slug within the context of our copy's parent page
+        current_lang = get_language()
+        slug_errors = {}
         for code, name in settings.LANGUAGES:
             locale_slug = "new_{}".format(build_localized_fieldname('slug', code))
             slug = cleaned_data.get(locale_slug)
-
-            param = build_localized_fieldname('slug', code)
-            query = {param: slug}
-            if slug and parent_page.get_children().filter(**query).count():
-                raise ValidationError({
-                    locale_slug: _(
-                        "This slug is already in use within the context of its parent page \"%s\"" % parent_page
-                    )
-                })
+            # we need to iterate over the children to get slugs because manager do not take in account the fallbacks
+            activate(code)
+            children_slugs = [child.slug for child in parent_page.get_children()]
+            if slug and slug in children_slugs:
+                slug_errors[locale_slug] = _(
+                    "This slug is already in use within the context of its parent page \"%s\"" % parent_page
+                )
+        # back to current lang
+        activate(current_lang)
+        if slug_errors:
+            raise ValidationError(slug_errors)
 
         # Don't allow recursive copies into self
         if cleaned_data.get('copy_subpages') and (self.page == parent_page or parent_page.is_descendant_of(self.page)):
