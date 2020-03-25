@@ -40,4 +40,4 @@ release: clean ## package and upload a release (working dir must be clean)
 			* ) echo "Please answer 1-3.";; \
 		esac \
 	done
-	@python setup.py bdist_wheel && twine upload dist/*
+	@python setup.py sdist bdist_wheel && twine upload dist/*
