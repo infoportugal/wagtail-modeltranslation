@@ -10,12 +10,7 @@ div.locale-picker {
 }
 
 form > div.locale-picker {
-  /* calc, to highlight what we're doing here:
-     wagtail's header has a 2em margin-bottom,
-     and so we correct that for the 1.5em
-     margin-bottom used in the normal definition
-     for the div.locale-picker, above */;
-  margin-top: calc(1.5em - 2em);
+  margin-top: 1em;
   margin-bottom: 1em;
 }
 
