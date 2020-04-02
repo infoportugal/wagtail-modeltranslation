@@ -79,15 +79,15 @@ if wmt_settings.LOCALE_PICKER:
         js_files = ['wagtail_modeltranslation/js/language_toggles.js']
 
         js_includes = format_html_join(
-            '\n', '<script src="{0}{1}"></script>',
-            ((settings.STATIC_URL, filename) for filename in js_files)
+            '\n', '<script src="{0}"></script>', (
+                (static(filename),) for filename in js_files)
         )
 
         css_files = ['wagtail_modeltranslation/css/language_toggles.css']
 
         css_includes = format_html_join(
-            '\n', '<link rel="stylesheet" href="{0}{1}">',
-            ((settings.STATIC_URL, filename) for filename in css_files)
+            '\n', '<link rel="stylesheet" href="{0}">', (
+                (static(filename),) for filename in css_files)
         )
 
         return js_includes + css_includes
