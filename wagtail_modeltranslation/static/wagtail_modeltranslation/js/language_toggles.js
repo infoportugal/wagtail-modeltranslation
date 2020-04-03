@@ -4,6 +4,7 @@ jQuery( () => {
 
 const tabbedContent = $(`form .tab-content`);
 const topLevel = (tabbedContent.length > 0) ? tabbedContent : $(`.content form`);
+const languageCodeRegex = new RegExp(' \\[('+wagtailModelTranslations.languages.join('|')+')\\]');
 
 if (topLevel.length === 0) {
   // obviously, if we don't have an element to attach
@@ -22,7 +23,7 @@ if (topLevel.attr(`class`) && topLevel.attr(`class`).indexOf(`search`) > -1) {
  */
 function filterForLocale(index, element) {
   var tc = element.textContent;
-  var res = tc.match(/ \[\w\w(-\w\w)?\]/);
+  var res = languageCodeRegex.exec(tc);
   if (res === null) return;
 
   var code = res[0],
