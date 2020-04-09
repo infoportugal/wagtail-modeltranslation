@@ -1,16 +1,21 @@
 # coding: utf-8
 
 import re
+from urllib.parse import unquote
 
 from django import template
 from django.utils.translation import activate, get_language
+from modeltranslation import settings as mt_settings
+from modeltranslation.settings import DEFAULT_LANGUAGE
+from six import iteritems
+
+from ..contextlib import use_language
 
 try:
     from django.urls import resolve
 except ImportError:
     from django.core.urlresolvers import resolve
 
-from six import iteritems
 
 try:
     from wagtail.core.models import Page
@@ -19,10 +24,6 @@ except ImportError:
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
-from modeltranslation import settings as mt_settings
-from modeltranslation.settings import DEFAULT_LANGUAGE
-
-from ..contextlib import use_language
 
 register = template.Library()
 
@@ -36,7 +37,7 @@ def change_lang(context, lang=None, page=None, *args, **kwargs):
 
     if 'request' in context and lang and current_language:
         request = context['request']
-        match = resolve(request.path)
+        match = resolve(unquote(request.path, errors='strict'))
         non_prefixed_path = re.sub(current_language + '/', '', request.path, count=1)
 
         # means that is an wagtail page object
