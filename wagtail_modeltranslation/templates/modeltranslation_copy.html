@@ -28,4 +28,5 @@
 {% block extra_js %}
     {{ block.super }}
     {% include "wagtailadmin/pages/_editor_js.html" %}
+    {{ form.media.js }}
 {% endblock %}
