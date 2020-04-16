@@ -102,7 +102,7 @@ class WagtailTranslator(object):
 
         for field in model.search_fields:
             # Check if the field is a SearchField and if it is one of the fields registered for translation
-            if field.__class__ is SearchField and field.field_name in translation_registered_fields:
+            if isinstance(field, SearchField) and field.field_name in translation_registered_fields:
                 # If it is we create a clone of the original SearchField to keep all the defined options
                 # and replace its name by the translated one
                 for language in mt_settings.AVAILABLE_LANGUAGES:
