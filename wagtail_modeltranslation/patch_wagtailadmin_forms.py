@@ -9,6 +9,8 @@ from django.utils.translation import ungettext
 from django.utils.translation import activate, get_language
 from modeltranslation.utils import build_localized_fieldname
 
+from wagtail_modeltranslation import settings as wmt_settings
+
 try:
     from wagtail.core.models import Page
     from wagtail.admin import widgets
@@ -42,10 +44,13 @@ class PatchedCopyForm(CopyForm):
             locale_label = "{} [{}]".format(_("New title"), code)
             self.fields[locale_title] = forms.CharField(initial=self.page.title, label=locale_label)
 
-        for code, name in settings.LANGUAGES:
-            locale_title = "new_{}".format(build_localized_fieldname('slug', code))
-            locale_label = "{} [{}]".format(_("New slug"), code)
-            self.fields[locale_title] = forms.SlugField(initial=self.page.slug, label=locale_label)
+        if wmt_settings.TRANSLATE_SLUGS:
+            for code, name in settings.LANGUAGES:
+                locale_title = "new_{}".format(build_localized_fieldname('slug', code))
+                locale_label = "{} [{}]".format(_("New slug"), code)
+                self.fields[locale_title] = forms.SlugField(initial=self.page.slug, label=locale_label)
+        else:
+            self.fields['new_slug'] = forms.SlugField(initial=self.page.slug, label=_("New slug"))
 
         self.fields['new_parent_page'] = forms.ModelChoiceField(
             initial=self.page.get_parent(),
