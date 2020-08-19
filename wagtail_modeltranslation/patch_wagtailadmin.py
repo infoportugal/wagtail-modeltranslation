@@ -45,7 +45,7 @@ except ImportError:
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
-from wagtail_modeltranslation.patch_wagtailadmin_forms import WagtailFixedAdminPageForm
+from wagtail_modeltranslation.patch_wagtailadmin_forms import patch_admin_page_form
 from wagtail import VERSION
 
 logger = logging.getLogger('wagtail.core')
@@ -118,7 +118,7 @@ class WagtailTranslator(object):
                 _patch_stream_field_meaningful_value(descriptor)
 
         # OVERRIDE CLEAN METHOD
-        model.base_form_class = WagtailFixedAdminPageForm
+        model.base_form_class = patch_admin_page_form(model.base_form_class)
 
         # OVERRIDE PAGE METHODS
         if TRANSLATE_SLUGS:

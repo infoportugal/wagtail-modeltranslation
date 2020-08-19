@@ -128,34 +128,36 @@ class PatchedCopyForm(CopyForm):
         return cleaned_data
 
 
-class WagtailFixedAdminPageForm(WagtailAdminPageForm):
-    """
-    Validate unicity of the slugs in every language. Take fallbacks into account.
-    """
+def patch_admin_page_form(current_page_form):
+    class WagtailFixedAdminPageForm(current_page_form):
+        """
+        Validate unicity of the slugs in every language. Take fallbacks into account.
+        """
 
-    def clean(self):
-        cleaned_data = super().clean()
+        def clean(self):
+            cleaned_data = super().clean()
 
-        # We follow the same logic as
-        # `wagtail_modeltranslation.patch_wagtailadmin._validate_slugs`,
-        # but we make sure that it work with new Page instances.
+            # We follow the same logic as
+            # `wagtail_modeltranslation.patch_wagtailadmin._validate_slugs`,
+            # but we make sure that it work with new Page instances.
 
-        siblings = self.parent_page.get_children()
-        if self.instance.pk:
-            siblings = siblings.not_page(self.instance)
+            siblings = self.parent_page.get_children()
+            if self.instance.pk:
+                siblings = siblings.not_page(self.instance)
 
-        for code, name in settings.LANGUAGES:
-            field_name = build_localized_fieldname("slug", code)
-            slug_value = self.cleaned_data.get(field_name, None)
-            if slug_value is None:
-                continue
+            for code, name in settings.LANGUAGES:
+                field_name = build_localized_fieldname("slug", code)
+                slug_value = self.cleaned_data.get(field_name, None)
+                if slug_value is None:
+                    continue
 
-            with translation.override(code):
-                siblings_slugs = [sibling.slug for sibling in siblings]
-                if slug_value in siblings_slugs:
-                    self.add_error(
-                        field_name,
-                        forms.ValidationError(_("This slug is already in use")),
-                    )
+                with translation.override(code):
+                    siblings_slugs = [sibling.slug for sibling in siblings]
+                    if slug_value in siblings_slugs:
+                        self.add_error(
+                            field_name,
+                            forms.ValidationError(_("This slug is already in use")),
+                        )
 
-        return cleaned_data
+            return cleaned_data
+    return WagtailFixedAdminPageForm
