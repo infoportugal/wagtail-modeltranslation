@@ -236,7 +236,10 @@ def before_copy_page(request, page):
 
             update_attrs = {}
             for code, name in settings.LANGUAGES:
-                slug = build_localized_fieldname('slug', code)
+                if wmt_settings.TRANSLATE_SLUGS:
+                    slug = build_localized_fieldname('slug', code)
+                else:
+                    slug = 'slug'
                 title = build_localized_fieldname('title', code)
                 update_attrs[slug] = form.cleaned_data["new_{}".format(slug)]
                 update_attrs[title] = form.cleaned_data["new_{}".format(title)]
