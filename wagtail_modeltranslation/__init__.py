@@ -1,3 +1,3 @@
 # coding: utf-8
-__version__ = '0.10.13'
+__version__ = '0.10.14'
 default_app_config = 'wagtail_modeltranslation.apps.ModeltranslationConfig'
