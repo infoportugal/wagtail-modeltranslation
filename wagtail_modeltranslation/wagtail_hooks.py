@@ -49,6 +49,11 @@ def translated_slugs():
     for lang in settings.LANGUAGES:
         lang_codes.append("'%s'" % lang[0])
 
+    if wmt_settings.LOCALE_PICKER_DEFAULT is not None:
+        locale_picker_default = ", ".join(f"'{v}'" for v in wmt_settings.LOCALE_PICKER_DEFAULT)
+    else:
+        locale_picker_default = f"'{mt_settings.DEFAULT_LANGUAGE}'"
+
     js_languages = """
     <script>
         wagtailModelTranslations = {{
@@ -56,13 +61,15 @@ def translated_slugs():
             defaultLanguage: '{language_code}',
             viewEditString: '{view_edit_string}',
             translate_slugs: {translate_slugs},
+            locale_picker_default: [{locale_picker_default}],
         }};
     </script>
     """.format(
         languages=", ".join(lang_codes),
         language_code=mt_settings.DEFAULT_LANGUAGE,
         view_edit_string=_('View / edit fields for'),
-        translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false'
+        translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false',
+        locale_picker_default=locale_picker_default
     )
 
     return js_languages + js_includes
