@@ -54,7 +54,7 @@ def translated_slugs():
             languages: [{languages}],
             defaultLanguage: '{language_code}',
             viewEditString: '{view_edit_string}',
-            translate_slugs: '{translate_slugs}',
+            translate_slugs: {translate_slugs},
         }};
     </script>
     """.format(
