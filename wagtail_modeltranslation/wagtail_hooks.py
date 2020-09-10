@@ -14,6 +14,7 @@ from django.views.decorators.csrf import csrf_exempt
 from six import iteritems
 
 from modeltranslation.utils import build_localized_fieldname
+from modeltranslation import settings as mt_settings
 from wagtail_modeltranslation import settings as wmt_settings
 
 from .patch_wagtailadmin_forms import PatchedCopyForm
@@ -59,7 +60,7 @@ def translated_slugs():
     </script>
     """.format(
         languages=", ".join(lang_codes),
-        language_code=settings.LANGUAGE_CODE,
+        language_code=mt_settings.DEFAULT_LANGUAGE,
         view_edit_string=_('View / edit fields for'),
         translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false'
     )
