@@ -1,19 +1,21 @@
 $(document).ready(function () {
-    /* Only non-live pages should auto-populate the slug from the title */
-    if (!$('body').hasClass('page-is-live')) {
-        if(!wagtailModelTranslations.translate_slugs) {
-            lang_code = wagtailModelTranslations.defaultLanguage.replace("-", "_");
-            title_selector = '#id_title_' + lang_code;
-            slug_selector = '#id_slug';
+    isLive = $('body').hasClass('page-is-live');
+    if(!wagtailModelTranslations.translate_slugs) {
+        lang_code = wagtailModelTranslations.defaultLanguage.replace("-", "_");
+        title_selector = '#id_title_' + lang_code;
+        slug_selector = '#id_slug';
+        if (!isLive || (isLive && !$(slug_selector).val())) {
             slugAutoPopulateTranslation(title_selector, slug_selector);
-        } else {
-            $.each(wagtailModelTranslations.languages, function (idx, lang_code) {
-                lang_code = lang_code.replace("-", "_");
-                title_selector = '#id_title_' + lang_code;
-                slug_selector = '#id_slug_' + lang_code;
-                slugAutoPopulateTranslation(title_selector, slug_selector);
-            });
         }
+    } else {
+        $.each(wagtailModelTranslations.languages, function (idx, lang_code) {
+            lang_code = lang_code.replace("-", "_");
+            title_selector = '#id_title_' + lang_code;
+            slug_selector = '#id_slug_' + lang_code;
+            if (!isLive || (isLive && !$(slug_selector).val())) {
+                slugAutoPopulateTranslation(title_selector, slug_selector);
+            }
+        });
     }
 });
 
