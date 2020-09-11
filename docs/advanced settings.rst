@@ -35,7 +35,7 @@ This setting behaves as the above but should be used for panels that are compose
 
 Default: ``True``
 
-This setting makes slug and url_path localized. If True, each page will have a slug and url_path per language.
+This setting makes slug and url_path localized. If True, each page will have a slug and url_path per language. If a slug field is not translated it will be automatically populated when the page title of it's language is filled.
 
 .. code-block:: python
 
