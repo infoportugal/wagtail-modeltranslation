@@ -52,3 +52,17 @@ This setting injects a locale picker in the editor interface, so that only selec
 .. code-block:: python
 
     WAGTAILMODELTRANSLATION_LOCALE_PICKER = True
+
+
+``WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``None``
+
+This setting specifies, which languages should initially be enabled on the edit pages when the locale picker is used. If not set, just the default language from ``MODELTRANSLATION_DEFAULT_LANGUAGE`` is initially enabled.
+
+.. code-block:: python
+
+    WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT = None            # only default language initially enabled
+    WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT = [ ]             # all languages initially disabled
+    WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT = [ 'en', 'de' ]  # these languages initially enabled
