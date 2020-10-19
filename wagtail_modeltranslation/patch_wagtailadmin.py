@@ -164,7 +164,7 @@ class WagtailTranslator(object):
             elif panel.__class__ in COMPOSED_PANEL_CLASSES:
                 patched_panels.append(self._patch_composed_panel(panel, related_model))
             elif panel.__class__ == InlinePanel:
-                patched_panels.append(self._patch_inline_panel(panel))
+                patched_panels.append(self._patch_inline_panel(current_patching_model, panel))
             else:
                 patched_panels.append(panel)
 
@@ -224,10 +224,10 @@ class WagtailTranslator(object):
 
         return localized_panel
 
-    def _patch_inline_panel(self, panel):
+    def _patch_inline_panel(self, model, panel):
         # get the model relation through the panel relation_name which is the
         # inline model related_name
-        relation = getattr(self.patched_model, panel.relation_name)
+        relation = getattr(model, panel.relation_name)
 
         try:
             related_model = relation.rel.related_model
