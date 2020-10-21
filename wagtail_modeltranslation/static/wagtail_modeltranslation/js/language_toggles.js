@@ -75,6 +75,7 @@ function filterForLocale(index, element) {
  */
 function buildSets(topElement) {
   $(`li.object:not(.multi-field), div.field`, topElement).each( filterForLocale );
+  document.dispatchEvent(new CustomEvent('wagtail-modeltranslation:buildSets:done'));
 }
 
 /**
