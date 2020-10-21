@@ -167,11 +167,12 @@ var locales = Object.keys(localisedElements).sort();
 // no locale field picker to build, either.
 if (locales.length === 0) return;
 
-// If there are locale sets, make sure to
-// enable at least the default locale after
-// building and hiding all locale sets.
 var localeToggler = buildLocaleToggler();
-localeToggler[default_locale].click();
+
+for (language of wagtailModelTranslations.locale_picker_default) {
+    localeToggler[language].classList.add(`showing-locale`);
+    toggleLocale(language, true);
+}
 
 ///////////////
 });
