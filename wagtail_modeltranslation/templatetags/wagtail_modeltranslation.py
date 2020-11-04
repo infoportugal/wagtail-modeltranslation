@@ -4,6 +4,7 @@ import re
 from urllib.parse import unquote
 
 from django import template
+from django.urls.exceptions import Resolver404
 from django.utils.translation import activate, get_language
 from modeltranslation import settings as mt_settings
 from modeltranslation.settings import DEFAULT_LANGUAGE
@@ -35,9 +36,13 @@ register = template.Library()
 def change_lang(context, lang=None, page=None, *args, **kwargs):
     current_language = get_language()
 
-    if 'request' in context and lang and current_language:
+    if 'request' in context and lang and current_language and page:
         request = context['request']
-        match = resolve(unquote(request.path, errors='strict'))
+        try:
+            match = resolve(unquote(request.path, errors='strict'))
+        except Resolver404:
+            # could be that we are on a non-existent path
+            return ''
         non_prefixed_path = re.sub(current_language + '/', '', request.path, count=1)
 
         # means that is an wagtail page object
