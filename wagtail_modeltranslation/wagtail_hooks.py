@@ -25,7 +25,7 @@ try:
     from wagtail.core.rich_text.pages import PageLinkHandler
     from wagtail.core import __version__ as WAGTAIL_VERSION
     from wagtail.admin import messages
-    from wagtail.admin.views.pages import get_valid_next_url_from_request
+    from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
 except ImportError:
     from wagtail.wagtailcore import hooks
     from wagtail.wagtailcore.models import Page
