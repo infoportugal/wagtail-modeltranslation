@@ -92,7 +92,8 @@ function getSelectedLocales() {
 /**
  * Adds event listeners on click for inlines.
 */
-$('a[id^=id_][id$=-ADD]').click(e => {
+// TODO : DOMNodeInserted is deprected, find a replacement for that
+$('#page-edit-form').on('DOMNodeInserted', '[data-inline-panel-child]', null, e => {
   e.preventDefault();
   // get the ul where all inlines will be added
   ulForms = $(e.currentTarget).parent().siblings('ul.multiple')[0];
