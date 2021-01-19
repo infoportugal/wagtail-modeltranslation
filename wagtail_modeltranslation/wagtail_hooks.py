@@ -25,13 +25,20 @@ try:
     from wagtail.core.rich_text.pages import PageLinkHandler
     from wagtail.core import __version__ as WAGTAIL_VERSION
     from wagtail.admin import messages
-    from wagtail.admin.views.pages import get_valid_next_url_from_request
 except ImportError:
     from wagtail.wagtailcore import hooks
     from wagtail.wagtailcore.models import Page
     from wagtail.wagtailcore.rich_text import PageLinkHandler
     from wagtail.wagtailcore import __version__ as WAGTAIL_VERSION
     from wagtail.wagtailadmin import messages
+
+from wagtail import __version__ as wagtail_version
+from distutils.version import LooseVersion
+if LooseVersion(wagtail_version) >= LooseVersion("2.11"):
+    from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
+elif LooseVersion(wagtail_version) >= LooseVersion("2.0"):
+    from wagtail.admin.views.pages import get_valid_next_url_from_request
+else:
     from wagtail.wagtailadmin.views.pages import get_valid_next_url_from_request
 
 
