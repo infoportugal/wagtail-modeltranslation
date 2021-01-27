@@ -48,7 +48,7 @@ def change_lang(context, lang=None, page=None, *args, **kwargs):
         # means that is an wagtail page object
         if match.url_name == 'wagtail_serve':
             activate(lang)
-            translated_url = page.url
+            translated_url = page.get_url()
             activate(current_language)
 
             return translated_url
