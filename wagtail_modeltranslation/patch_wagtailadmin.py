@@ -43,7 +43,7 @@ except ImportError:
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
     from wagtail.wagtailsearch.index import SearchField
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, TRANSLATE_SLUGS
+from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, CUSTOM_INLINE_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 from wagtail_modeltranslation.patch_wagtailadmin_forms import patch_admin_page_form
 from wagtail import VERSION
@@ -52,7 +52,7 @@ logger = logging.getLogger('wagtail.core')
 
 SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel, RichTextFieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS
-
+INLINE_PANEL_CLASSES = [InlinePanel] + CUSTOM_INLINE_PANELS
 
 class WagtailTranslator(object):
     _patched_models = []
@@ -163,7 +163,7 @@ class WagtailTranslator(object):
                 patched_panels += self._patch_simple_panel(current_patching_model, panel)
             elif panel.__class__ in COMPOSED_PANEL_CLASSES:
                 patched_panels.append(self._patch_composed_panel(panel, related_model))
-            elif panel.__class__ == InlinePanel:
+            elif panel.__class__ in INLINE_PANEL_CLASSES:
                 patched_panels.append(self._patch_inline_panel(current_patching_model, panel))
             else:
                 patched_panels.append(panel)
@@ -414,10 +414,16 @@ def _localized_site_get_site_root_paths():
     result = cache.get(cache_key)
 
     if result is None:
-        result = [
-            (site.id, site.root_page.url_path, site.root_url)
-            for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
-        ]
+        if VERSION >= (2, 11):
+            result = [
+                (site.id, site.root_page.url_path, site.root_url, site.root_page.locale.language_code)
+                for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
+            ]
+        else:
+            result = [
+                (site.id, site.root_page.url_path, site.root_url)
+                for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
+            ]
         cache.set(cache_key, result, 3600)
 
     return result

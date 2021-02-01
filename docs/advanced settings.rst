@@ -30,6 +30,18 @@ This setting behaves as the above but should be used for panels that are compose
     WAGTAILMODELTRANSLATION_CUSTOM_COMPOSED_PANELS = ['app_x.module_y.PanelZ']
 
 
+``WAGTAILMODELTRANSLATION_CUSTOM_INLINE_PANELS``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``[]`` (empty list)
+
+This setting behaves as the above but should be used for panels that inherit InlinePanel.
+
+.. code-block:: python
+
+    WAGTAILMODELTRANSLATION_CUSTOM_INLINE_PANELS = ['app_x.module_y.PanelZ']
+
+
 ``WAGTAILMODELTRANSLATION_TRANSLATE_SLUGS``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
