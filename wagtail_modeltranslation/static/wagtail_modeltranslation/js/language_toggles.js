@@ -116,7 +116,7 @@ function buildLocaleToggler() {
 
   var toggles = {};
   locales.forEach( locale => {
-    var li = $(`<li class="locale"><button class="locale-toggle">${locale}</button></li>`);
+    var li = $(`<li class="locale"><button type="button" class="locale-toggle">${locale}</button></li>`);
     ul.append(li);
 
     $(`button.locale-toggle`, li).each( (index, toggle) => {
