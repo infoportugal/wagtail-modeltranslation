@@ -566,7 +566,7 @@ def _patch_stream_field_meaningful_value(field):
             Check if val is considered non-empty.
         """
         if isinstance(val, StreamValue):
-            return len(val.stream_data) != 0
+            return len(val) != 0
         return old_meaningful_value(self, val, undefined)
 
     field.meaningful_value = meaningful_value.__get__(field)
