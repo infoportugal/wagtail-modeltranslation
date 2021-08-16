@@ -66,3 +66,15 @@ This setting specifies, which languages should initially be enabled on the edit 
     WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT = None            # only default language initially enabled
     WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT = [ ]             # all languages initially disabled
     WAGTAILMODELTRANSLATION_LOCALE_PICKER_DEFAULT = [ 'en', 'de' ]  # these languages initially enabled
+
+``WAGTAILMODELTRANSLATION_LOCALE_PICKER_STORE``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Default: ``False``
+
+If set to true, the language picker will restore language selection on each page. Otherwise, the default will be used
+
+.. code-block:: python
+
+    WAGTAILMODELTRANSLATION_LOCALE_PICKER_RESTORE = False # the default will be used on each page
+    WAGTAILMODELTRANSLATION_LOCALE_PICKER_RESTORE = True  # the last used language will be used on each page

@@ -123,7 +123,7 @@ function buildLocaleToggler() {
       toggle.addEventListener(`click`, e => {
         e.preventDefault();
         toggle.classList.toggle(`showing-locale`);
-        toggleLocale(locale);
+        toggleLocale(locale, toggle.classList.contains(`showing-locale`));
       });
 
       toggles[locale] = toggle;
@@ -142,15 +142,16 @@ function buildLocaleToggler() {
  * value of `state` (a boolean).
  */
 function toggleLocale(locale, state) {
-  var action = `toggle`;
-
-  if (state !== undefined) {
-    action = state ? `remove` : `add`
-  }
+  var action = state ? `remove` : `add`;
 
   localisedElements[locale].forEach(element => {
     element.classList[action](`l10n-hidden`);
   });
+
+  //store current state
+  let cur_state = JSON.parse(localStorage.getItem('initially_loaded_locale') || "{}");
+  cur_state[locale] = state;
+  localStorage.setItem('initially_loaded_locale', JSON.stringify(cur_state));
 }
 
 var default_locale = wagtailModelTranslations.defaultLanguage;
@@ -170,7 +171,19 @@ if (locales.length === 0) return;
 
 var localeToggler = buildLocaleToggler();
 
-for (language of wagtailModelTranslations.locale_picker_default) {
+
+let initially_loaded_locale = wagtailModelTranslations.locale_picker_default;
+
+// Restore enabled locale
+if(wagtailModelTranslations.locale_picker_restore){
+  let stored = localStorage.getItem('initially_loaded_locale');
+  if(stored !== null){
+    let stored_state = JSON.parse(stored);
+    initially_loaded_locale = Object.keys(stored_state).filter(k=>stored_state[k]);
+  }
+}
+
+for (language of initially_loaded_locale) {
     localeToggler[language].classList.add(`showing-locale`);
     toggleLocale(language, true);
 }
