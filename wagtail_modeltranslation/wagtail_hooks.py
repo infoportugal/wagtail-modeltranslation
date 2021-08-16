@@ -69,6 +69,7 @@ def translated_slugs():
             viewEditString: '{view_edit_string}',
             translate_slugs: {translate_slugs},
             locale_picker_default: [{locale_picker_default}],
+            locale_picker_restore: {locale_picker_restore}
         }};
     </script>
     """.format(
@@ -76,7 +77,8 @@ def translated_slugs():
         language_code=mt_settings.DEFAULT_LANGUAGE,
         view_edit_string=_('View / edit fields for'),
         translate_slugs='true' if wmt_settings.TRANSLATE_SLUGS else 'false',
-        locale_picker_default=locale_picker_default
+        locale_picker_default=locale_picker_default,
+        locale_picker_restore='true' if wmt_settings.LOCALE_PICKER_RESTORE else 'false',
     )
 
     return js_languages + js_includes
