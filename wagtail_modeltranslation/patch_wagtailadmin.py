@@ -71,6 +71,16 @@ class WagtailTranslator(object):
 
         WagtailTranslator._patched_models.append(model)
 
+    def _patch_fields(self, model):
+        translation_registered_fields = translator.get_options_for_model(model).fields
+
+        model_fields = model._meta.get_fields()
+        for field in model_fields:
+            if isinstance(field, StreamField) and field.name in translation_registered_fields:
+                descriptor = getattr(model, field.name)
+                _patch_stream_field_meaningful_value(descriptor)
+
+
     def _patch_page_models(self, model):
         # PANEL PATCHING
 
@@ -110,12 +120,8 @@ class WagtailTranslator(object):
                     translated_field.field_name = build_localized_fieldname(field.field_name, language)
                     model.search_fields = list(model.search_fields) + [translated_field]
 
-        # OVERRIDE FIELDS
-        model_fields = model._meta.get_fields()
-        for field in model_fields:
-            if isinstance(field, StreamField) and field.name in translation_registered_fields:
-                descriptor = getattr(model, field.name)
-                _patch_stream_field_meaningful_value(descriptor)
+        # PATCH FIELDS
+        self._patch_fields(model)
 
         # OVERRIDE CLEAN METHOD
         model.base_form_class = patch_admin_page_form(model.base_form_class)
@@ -134,6 +140,9 @@ class WagtailTranslator(object):
                 setattr(model, 'save', LocalizedSaveDescriptor(model.save))
 
     def _patch_other_models(self, model):
+        # PATCH FIELDS
+        self._patch_fields(model)
+
         if hasattr(model, 'edit_handler'):
             edit_handler = model.edit_handler
             for tab in edit_handler.children:
