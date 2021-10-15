@@ -40,15 +40,27 @@ class PatchedCopyForm(CopyForm):
         super(CopyForm, self).__init__(*args, **kwargs)
 
         for code, name in settings.LANGUAGES:
-            locale_title = "new_{}".format(build_localized_fieldname('title', code))
+            localized_fieldname = build_localized_fieldname("title", code)
+            localized_field = Page._meta.get_field(localized_fieldname)
+            locale_title = "new_{}".format(localized_fieldname)
             locale_label = "{} [{}]".format(_("New title"), code)
-            self.fields[locale_title] = forms.CharField(initial=self.page.title, label=locale_label)
+            self.fields[locale_title] = forms.CharField(
+                initial=getattr(self.page, localized_fieldname),
+                label=locale_label,
+                required=not localized_field.blank,
+            )
 
         if wmt_settings.TRANSLATE_SLUGS:
             for code, name in settings.LANGUAGES:
-                locale_title = "new_{}".format(build_localized_fieldname('slug', code))
+                localized_fieldname = build_localized_fieldname("slug", code)
+                localized_field = Page._meta.get_field(localized_fieldname)
+                locale_title = "new_{}".format(localized_fieldname)
                 locale_label = "{} [{}]".format(_("New slug"), code)
-                self.fields[locale_title] = forms.SlugField(initial=self.page.slug, label=locale_label)
+                self.fields[locale_title] = forms.SlugField(
+                    initial=getattr(self.page, localized_fieldname),
+                    label=locale_label,
+                    required=not localized_field.blank,
+                )
         else:
             self.fields['new_slug'] = forms.SlugField(initial=self.page.slug, label=_("New slug"))
 
