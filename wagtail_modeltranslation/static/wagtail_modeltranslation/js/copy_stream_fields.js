@@ -61,6 +61,13 @@ function extractInputId(currentStreamField) {
 		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
 		var inputId = $(streamFieldDiv).children('input')[0].id.split('-')[0];
 	}
+	
+	if (!inputId) {
+		var streamFieldInput = $(currentStreamField).find('.field-content input')[0];
+		streamFieldInput.id = streamFieldInput.name;
+		var inputId = streamFieldInput.name.split('-')[0];
+	}
+	
 	return inputId;
 }
 
