@@ -164,7 +164,7 @@ def return_translation_target_field_rendered_html(request, page_id):
 @hooks.register('register_admin_urls')
 def copy_streamfields_content():
     return [
-        url(r'(?P<page_id>\d+)/edit/copy_translation_content/$',
+        url(r'pages/(?P<page_id>\d+)/edit/copy_translation_content/$',
             return_translation_target_field_rendered_html, name=''),
     ]
 
