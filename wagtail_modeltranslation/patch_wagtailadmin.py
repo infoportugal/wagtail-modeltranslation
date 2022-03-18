@@ -44,7 +44,7 @@ except ImportError:
     from wagtail.wagtailsearch.index import SearchField
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 try:
-    from wagtail.core.models SiteRootPath
+    from wagtail.core.models import SiteRootPath
 except ImportError:
     SiteRootPath = None
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, CUSTOM_INLINE_PANELS, TRANSLATE_SLUGS
