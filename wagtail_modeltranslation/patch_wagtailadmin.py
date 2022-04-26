@@ -43,6 +43,10 @@ except ImportError:
     from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
     from wagtail.wagtailsearch.index import SearchField
     from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
+try:
+    from wagtail.core.models import SiteRootPath
+except ImportError:
+    SiteRootPath = None
 from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, CUSTOM_INLINE_PANELS, TRANSLATE_SLUGS
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 from wagtail_modeltranslation.patch_wagtailadmin_forms import patch_admin_page_form
@@ -434,8 +438,12 @@ def _localized_site_get_site_root_paths():
                 for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
             ]
         cache.set(cache_key, result, 3600)
-
-    return result
+    
+    if SiteRootPath is None:
+        return result
+    else:
+        # Wagtail >= 2.16 compatibility
+        return [SiteRootPath(*srp) for srp in result]
 
 
 def _new_get_site_root_paths(self, request=None):
