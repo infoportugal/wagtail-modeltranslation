@@ -5,7 +5,6 @@ import sys
 import django
 from django.conf import settings
 from django.core.management import call_command
-from wagtail import VERSION
 
 
 def runtests():
@@ -32,42 +31,22 @@ def runtests():
             })
 
         # Configure test environment
-        import wagtail
-        if VERSION < (2,):
-            WAGTAIL_MODULES = [
-                'wagtail.wagtailcore',
-                'wagtail.wagtailadmin',
-                'wagtail.wagtaildocs',
-                'wagtail.wagtailsnippets',
-                'wagtail.wagtailusers',
-                'wagtail.wagtailimages',
-                'wagtail.wagtailembeds',
-                'wagtail.wagtailsearch',
-                'wagtail.wagtailredirects',
-                'wagtail.wagtailforms',
-                'wagtail.wagtailsites',
-                'wagtail.contrib.settings',
-                'wagtail.contrib.wagtailapi',
-            ]
-            WAGTAIL_CORE = 'wagtail.wagtailcore'
-        else:
-            WAGTAIL_MODULES = [
-                'wagtail.core',
-                'wagtail.admin',
-                'wagtail.documents',
-                'wagtail.snippets',
-                'wagtail.users',
-                'wagtail.images',
-                'wagtail.embeds',
-                'wagtail.search',
-                'wagtail.contrib.redirects',
-                'wagtail.contrib.forms',
-                'wagtail.sites',
-                'wagtail.contrib.settings',
-                'wagtail.api'
-            ]
-            WAGTAIL_CORE = 'wagtail.core'
-
+        WAGTAIL_MODULES = [
+            'wagtail.core',
+            'wagtail.admin',
+            'wagtail.documents',
+            'wagtail.snippets',
+            'wagtail.users',
+            'wagtail.images',
+            'wagtail.embeds',
+            'wagtail.search',
+            'wagtail.contrib.redirects',
+            'wagtail.contrib.forms',
+            'wagtail.sites',
+            'wagtail.contrib.settings',
+            'wagtail.api'
+        ]
+        WAGTAIL_CORE = 'wagtail.core'
 
         settings.configure(
             DATABASES=DATABASES,
@@ -75,8 +54,8 @@ def runtests():
                 'django.contrib.contenttypes',
                 'django.contrib.auth',
                 'taggit',
-                'rest_framework'] +
-                WAGTAIL_MODULES + [
+                'rest_framework'
+            ] + WAGTAIL_MODULES + [
                 'wagtail_modeltranslation.makemigrations',
                 'wagtail_modeltranslation',
             ],
