@@ -133,10 +133,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         super(WagtailModeltranslationTest, cls).setUpClass()
 
         # Delete the default wagtail pages from db
-        try:
-            from wagtail.core.models import Page
-        except ImportError:
-            from wagtail.wagtailcore.models import Page
+        from wagtail.core.models import Page
         Page.objects.delete()
 
     def test_page_fields(self):
@@ -170,10 +167,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEquals(len(panels), 2)
 
         # Validate if the created panels are instances of FieldPanel
-        try:
-            from wagtail.admin.edit_handlers import FieldPanel
-        except ImportError:
-            from wagtail.wagtailadmin.edit_handlers import FieldPanel
+        from wagtail.admin.edit_handlers import FieldPanel
 
         self.assertIsInstance(panels[0], FieldPanel)
         self.assertIsInstance(panels[1], FieldPanel)
@@ -186,10 +180,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Check if there is one panel per language
         self.assertEquals(len(panels), 2)
 
-        try:
-            from wagtail.images.edit_handlers import ImageChooserPanel
-        except ImportError:
-            from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+        from wagtail.images.edit_handlers import ImageChooserPanel
         self.assertIsInstance(panels[0], ImageChooserPanel)
         self.assertIsInstance(panels[1], ImageChooserPanel)
 
@@ -201,10 +192,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Check if the fieldrowpanel still exists
         self.assertEqual(len(panels), 1)
 
-        try:
-            from wagtail.admin.edit_handlers import FieldRowPanel
-        except ImportError:
-            from wagtail.wagtailadmin.edit_handlers import FieldRowPanel
+        from wagtail.admin.edit_handlers import FieldRowPanel
         self.assertIsInstance(panels[0], FieldRowPanel)
 
         # Check if the children were correctly patched using the fieldpanel test
@@ -461,12 +449,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         model_search_fields = [searchfield.field_name for searchfield in models.PatchTestPage.search_fields]
 
-        try:
-            # python 3
-            self.assertCountEqual(expected_fields, model_search_fields)
-        except AttributeError:
-            # python 2.7
-            self.assertItemsEqual(expected_fields, model_search_fields)
+        self.assertCountEqual(expected_fields, model_search_fields)
 
     def test_streamfield_fallback(self):
         body_text = '[{"value": "Some text", "type": "text"}]'
@@ -486,10 +469,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         Assert translation URL Paths are correctly set in page and descendants for a slug change and
         page move operations
         """
-        try:
-            from wagtail.core.models import Site
-        except ImportError:
-            from wagtail.wagtailcore.models import Site
+        from wagtail.core.models import Site
         # Create a test Site with a root page
         root = models.TestRootPage.objects.create(title='url paths', depth=1, path='0006', slug='url-path-slug')
 
