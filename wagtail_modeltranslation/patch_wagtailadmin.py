@@ -409,8 +409,12 @@ def _localized_site_get_site_root_paths():
             for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
         ]
         cache.set(cache_key, result, 3600)
-
-    return result
+    
+    if SiteRootPath is None:
+        return result
+    else:
+        # Wagtail >= 2.16 compatibility
+        return [SiteRootPath(*srp) for srp in result]
 
 
 def _new_get_site_root_paths(self, request=None):
