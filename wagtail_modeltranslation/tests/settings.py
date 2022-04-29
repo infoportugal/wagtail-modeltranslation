@@ -1,4 +1,3 @@
-# coding: utf-8
 """
 Settings overrided for test time
 """

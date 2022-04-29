@@ -4,31 +4,15 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import translation
+from django.utils.translation import activate, get_language
 from django.utils.translation import ugettext as _
 from django.utils.translation import ungettext
-from django.utils.translation import activate, get_language
 from modeltranslation.utils import build_localized_fieldname
+from wagtail.admin import widgets
+from wagtail.admin.forms.pages import CopyForm
+from wagtail.core.models import Page
 
 from wagtail_modeltranslation import settings as wmt_settings
-
-try:
-    from wagtail.core.models import Page
-    from wagtail.admin import widgets
-    from wagtail.admin.forms import WagtailAdminPageForm
-except ImportError:
-    from wagtail.wagtailcore.models import Page
-    from wagtail.wagtailadmin import widgets
-    from wagtail.wagtailadmin.forms import WagtailAdminPageForm
-
-try:
-    from wagtail.admin.forms.pages import CopyForm
-except ImportError:
-    # wagtail>=2.0,<2.3
-    try:
-        from wagtail.admin.forms import CopyForm
-    except ImportError:
-        # wagtail<2.0
-        from wagtail.wagtailadmin.forms import CopyForm
 
 
 class PatchedCopyForm(CopyForm):

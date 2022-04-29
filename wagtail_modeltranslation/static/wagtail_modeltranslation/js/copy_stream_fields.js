@@ -46,28 +46,20 @@ $(document).ready(function(){
 
 /* Get header */
 function getStreamFieldHeader(currentStreamField) {
-	if(versionCompare(WAGTAIL_VERSION,'2.6.0', {zeroExtend:true})>=0){
-		return $(currentStreamField).children('.title-wrapper')[0];
-	}
-	return $(currentStreamField).children('h2')[0];
+	return $(currentStreamField).children('.title-wrapper')[0];
 }
 
 function extractInputId(currentStreamField) {
 	//Search for the input field so that we can get is id to know the field's name.
-	if(versionCompare(WAGTAIL_VERSION,'2.7.0', {zeroExtend:true})>=0){
-		var streamFieldDiv = $(currentStreamField).find('.field-content')[0];
-		var inputId = $(streamFieldDiv).find('input')[0].id.split('-')[0];
-	} else {
-		var streamFieldDiv = $(currentStreamField).find('div.sequence-container.sequence-type-stream')[0];
-		var inputId = $(streamFieldDiv).children('input')[0].id.split('-')[0];
-	}
-	
+	var streamFieldDiv = $(currentStreamField).find('.field-content')[0];
+	var inputId = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+
 	if (!inputId) {
 		var streamFieldInput = $(currentStreamField).find('.field-content input')[0];
 		streamFieldInput.id = streamFieldInput.name;
 		var inputId = streamFieldInput.name.split('-')[0];
 	}
-	
+
 	return inputId;
 }
 

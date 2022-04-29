@@ -1,30 +1,19 @@
-# coding: utf-8
 from django.db import models
 from django.http import HttpResponse
 from modelcluster.fields import ParentalKey
-try:
-    from wagtail.contrib.routable_page.models import RoutablePageMixin, route
-    from wagtail.admin.edit_handlers import FieldPanel, MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel
-    from wagtail.core import blocks
-    from wagtail.core.fields import StreamField
-    from wagtail.core.models import Page as WagtailPage
-    from wagtail.images.edit_handlers import ImageChooserPanel
-    from wagtail.search import index
-    from wagtail.snippets.models import register_snippet
-except ImportError:
-    from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin, route
-    from wagtail.wagtailadmin.edit_handlers import FieldPanel, MultiFieldPanel, FieldRowPanel, InlinePanel, \
-        StreamFieldPanel
-    from wagtail.wagtailcore import blocks
-    from wagtail.wagtailcore.fields import StreamField
-    from wagtail.wagtailcore.models import Page as WagtailPage
-    from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
-    from wagtail.wagtailsearch import index
-    from wagtail.wagtailsnippets.models import register_snippet
+from wagtail.admin.edit_handlers import (FieldPanel, FieldRowPanel,
+                                         InlinePanel, MultiFieldPanel,
+                                         StreamFieldPanel)
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
+from wagtail.core import blocks
+from wagtail.core.fields import StreamField
+from wagtail.core.models import Page as WagtailPage
+from wagtail.images.edit_handlers import ImageChooserPanel
+from wagtail.search import index
+from wagtail.snippets.models import register_snippet
 
 
 # Wagtail Models
-
 class TestRootPage(WagtailPage):
     parent_page_types = []
     subpage_types = ['tests.TestSlugPage1', 'tests.TestSlugPage2']

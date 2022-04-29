@@ -1,7 +1,5 @@
-# coding: utf-8
 import imp
 
-import django
 from django.apps import apps as django_apps
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
@@ -11,18 +9,16 @@ from django.test import TestCase, TransactionTestCase
 from django.test.client import RequestFactory
 from django.test.utils import override_settings
 from django.utils.translation import get_language, trans_real
-from modeltranslation import settings as mt_settings, translator
-try:
-    from wagtail.snippets.views.snippets import get_snippet_edit_handler
-except ImportError:
-    from wagtail.wagtailsnippets.views.snippets import get_snippet_edit_handler
-from wagtail import VERSION
-from .util import page_factory
-
+from modeltranslation import settings as mt_settings
+from modeltranslation import translator
+from wagtail.snippets.views.snippets import get_snippet_edit_handler
 from wagtail_modeltranslation.tests.test_settings import TEST_SETTINGS
+
+from .util import page_factory
 
 models = translation = None
 request_factory = RequestFactory()
+
 
 class dummy_context_mgr():
     def __enter__(self):
@@ -64,17 +60,11 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 del cls.cache.all_models['wagtailcore']
                 sys.modules.pop('wagtail_modeltranslation.translation.pagetr', None)
                 from wagtail_modeltranslation import translation as wag_translation
-                try:
-                    from wagtail.admin import edit_handlers
-                    sys.modules.pop('wagtail.core.models', None)
-                except ImportError:
-                    from wagtail.wagtailadmin import edit_handlers
-                    sys.modules.pop('wagtail.wagtailcore.models', None)
+                from wagtail.admin import edit_handlers
+                sys.modules.pop('wagtail.core.models', None)
                 imp.reload(wag_translation)
                 imp.reload(edit_handlers)  # so Page can be repatched by edit_handlers
                 wagtailcore_args = []
-                if django.VERSION < (1, 11):
-                    wagtailcore_args = [cls.cache.all_models['wagtailcore']]
                 cls.cache.get_app_config('wagtailcore').import_models(*wagtailcore_args)
 
                 # Reload the patching class to update the imported translator
@@ -89,8 +79,6 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 sys.modules.pop('wagtail_modeltranslation.tests.models', None)
                 sys.modules.pop('wagtail_modeltranslation.tests.translation', None)
                 tests_args = []
-                if django.VERSION < (1, 11):
-                    tests_args = [cls.cache.all_models['tests']]
                 cls.cache.get_app_config('tests').import_models(*tests_args)
 
                 # 4. Autodiscover
@@ -98,7 +86,7 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 handle_translation_registrations()
 
                 # 5. makemigrations
-                from django.db import connections, DEFAULT_DB_ALIAS
+                from django.db import DEFAULT_DB_ALIAS, connections
                 call_command('makemigrations', verbosity=2, interactive=False)
 
                 # 6. Syncdb
@@ -116,7 +104,8 @@ class WagtailModeltranslationTransactionTestBase(TransactionTestCase):
                 # tests app has been added into INSTALLED_APPS and loaded
                 # (that's why this is not imported in normal import section)
                 global models, translation
-                from wagtail_modeltranslation.tests import models, translation # NOQA
+                from wagtail_modeltranslation.tests import models  # NOQA
+                from wagtail_modeltranslation.tests import translation
 
     def setUp(self):
         self._old_language = get_language()
@@ -227,10 +216,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         # Check if there is one panel per language
         self.assertEquals(len(panels), 2)
 
-        try:
-            from wagtail.admin.edit_handlers import StreamFieldPanel
-        except ImportError:
-            from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
+        from wagtail.admin.edit_handlers import StreamFieldPanel
         self.assertIsInstance(panels[0], StreamFieldPanel)
         self.assertIsInstance(panels[1], StreamFieldPanel)
 
@@ -243,33 +229,26 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertEquals(len(child_block), 1)
 
-        try:
-            from wagtail.core.blocks import CharBlock
-        except ImportError:
-            from wagtail.wagtailcore.blocks import CharBlock
+        from wagtail.core.blocks import CharBlock
         self.assertEquals(child_block[0][0], 'text')
         self.assertIsInstance(child_block[0][1], CharBlock)
 
-        if VERSION >= (1, 12):
-            # Original and Default language StreamFields are required
-            self.assertFalse(models.StreamFieldPanelPage.body.field.blank)
-            self.assertTrue(models.StreamFieldPanelPage.body.field.stream_block.required)
-            self.assertFalse(models.StreamFieldPanelPage.body_de.field.blank)
-            self.assertTrue(models.StreamFieldPanelPage.body_de.field.stream_block.required)
+        # Original and Default language StreamFields are required
+        self.assertFalse(models.StreamFieldPanelPage.body.field.blank)
+        self.assertTrue(models.StreamFieldPanelPage.body.field.stream_block.required)
+        self.assertFalse(models.StreamFieldPanelPage.body_de.field.blank)
+        self.assertTrue(models.StreamFieldPanelPage.body_de.field.stream_block.required)
 
-            # Translated StreamField is optional
-            self.assertTrue(models.StreamFieldPanelPage.body_en.field.blank)
-            self.assertFalse(models.StreamFieldPanelPage.body_en.field.stream_block.required)
+        # Translated StreamField is optional
+        self.assertTrue(models.StreamFieldPanelPage.body_en.field.blank)
+        self.assertFalse(models.StreamFieldPanelPage.body_en.field.stream_block.required)
 
     def check_multipanel_patching(self, panels):
         # There are three multifield panels, one for each of the available
         # children panels
         self.assertEquals(len(panels), 3)
 
-        try:
-            from wagtail.admin.edit_handlers import MultiFieldPanel
-        except ImportError:
-            from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
+        from wagtail.admin.edit_handlers import MultiFieldPanel
         self.assertIsInstance(panels[0], MultiFieldPanel)
         self.assertIsInstance(panels[1], MultiFieldPanel)
         self.assertIsInstance(panels[2], MultiFieldPanel)
@@ -324,17 +303,9 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
     def check_panels_patching(self, model, model_fields):
         patched_edit_handler = get_snippet_edit_handler(model)
 
-        if VERSION[0] < 2:
-            form = patched_edit_handler.get_form_class(model)
-        else:
-            form = patched_edit_handler.get_form_class()
+        form = patched_edit_handler.get_form_class()
 
-        try:
-            # python 3
-            self.assertEqual(model_fields, list(form.base_fields.keys()))
-        except AttributeError:
-            # python 2.7
-            self.assertItemsEqual(model_fields, form.base_fields.keys())
+        self.assertEqual(model_fields, list(form.base_fields.keys()))
 
     def test_page_form(self):
         """
@@ -344,20 +315,12 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         page_edit_handler = models.InlinePanelPage.get_edit_handler()
 
-        if VERSION < (2,):
-            form = page_edit_handler.get_form_class(models.InlinePanelPage)
-        else:
-            form = page_edit_handler.get_form_class()
+        form = page_edit_handler.get_form_class()
 
         page_base_fields = ['slug_de', 'slug_en', 'seo_title_de', 'seo_title_en', 'search_description_de',
                             'search_description_en', u'show_in_menus', u'go_live_at', u'expire_at']
 
-        try:
-            # python 3
-            self.assertCountEqual(page_base_fields, form.base_fields.keys())
-        except AttributeError:
-            # python 2.7
-            self.assertItemsEqual(page_base_fields, form.base_fields.keys())
+        self.assertCountEqual(page_base_fields, form.base_fields.keys())
 
         inline_model_fields = ['field_name_de', 'field_name_en', 'image_chooser_de', 'image_chooser_en',
                                'fieldrow_name_de', 'fieldrow_name_en', 'name_de', 'name_en', 'image_de', 'image_en',
@@ -365,12 +328,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         related_formset_form = form.formsets['related_page_model'].form
 
-        try:
-            # python 3
-            self.assertCountEqual(inline_model_fields, related_formset_form.base_fields.keys())
-        except AttributeError:
-            # python 2.7
-            self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
+        self.assertCountEqual(inline_model_fields, related_formset_form.base_fields.keys())
 
     def test_snippet_form(self):
         """
@@ -379,10 +337,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         """
         snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
 
-        if VERSION < (2,):
-            form = snippet_edit_handler.get_form_class(models.InlinePanelSnippet)
-        else:
-            form = snippet_edit_handler.get_form_class()
+        form = snippet_edit_handler.get_form_class()
 
         inline_model_fields = ['field_name_de', 'field_name_en', 'image_chooser_de', 'image_chooser_en',
                                'fieldrow_name_de', 'fieldrow_name_en', 'name_de', 'name_en', 'image_de', 'image_en',
@@ -390,18 +345,10 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         related_formset_form = form.formsets['related_snippet_model'].form
 
-        try:
-            # python 3
-            self.assertCountEqual(inline_model_fields, related_formset_form.base_fields.keys())
-        except AttributeError:
-            # python 2.7
-            self.assertItemsEqual(inline_model_fields, related_formset_form.base_fields.keys())
+        self.assertCountEqual(inline_model_fields, related_formset_form.base_fields.keys())
 
     def test_duplicate_slug(self):
-        try:
-            from wagtail.core.models import Site
-        except ImportError:
-            from wagtail.wagtailcore.models import Site
+        from wagtail.core.models import Site
         # Create a test Site with a root page
         root = models.TestRootPage(title='title', depth=1, path='0001', slug_en='slug_en', slug_de='slug_de')
         root.save()
@@ -410,7 +357,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         site.save()
 
         # Add children to the root
-        child = root.add_child(
+        root.add_child(
             instance=models.TestSlugPage1(title='child1', slug_de='child', slug_en='child-en', depth=2, path='00010001')
         )
 
@@ -464,10 +411,7 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(slugurl_trans(context, 'child-slugurl-en', 'en'), '/en/child-slugurl-en/')
 
     def test_relative_url(self):
-        try:
-            from wagtail.core.models import Site
-        except ImportError:
-            from wagtail.wagtailcore.models import Site
+        from wagtail.core.models import Site
         # Create a test Site with a root page
         root = models.TestRootPage(title='title slugurl', depth=1, path='0004',
                                    slug_en='title_slugurl_en', slug_de='title_slugurl_de')
@@ -696,10 +640,9 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         Assert that saved translation fields are retrieved correctly
         See: https://github.com/infoportugal/wagtail-modeltranslation/issues/103#issuecomment-352006610
         """
-        page = models.StreamFieldPanelPage.objects.create(title_de='Fetch DE', title_en='Fetch EN',
-                                                          slug_de='fetch_de', slug_en='fetch_en',
-                                                          body_de=[('text', 'fetch de')], body_en=[('text', 'fetch en')],
-                                                          depth=1, path='0007')
+        page = models.StreamFieldPanelPage.objects.create(
+            title_de='Fetch DE', title_en='Fetch EN', slug_de='fetch_de', slug_en='fetch_en',
+            body_de=[('text', 'fetch de')], body_en=[('text', 'fetch en')], depth=1, path='0007')
         page.save()
 
         page_db = models.StreamFieldPanelPage.objects.get(id=page.id)
@@ -882,22 +825,19 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         self.assertEqual(wagtail_page_01.url, '/de/url-de-01/')
         self.assertEqual(wagtail_page_01.url_path, '/root-de/url-de-01/')
-        if VERSION >= (1, 11):
-            self.assertEqual(wagtail_page_02.get_url(request=request), '/de/url-de-02/')  # with request
+        self.assertEqual(wagtail_page_02.get_url(request=request), '/de/url-de-02/')  # with request
 
         trans_real.activate('en')
 
         self.assertEqual(wagtail_page_01.url, '/en/url-en-01/')
         self.assertEqual(wagtail_page_01.url_path, '/root-en/url-en-01/')
-        if VERSION >= (1, 11):
-            self.assertEqual(wagtail_page_02.get_url(request=request), '/en/url-de-02/')
+        self.assertEqual(wagtail_page_02.get_url(request=request), '/en/url-de-02/')
 
         trans_real.activate('de')
 
         # new request after changing language
         self.assertEqual(wagtail_page_03.url, '/de/url-de-03/')
-        if VERSION >= (1, 11):
-            self.assertEqual(wagtail_page_01.get_url(request=HttpRequest()), '/de/url-de-01/')
+        self.assertEqual(wagtail_page_01.get_url(request=HttpRequest()), '/de/url-de-01/')
 
         # URL should not be broken after updating the root_page (ensure the cache is evicted)
         self.assertEqual(wagtail_page_01.url, '/de/url-de-01/')
@@ -968,8 +908,9 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
 
         # change grandchild2 url_path to corrupt it in order to simulate Wagtail's 0.7 corruption bug:
         # http://docs.wagtail.io/en/latest/releases/0.8.html#corrupted-url-paths-may-need-fixing
-        models.TestSlugPage2.objects.filter(slug_de__in=['grandchild2-untranslated',]) \
-            .rewrite(False).update(url_path='corrupted', url_path_de='corrupted')
+        models.TestSlugPage2.objects.filter(
+            slug_de__in=['grandchild2-untranslated']
+        ).rewrite(False).update(url_path='corrupted', url_path_de='corrupted')
 
         grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
         self.assertEqual(grandchild2.__dict__['url_path'], 'corrupted')
@@ -985,12 +926,19 @@ class WagtailModeltranslationTest(WagtailModeltranslationTestBase):
         self.assertEqual(grandgrandchild.url_path_en,
                          '/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/')
         grandchild2 = models.TestSlugPage2.objects.get(slug_de='grandchild2-untranslated')
-        self.assertEqual(grandchild2.__dict__['url_path'], '/root-untranslated/child-untranslated/grandchild2-untranslated/')
+        self.assertEqual(
+            grandchild2.__dict__['url_path'],
+            '/root-untranslated/child-untranslated/grandchild2-untranslated/'
+        )
         self.assertEqual(grandchild2.url_path_de, '/root-untranslated/child-untranslated/grandchild2-untranslated/')
         self.assertEqual(grandchild2.url_path_en, '/root-untranslated/child-untranslated/grandchild2-untranslated/')
 
         grandgrandchild_translated = models.TestSlugPage1.objects.get(slug_de='grandgrandchild1-translated')
-        self.assertEqual(grandgrandchild_translated.url_path_de,
-                         '/root-untranslated/child2-translated/grandchild1-translated/grandgrandchild1-translated/')
-        self.assertEqual(grandgrandchild_translated.url_path_en,
-                         '/root-untranslated/child2-translated-en/grandchild1-translated-en/grandgrandchild1-translated-en/')
+        self.assertEqual(
+            grandgrandchild_translated.url_path_de,
+            '/root-untranslated/child2-translated/grandchild1-translated/grandgrandchild1-translated/'
+        )
+        self.assertEqual(
+            grandgrandchild_translated.url_path_en,
+            '/root-untranslated/child2-translated-en/grandchild1-translated-en/grandgrandchild1-translated-en/'
+        )

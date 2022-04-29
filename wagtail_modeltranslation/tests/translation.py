@@ -1,7 +1,5 @@
-# coding: utf-8
 from modeltranslation.translator import (TranslationOptions, register,
                                          translator)
-
 from wagtail_modeltranslation.tests.models import (BaseInlineModel,
                                                    FieldPanelPage,
                                                    FieldPanelSnippet,
@@ -25,8 +23,8 @@ from wagtail_modeltranslation.tests.models import (BaseInlineModel,
                                                    TestSlugPage1Subclass,
                                                    TestSlugPage2)
 
-# Wagtail Models
 
+# Wagtail Models
 @register(TestRootPage)
 class TestRootPagePageTranslationOptions(TranslationOptions):
     fields = ()
