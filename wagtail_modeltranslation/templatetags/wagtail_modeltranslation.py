@@ -65,6 +65,7 @@ class GetAvailableLanguagesNode(template.Node):
         context[self.variable] = mt_settings.AVAILABLE_LANGUAGES
         return ''
 
+
 # Alternative to slugurl which uses chosen or default language for language
 @register.simple_tag(takes_context=True)
 def slugurl_trans(context, slug, language=None):
