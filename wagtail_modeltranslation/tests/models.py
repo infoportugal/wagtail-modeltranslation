@@ -124,12 +124,12 @@ class BaseInlineModel(MultiFieldPanelSnippet):
     fieldrow_name = models.CharField(max_length=10)
 
     panels = [
-                 FieldPanel('field_name'),
-                 ImageChooserPanel('image_chooser'),
-                 FieldRowPanel([
-                     FieldPanel('fieldrow_name'),
-                 ]),
-             ] + MultiFieldPanelSnippet.panels
+        FieldPanel('field_name'),
+        ImageChooserPanel('image_chooser'),
+        FieldRowPanel([
+            FieldPanel('fieldrow_name'),
+        ]),
+    ] + MultiFieldPanelSnippet.panels
 
 
 class SnippetInlineModel(BaseInlineModel):

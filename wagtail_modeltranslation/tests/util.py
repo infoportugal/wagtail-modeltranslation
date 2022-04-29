@@ -71,7 +71,7 @@ class PageFactory(object):
         node['instance'] = node_page
 
         for n, child in enumerate(node.get('children', {}).values()):
-            self.create_instance(child, node_page, n+1)
+            self.create_instance(child, node_page, n + 1)
 
         return node_page
 
