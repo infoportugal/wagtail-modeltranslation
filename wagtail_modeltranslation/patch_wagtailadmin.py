@@ -21,7 +21,7 @@ from wagtail.admin.edit_handlers import (
     extract_panel_definitions_from_model_class)
 from wagtail.contrib.routable_page.models import RoutablePageMixin
 from wagtail.core.fields import StreamField, StreamValue
-from wagtail.core.models import Page, Site
+from wagtail.core.models import Page, Site, SiteRootPath
 from wagtail.core.url_routing import RouteResult
 from wagtail.core.utils import WAGTAIL_APPEND_SLASH
 from wagtail.images.edit_handlers import ImageChooserPanel
@@ -409,12 +409,8 @@ def _localized_site_get_site_root_paths():
             for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
         ]
         cache.set(cache_key, result, 3600)
-    
-    if SiteRootPath is None:
-        return result
-    else:
-        # Wagtail >= 2.16 compatibility
-        return [SiteRootPath(*srp) for srp in result]
+
+    return [SiteRootPath(*srp) for srp in result]
 
 
 def _new_get_site_root_paths(self, request=None):
