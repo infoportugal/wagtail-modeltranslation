@@ -20,17 +20,27 @@ from wagtail_modeltranslation import settings as wmt_settings
 from .patch_wagtailadmin_forms import PatchedCopyForm
 
 try:
+    # for Wagtail v3.0
     from wagtail.core import hooks
     from wagtail.core.models import Page
-    from wagtail.core.rich_text.pages import PageLinkHandler
-    from wagtail.core import __version__ as WAGTAIL_VERSION
+    from wagtail.rich_text.pages import PageLinkHandler
+    from wagtail import __version__ as WAGTAIL_VERSION
     from wagtail.admin import messages
 except ImportError:
-    from wagtail.wagtailcore import hooks
-    from wagtail.wagtailcore.models import Page
-    from wagtail.wagtailcore.rich_text import PageLinkHandler
-    from wagtail.wagtailcore import __version__ as WAGTAIL_VERSION
-    from wagtail.wagtailadmin import messages
+    try:
+        # for Wagtail v2.16
+        from wagtail.core import hooks
+        from wagtail.core.models import Page
+        from wagtail.core.rich_text.pages import PageLinkHandler
+        from wagtail.core import __version__ as WAGTAIL_VERSION
+        from wagtail.admin import messages
+    except ImportError:
+        # for legacy Wagtail
+        from wagtail.wagtailcore import hooks
+        from wagtail.wagtailcore.models import Page
+        from wagtail.wagtailcore.rich_text import PageLinkHandler
+        from wagtail.wagtailcore import __version__ as WAGTAIL_VERSION
+        from wagtail.wagtailadmin import messages
 
 from wagtail import __version__ as wagtail_version
 from distutils.version import LooseVersion

@@ -20,29 +20,45 @@ from modeltranslation.translator import translator, NotRegistered
 from modeltranslation.utils import build_localized_fieldname, get_language
 
 try:
+    # for Wagtail v3.0
     from wagtail.contrib.routable_page.models import RoutablePageMixin
     from wagtail.admin.edit_handlers import FieldPanel, \
         MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
         extract_panel_definitions_from_model_class, ObjectList
     from wagtail.core.models import Page, Site
     from wagtail.core.fields import StreamField, StreamValue
-    from wagtail.core.url_routing import RouteResult
+    from wagtail.url_routing import RouteResult
     from wagtail.core.utils import WAGTAIL_APPEND_SLASH
     from wagtail.images.edit_handlers import ImageChooserPanel
     from wagtail.search.index import SearchField
     from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
 except ImportError:
-    from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
-    from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
-        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
-        extract_panel_definitions_from_model_class, ObjectList
-    from wagtail.wagtailcore.models import Page, Site
-    from wagtail.wagtailcore.fields import StreamField, StreamValue
-    from wagtail.wagtailcore.url_routing import RouteResult
-    from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
-    from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
-    from wagtail.wagtailsearch.index import SearchField
-    from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
+    # for Wagtail v2.16
+    try:
+        from wagtail.contrib.routable_page.models import RoutablePageMixin
+        from wagtail.admin.edit_handlers import FieldPanel, \
+            MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
+            extract_panel_definitions_from_model_class, ObjectList
+        from wagtail.core.models import Page, Site
+        from wagtail.core.fields import StreamField, StreamValue
+        from wagtail.core.url_routing import RouteResult
+        from wagtail.core.utils import WAGTAIL_APPEND_SLASH
+        from wagtail.images.edit_handlers import ImageChooserPanel
+        from wagtail.search.index import SearchField
+        from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
+    except ImportError:
+        # for Legacy Wagtail
+        from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
+        from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
+            MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
+            extract_panel_definitions_from_model_class, ObjectList
+        from wagtail.wagtailcore.models import Page, Site
+        from wagtail.wagtailcore.fields import StreamField, StreamValue
+        from wagtail.wagtailcore.url_routing import RouteResult
+        from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
+        from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+        from wagtail.wagtailsearch.index import SearchField
+        from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
 try:
     from wagtail.core.models import SiteRootPath
 except ImportError:
