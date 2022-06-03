@@ -140,7 +140,7 @@ class WagtailTranslator(object):
         else:
             panels = extract_panel_definitions_from_model_class(model)
             translation_registered_fields = translator.get_options_for_model(model).fields
-            panels = filter(lambda field: field.field_name not in translation_registered_fields, panels)
+            panels = list(filter(lambda field: field.field_name not in translation_registered_fields, panels))
             edit_handler = ObjectList(panels)
             SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to(model=model)
 
