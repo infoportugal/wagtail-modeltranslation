@@ -1,7 +1,7 @@
 from django.apps import AppConfig
 
 
-class ModeltranslationConfig(AppConfig):
+class WagtailModeltranslationConfig(AppConfig):
     name = 'wagtail_modeltranslation'
     verbose_name = 'Wagtail Modeltranslation'
 
