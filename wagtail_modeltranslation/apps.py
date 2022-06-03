@@ -29,3 +29,6 @@ class WagtailModeltranslationConfig(AppConfig):
 
         from .patch_wagtailadmin import patch_wagtail_models
         patch_wagtail_models()
+
+        from wagtail_modeltranslation.signal_handlers import register_signal_handlers
+        register_signal_handlers()
