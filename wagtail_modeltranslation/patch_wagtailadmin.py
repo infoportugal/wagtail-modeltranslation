@@ -249,7 +249,6 @@ def _localized_set_url_path(page, parent, language):
     default_localized_slug_field = build_localized_fieldname('slug', mt_settings.DEFAULT_LANGUAGE)
     localized_url_path_field = build_localized_fieldname('url_path', language)
     default_localized_url_path_field = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
-
     if parent:
         # Emulate the default behavior of django-modeltranslation to get the slug and url path
         # for the current language. If the value for the current language is invalid we get the one
@@ -372,27 +371,23 @@ def _new_update_descendant_url_paths(self, old_url_path, new_url_path):
 
 
 def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language=None):
+    # print("Page:", page, old_url_path, new_url_path, language)
     localized_url_path = 'url_path'
     if language:
         localized_url_path = build_localized_fieldname('url_path', language)
 
-    if connection.vendor in ('mssql', 'microsoft'):
-        cursor = connection.cursor()
-        update_statement = """
-            UPDATE wagtailcore_page
-            SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
-            WHERE path LIKE %s AND id <> %s
-        """.format(localized_url_path=localized_url_path)
-        cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, page.path + '%', page.id])
-    else:
-        (Page.objects
-            .rewrite(False)
-            .filter(path__startswith=page.path)
-            .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
-            .exclude(pk=page.pk)
-            .update(**{localized_url_path: Concat(
+    (
+        Page.objects
+        .filter(path__startswith=page.path)
+        .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
+        .exclude(pk=page.pk)
+        .update(
+            **{localized_url_path: Concat(
                 Value(new_url_path),
-                Substr(localized_url_path, len(old_url_path) + 1))}))
+                Substr(localized_url_path, len(old_url_path) + 1)
+            )}
+        )
+    )
 
 
 def _localized_site_get_site_root_paths():
