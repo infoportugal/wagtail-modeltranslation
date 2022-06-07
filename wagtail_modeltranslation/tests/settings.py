@@ -51,7 +51,6 @@ INSTALLED_APPS = [
     'wagtail.contrib.modeladmin',
     'wagtail.contrib.table_block',
     'wagtail.contrib.forms',
-    'wagtail.contrib.typed_table_block',
 
     'wagtail.search',
     'wagtail.embeds',
