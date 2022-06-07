@@ -37,7 +37,7 @@ class PageFactory(object):
         # add a top root node to mimic Wagtail's real behaviour
         all_nodes = {
             'model': TestRootPage,
-            'kwargs': {'title': 'Root', 'slug': 'root', },
+            'kwargs': {'title_de': 'Root', 'slug_de': 'root', },
             'children': {
                 'site_root': nodes,
             },
@@ -60,7 +60,6 @@ class PageFactory(object):
         kwargs = node.get('kwargs', {})
         kwargs['path'] = kwargs.get('path', path)
         kwargs['depth'] = kwargs.get('depth', depth)
-
         if parent:
             node_page = parent.add_child(instance=node['model'](*args, **kwargs))
             node_page.save()

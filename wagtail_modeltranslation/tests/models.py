@@ -7,23 +7,24 @@ from wagtail.admin.edit_handlers import (FieldPanel, FieldRowPanel,
 from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from wagtail.core import blocks
 from wagtail.core.fields import StreamField
-from wagtail.core.models import Page as WagtailPage
+from wagtail.core.models import Page
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+from modelcluster.models import ClusterableModel
 
 
 # Wagtail Models
-class TestRootPage(WagtailPage):
+class TestRootPage(Page):
     parent_page_types = []
     subpage_types = ['tests.TestSlugPage1', 'tests.TestSlugPage2']
 
 
-class TestSlugPage1(WagtailPage):
+class TestSlugPage1(Page):
     pass
 
 
-class TestSlugPage2(WagtailPage):
+class TestSlugPage2(Page):
     pass
 
 
@@ -31,7 +32,7 @@ class TestSlugPage1Subclass(TestSlugPage1):
     pass
 
 
-class PatchTestPage(WagtailPage):
+class PatchTestPage(Page):
     description = models.CharField(max_length=50)
 
     search_fields = (
@@ -98,8 +99,14 @@ class StreamFieldPanelSnippet(models.Model):
     ]
 
 
-@register_snippet
-class MultiFieldPanelSnippet(FieldPanelSnippet, ImageChooserPanelSnippet, FieldRowPanelSnippet):
+class MultiFieldPanelBase(models.Model):
+    name = models.CharField(max_length=10)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        on_delete=models.CASCADE,
+        related_name='+'
+    )
+    other_name = models.CharField(max_length=10)
     panels = [
         MultiFieldPanel(
             FieldPanelSnippet.panels
@@ -112,13 +119,22 @@ class MultiFieldPanelSnippet(FieldPanelSnippet, ImageChooserPanelSnippet, FieldR
         ),
     ]
 
+    class Meta:
+        abstract = True
 
-class BaseInlineModel(MultiFieldPanelSnippet):
+
+@register_snippet
+class MultiFieldPanelSnippet(MultiFieldPanelBase):
+    panels = MultiFieldPanelBase.panels
+
+
+class BaseInlineModel(MultiFieldPanelBase):
     field_name = models.CharField(max_length=10)
 
     image_chooser = models.ForeignKey(
         'wagtailimages.Image',
         on_delete=models.CASCADE,
+        related_name='+'
     )
 
     fieldrow_name = models.CharField(max_length=10)
@@ -129,15 +145,19 @@ class BaseInlineModel(MultiFieldPanelSnippet):
         FieldRowPanel([
             FieldPanel('fieldrow_name'),
         ]),
-    ] + MultiFieldPanelSnippet.panels
+    ] + MultiFieldPanelBase.panels
 
 
 class SnippetInlineModel(BaseInlineModel):
-    page = ParentalKey('tests.InlinePanelSnippet', related_name='related_snippet_model')
+    page = ParentalKey(
+        'tests.InlinePanelSnippet',
+        related_name='related_snippet_model',
+        on_delete=models.CASCADE,
+    )
 
 
 @register_snippet
-class InlinePanelSnippet(models.Model):
+class InlinePanelSnippet(ClusterableModel):
     panels = [
         InlinePanel('related_snippet_model')
     ]
@@ -145,7 +165,7 @@ class InlinePanelSnippet(models.Model):
 
 # ######### Page Patching Models
 
-class FieldPanelPage(WagtailPage):
+class FieldPanelPage(Page):
     name = models.CharField(max_length=50)
 
     content_panels = [
@@ -153,10 +173,11 @@ class FieldPanelPage(WagtailPage):
     ]
 
 
-class ImageChooserPanelPage(WagtailPage):
+class ImageChooserPanelPage(Page):
     image = models.ForeignKey(
         'wagtailimages.Image',
-        on_delete=models.CASCADE,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
     )
 
     content_panels = [
@@ -164,7 +185,7 @@ class ImageChooserPanelPage(WagtailPage):
     ]
 
 
-class FieldRowPanelPage(WagtailPage):
+class FieldRowPanelPage(Page):
     other_name = models.CharField(max_length=10)
 
     content_panels = [
@@ -174,7 +195,7 @@ class FieldRowPanelPage(WagtailPage):
     ]
 
 
-class StreamFieldPanelPage(WagtailPage):
+class StreamFieldPanelPage(Page):
     body = StreamField([
         ('text', blocks.CharBlock(max_length=10))
     ], blank=False)  # since wagtail 1.12 StreamField's blank defaults to False
@@ -184,7 +205,14 @@ class StreamFieldPanelPage(WagtailPage):
     ]
 
 
-class MultiFieldPanelPage(FieldPanelPage, ImageChooserPanelPage, FieldRowPanelPage):
+class MultiFieldPanelPage(Page):
+    name = models.CharField(max_length=50)
+    image = models.ForeignKey(
+        'wagtailimages.Image',
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+    )
+    other_name = models.CharField(max_length=10)
     content_panels = [
         MultiFieldPanel(
             FieldPanelPage.content_panels
@@ -202,13 +230,13 @@ class PageInlineModel(BaseInlineModel):
     page = ParentalKey('tests.InlinePanelPage', related_name='related_page_model')
 
 
-class InlinePanelPage(WagtailPage):
+class InlinePanelPage(Page):
     content_panels = [
         InlinePanel('related_page_model')
     ]
 
 
-class RoutablePageTest(RoutablePageMixin, WagtailPage):
+class RoutablePageTest(RoutablePageMixin, Page):
     @route(r'^archive/year/1984/$')
     def archive_for_1984(self, request):
         return HttpResponse("we were always at war with eastasia")

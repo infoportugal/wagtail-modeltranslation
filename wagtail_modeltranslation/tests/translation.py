@@ -95,7 +95,7 @@ translator.register(StreamFieldPanelSnippet, StreamFieldPanelTranslationOptions)
 
 
 class MultiFieldPanelTranslationOptions(TranslationOptions):
-    fields = ()
+    fields = ('name', 'image', 'other_name',)
 
 
 translator.register(MultiFieldPanelPage, MultiFieldPanelTranslationOptions)
@@ -103,7 +103,7 @@ translator.register(MultiFieldPanelSnippet, MultiFieldPanelTranslationOptions)
 
 
 class InlinePanelTranslationOptions(TranslationOptions):
-    fields = ('field_name', 'image_chooser', 'fieldrow_name',)
+    fields = ('name', 'image', 'other_name', 'field_name', 'image_chooser', 'fieldrow_name',)
 
 
 translator.register(BaseInlineModel, InlinePanelTranslationOptions)
