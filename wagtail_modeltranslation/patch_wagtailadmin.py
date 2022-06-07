@@ -5,7 +5,7 @@ import types
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-from django.db import connection, transaction
+from django.db import transaction
 from django.db.models import Q, Value
 from django.db.models.functions import Concat, Substr
 from django.http import Http404
@@ -371,13 +371,13 @@ def _new_update_descendant_url_paths(self, old_url_path, new_url_path):
 
 
 def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, language=None):
-    # print("Page:", page, old_url_path, new_url_path, language)
     localized_url_path = 'url_path'
     if language:
         localized_url_path = build_localized_fieldname('url_path', language)
 
     (
         Page.objects
+        .rewrite(False)
         .filter(path__startswith=page.path)
         .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
         .exclude(pk=page.pk)
