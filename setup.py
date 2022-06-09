@@ -46,7 +46,7 @@ setup(
     package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
                                                'static/wagtail_modeltranslation/js/*.js',
                                                'templates/*.html']},
-    install_requires=['wagtail>=2.15', 'django-modeltranslation>=0.15'],
+    install_requires=['wagtail>=2.13', 'django-modeltranslation>=0.17'],
     classifiers=[
         'Programming Language :: Python :: 3',
         'Programming Language :: Python :: 3.6',
