@@ -11,7 +11,7 @@ from django.db.models.functions import Concat, Substr
 from django.http import Http404
 from django.urls import reverse
 from django.utils.translation import trans_real
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from modeltranslation import settings as mt_settings
 from modeltranslation.translator import NotRegistered, translator
 from modeltranslation.utils import build_localized_fieldname, get_language
