@@ -93,4 +93,4 @@ TRANSLATE_SLUGS = True
 
 SECRET_KEY = 'not important'
 
-ALLOWED_HOSTS = ['localhost',]
+ALLOWED_HOSTS = ['localhost']
