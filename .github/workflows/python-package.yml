@@ -26,3 +26,60 @@ jobs:
       - name: Lint with flake8
         run: |
           flake8 --ignore=E501 wagtail_modeltranslation
+  Test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.7", "3.8", "3.9"]
+        django-modeltranslation: ["0.17", "0.18"]
+        wagtail: ["2.13", "2.14", "2.15", "2.16"]
+        database: ["sqlite", "postgres", "mysql"]
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DB: ${{ matrix.database }}
+      DB_HOST: 127.0.0.1
+      MYSQL_DATABASE: "wagtail_modeltranslation"
+      MYSQL_USER: "root"
+      MYSQL_PASSWORD: "password"
+      POSTGRES_DB: "wagtail_modeltranslation"
+      POSTGRES_USER: "wagtail_modeltranslation"
+      POSTGRES_PASSWORD: "wagtail_modeltranslation"
+    services:
+      mariadb:
+        image: mariadb
+        ports:
+          - 3306:3306
+        env:
+          MYSQL_DATABASE: "wagtail_modeltranslation"
+          MYSQL_USER: "wagtail_modeltranslation"
+          MYSQL_PASSWORD: "password"
+          MYSQL_ROOT_PASSWORD: "password"
+        options: --health-cmd="mysqladmin ping" --health-interval=10s --health-timeout=5s --health-retries=3
+      postgres:
+        image: postgres
+        ports:
+          - 5432:5432
+        options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
+        env:
+          POSTGRES_DB: "wagtail_modeltranslation"
+          POSTGRES_USER: "wagtail_modeltranslation"
+          POSTGRES_PASSWORD: "wagtail_modeltranslation"
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python }}
+      - name: Set up env
+        run: |
+          if [[ $DB == mysql ]]; then
+            pip install -q mysqlclient
+          fi
+          if [[ $DB == postgres ]]; then
+            pip install -q psycopg2-binary
+          fi
+          pip install $(./get-modeltranslation-version.py ${{ matrix.django-modeltranslation }})
+          pip install $(./get-wagtail-version.py ${{ matrix.wagtail }})
+      - name: Run tests
+        run: |
+          ./runtests.py
