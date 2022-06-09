@@ -1,7 +1,7 @@
 import json
 
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, QueryDict
 from django.shortcuts import redirect, render
@@ -147,8 +147,10 @@ def return_translation_target_field_rendered_html(request, page_id):
 @hooks.register('register_admin_urls')
 def copy_streamfields_content():
     return [
-        url(r'pages/(?P<page_id>\d+)/edit/copy_translation_content/$',
-            return_translation_target_field_rendered_html, name=''),
+        re_path(
+            r'pages/(?P<page_id>\d+)/edit/copy_translation_content/$',
+            return_translation_target_field_rendered_html, name=''
+        ),
     ]
 
 
