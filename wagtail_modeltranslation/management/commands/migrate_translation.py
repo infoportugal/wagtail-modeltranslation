@@ -1,6 +1,8 @@
 from django.core.management.commands.migrate import Command as MigrateCommand
 from django.db.migrations.autodetector import MigrationAutodetector
-from .sync_page_translation_fields import Command as SyncPageTranslationFieldsCommand
+
+from .sync_page_translation_fields import \
+    Command as SyncPageTranslationFieldsCommand
 
 
 # decorate MigrationAutodetector.changes so we can silence any wagtailcore migrations missing warnings

@@ -4,31 +4,15 @@ from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import translation
-from django.utils.translation import ugettext as _
-from django.utils.translation import ungettext
 from django.utils.translation import activate, get_language
+from django.utils.translation import gettext as _
+from django.utils.translation import ngettext
 from modeltranslation.utils import build_localized_fieldname
+from wagtail.admin import widgets
+from wagtail.admin.forms.pages import CopyForm
+from wagtail.core.models import Page
 
 from wagtail_modeltranslation import settings as wmt_settings
-
-try:
-    from wagtail.core.models import Page
-    from wagtail.admin import widgets
-    from wagtail.admin.forms import WagtailAdminPageForm
-except ImportError:
-    from wagtail.wagtailcore.models import Page
-    from wagtail.wagtailadmin import widgets
-    from wagtail.wagtailadmin.forms import WagtailAdminPageForm
-
-try:
-    from wagtail.admin.forms.pages import CopyForm
-except ImportError:
-    # wagtail>=2.0,<2.3
-    try:
-        from wagtail.admin.forms import CopyForm
-    except ImportError:
-        # wagtail<2.0
-        from wagtail.wagtailadmin.forms import CopyForm
 
 
 class PatchedCopyForm(CopyForm):
@@ -76,7 +60,7 @@ class PatchedCopyForm(CopyForm):
         if subpage_count > 0:
             self.fields['copy_subpages'] = forms.BooleanField(
                 required=False, initial=True, label=_("Copy subpages"),
-                help_text=ungettext(
+                help_text=ngettext(
                     "This will copy %(count)s subpage.",
                     "This will copy %(count)s subpages.",
                     subpage_count) % {'count': subpage_count})
@@ -90,7 +74,7 @@ class PatchedCopyForm(CopyForm):
                     help_text = _("This page is live. Would you like to publish its copy as well?")
                 else:
                     label = _("Publish copies")
-                    help_text = ungettext(
+                    help_text = ngettext(
                         "%(count)s of the pages being copied is live. Would you like to publish its copy?",
                         "%(count)s of the pages being copied are live. Would you like to publish their copies?",
                         pages_to_publish_count) % {'count': pages_to_publish_count}

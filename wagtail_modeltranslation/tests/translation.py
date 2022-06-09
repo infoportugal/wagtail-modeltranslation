@@ -1,7 +1,5 @@
-# coding: utf-8
 from modeltranslation.translator import (TranslationOptions, register,
                                          translator)
-
 from wagtail_modeltranslation.tests.models import (BaseInlineModel,
                                                    FieldPanelPage,
                                                    FieldPanelSnippet,
@@ -25,8 +23,8 @@ from wagtail_modeltranslation.tests.models import (BaseInlineModel,
                                                    TestSlugPage1Subclass,
                                                    TestSlugPage2)
 
-# Wagtail Models
 
+# Wagtail Models
 @register(TestRootPage)
 class TestRootPagePageTranslationOptions(TranslationOptions):
     fields = ()
@@ -97,7 +95,7 @@ translator.register(StreamFieldPanelSnippet, StreamFieldPanelTranslationOptions)
 
 
 class MultiFieldPanelTranslationOptions(TranslationOptions):
-    fields = ()
+    fields = ('name', 'image', 'other_name',)
 
 
 translator.register(MultiFieldPanelPage, MultiFieldPanelTranslationOptions)
@@ -105,7 +103,7 @@ translator.register(MultiFieldPanelSnippet, MultiFieldPanelTranslationOptions)
 
 
 class InlinePanelTranslationOptions(TranslationOptions):
-    fields = ('field_name', 'image_chooser', 'fieldrow_name',)
+    fields = ('name', 'image', 'other_name', 'field_name', 'image_chooser', 'fieldrow_name',)
 
 
 translator.register(BaseInlineModel, InlinePanelTranslationOptions)

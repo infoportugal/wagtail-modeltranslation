@@ -101,6 +101,26 @@ Quick start
 9. If you're adding :code:`wagtail-modeltranslation` to an existing site run :code:`python manage.py update_translation_fields`
 
 
+Supported versions
+==================
+
+.. list-table:: Title
+   :widths: 25 25 25 25
+   :header-rows: 1
+
+   * - wagtail-modeltranslation release
+     - Compatible Wagtail versions
+     - Compatible Django versions
+     - Compatible Python versions
+   * - 0.10
+     - >= 1.12, < 2.12
+     - >= 1.11
+     - 2.7, 3.4, 3.5, 3.6
+   * - 0.11
+     - >= 2.13, < 3.0
+     - >= 3.0
+     - 3.6, 3.7, 3.8, 3.9
+
 Upgrade considerations (v0.10.8)
 ================================
 

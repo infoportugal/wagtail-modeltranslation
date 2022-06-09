@@ -5,58 +5,43 @@ import types
 
 from django.core.cache import cache
 from django.core.exceptions import ValidationError
-try:
-    from django.urls import reverse
-except ImportError:
-    from django.core.urlresolvers import reverse
-from django.db import transaction, connection
+from django.db import transaction
 from django.db.models import Q, Value
 from django.db.models.functions import Concat, Substr
 from django.http import Http404
+from django.urls import reverse
 from django.utils.translation import trans_real
-from django.utils.translation import ugettext_lazy as _
+from django.utils.translation import gettext_lazy as _
 from modeltranslation import settings as mt_settings
-from modeltranslation.translator import translator, NotRegistered
+from modeltranslation.translator import NotRegistered, translator
 from modeltranslation.utils import build_localized_fieldname, get_language
+from wagtail.admin.edit_handlers import (
+    FieldPanel, FieldRowPanel, InlinePanel, MultiFieldPanel, ObjectList,
+    RichTextFieldPanel, StreamFieldPanel,
+    extract_panel_definitions_from_model_class)
+from wagtail.contrib.routable_page.models import RoutablePageMixin
+from wagtail.core.fields import StreamField, StreamValue
+from wagtail.core.models import Page, Site, SiteRootPath
+from wagtail.core.url_routing import RouteResult
+from wagtail.core.utils import WAGTAIL_APPEND_SLASH
+from wagtail.images.edit_handlers import ImageChooserPanel
+from wagtail.search.index import SearchField
+from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
 
-try:
-    from wagtail.contrib.routable_page.models import RoutablePageMixin
-    from wagtail.admin.edit_handlers import FieldPanel, \
-        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
-        extract_panel_definitions_from_model_class, ObjectList
-    from wagtail.core.models import Page, Site
-    from wagtail.core.fields import StreamField, StreamValue
-    from wagtail.core.url_routing import RouteResult
-    from wagtail.core.utils import WAGTAIL_APPEND_SLASH
-    from wagtail.images.edit_handlers import ImageChooserPanel
-    from wagtail.search.index import SearchField
-    from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
-except ImportError:
-    from wagtail.contrib.wagtailroutablepage.models import RoutablePageMixin
-    from wagtail.wagtailadmin.edit_handlers import FieldPanel, \
-        MultiFieldPanel, FieldRowPanel, InlinePanel, StreamFieldPanel, RichTextFieldPanel,\
-        extract_panel_definitions_from_model_class, ObjectList
-    from wagtail.wagtailcore.models import Page, Site
-    from wagtail.wagtailcore.fields import StreamField, StreamValue
-    from wagtail.wagtailcore.url_routing import RouteResult
-    from wagtail.wagtailcore.utils import WAGTAIL_APPEND_SLASH
-    from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
-    from wagtail.wagtailsearch.index import SearchField
-    from wagtail.wagtailsnippets.views.snippets import SNIPPET_EDIT_HANDLERS
-try:
-    from wagtail.core.models import SiteRootPath
-except ImportError:
-    SiteRootPath = None
-from wagtail_modeltranslation.settings import CUSTOM_SIMPLE_PANELS, CUSTOM_COMPOSED_PANELS, CUSTOM_INLINE_PANELS, TRANSLATE_SLUGS
+from wagtail_modeltranslation.patch_wagtailadmin_forms import \
+    patch_admin_page_form
+from wagtail_modeltranslation.settings import (CUSTOM_COMPOSED_PANELS,
+                                               CUSTOM_INLINE_PANELS,
+                                               CUSTOM_SIMPLE_PANELS,
+                                               TRANSLATE_SLUGS)
 from wagtail_modeltranslation.utils import compare_class_tree_depth
-from wagtail_modeltranslation.patch_wagtailadmin_forms import patch_admin_page_form
-from wagtail import VERSION
 
 logger = logging.getLogger('wagtail.core')
 
 SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel, RichTextFieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS
 INLINE_PANEL_CLASSES = [InlinePanel] + CUSTOM_INLINE_PANELS
+
 
 class WagtailTranslator(object):
     _patched_models = []
@@ -83,7 +68,6 @@ class WagtailTranslator(object):
             if isinstance(field, StreamField) and field.name in translation_registered_fields:
                 descriptor = getattr(model, field.name)
                 _patch_stream_field_meaningful_value(descriptor)
-
 
     def _patch_page_models(self, model):
         # PANEL PATCHING
@@ -156,12 +140,9 @@ class WagtailTranslator(object):
         else:
             panels = extract_panel_definitions_from_model_class(model)
             translation_registered_fields = translator.get_options_for_model(model).fields
-            panels = filter(lambda field: field.field_name not in translation_registered_fields, panels)
+            panels = list(filter(lambda field: field.field_name not in translation_registered_fields, panels))
             edit_handler = ObjectList(panels)
-            if VERSION < (2, 5):
-                SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model)
-            else:
-                SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to(model=model)
+            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to(model=model)
 
     def _patch_panels(self, panels_list, related_model=None):
         """
@@ -242,11 +223,7 @@ class WagtailTranslator(object):
         # inline model related_name
         relation = getattr(model, panel.relation_name)
 
-        try:
-            related_model = relation.rel.related_model
-        except AttributeError:
-            # Django 1.8
-            related_model = relation.related.related_model
+        related_model = relation.rel.related_model
 
         # If the related model is not registered for translation there is nothing
         # for us to do
@@ -272,7 +249,6 @@ def _localized_set_url_path(page, parent, language):
     default_localized_slug_field = build_localized_fieldname('slug', mt_settings.DEFAULT_LANGUAGE)
     localized_url_path_field = build_localized_fieldname('url_path', language)
     default_localized_url_path_field = build_localized_fieldname('url_path', mt_settings.DEFAULT_LANGUAGE)
-
     if parent:
         # Emulate the default behavior of django-modeltranslation to get the slug and url path
         # for the current language. If the value for the current language is invalid we get the one
@@ -399,23 +375,19 @@ def _localized_update_descendant_url_paths(page, old_url_path, new_url_path, lan
     if language:
         localized_url_path = build_localized_fieldname('url_path', language)
 
-    if connection.vendor in ('mssql', 'microsoft'):
-        cursor = connection.cursor()
-        update_statement = """
-            UPDATE wagtailcore_page
-            SET {localized_url_path}= CONCAT(%s, (SUBSTRING({localized_url_path}, 0, %s)))
-            WHERE path LIKE %s AND id <> %s
-        """.format(localized_url_path=localized_url_path)
-        cursor.execute(update_statement, [new_url_path, len(old_url_path) + 1, page.path + '%', page.id])
-    else:
-        (Page.objects
-            .rewrite(False)
-            .filter(path__startswith=page.path)
-            .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
-            .exclude(pk=page.pk)
-            .update(**{localized_url_path: Concat(
+    (
+        Page.objects
+        .rewrite(False)
+        .filter(path__startswith=page.path)
+        .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
+        .exclude(pk=page.pk)
+        .update(
+            **{localized_url_path: Concat(
                 Value(new_url_path),
-                Substr(localized_url_path, len(old_url_path) + 1))}))
+                Substr(localized_url_path, len(old_url_path) + 1)
+            )}
+        )
+    )
 
 
 def _localized_site_get_site_root_paths():
@@ -427,23 +399,13 @@ def _localized_site_get_site_root_paths():
     result = cache.get(cache_key)
 
     if result is None:
-        if VERSION >= (2, 11):
-            result = [
-                (site.id, site.root_page.url_path, site.root_url, site.root_page.locale.language_code)
-                for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
-            ]
-        else:
-            result = [
-                (site.id, site.root_page.url_path, site.root_url)
-                for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
-            ]
+        result = [
+            (site.id, site.root_page.url_path, site.root_url, site.root_page.locale.language_code)
+            for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
+        ]
         cache.set(cache_key, result, 3600)
-    
-    if SiteRootPath is None:
-        return result
-    else:
-        # Wagtail >= 2.16 compatibility
-        return [SiteRootPath(*srp) for srp in result]
+
+    return [SiteRootPath(*srp) for srp in result]
 
 
 def _new_get_site_root_paths(self, request=None):

@@ -1,6 +1,8 @@
-from django.core.management.commands.makemigrations import Command as MakeMigrationsCommand
-from django.db.migrations.autodetector import MigrationAutodetector
 import copy
+
+from django.core.management.commands.makemigrations import \
+    Command as MakeMigrationsCommand
+from django.db.migrations.autodetector import MigrationAutodetector
 
 
 def autodetector_decorator(func):

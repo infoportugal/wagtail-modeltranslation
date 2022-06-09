@@ -1,10 +1,7 @@
-# coding: utf-8
-from __future__ import absolute_import
-
 from django.apps import AppConfig
 
 
-class ModeltranslationConfig(AppConfig):
+class WagtailModeltranslationConfig(AppConfig):
     name = 'wagtail_modeltranslation'
     verbose_name = 'Wagtail Modeltranslation'
 
@@ -32,3 +29,6 @@ class ModeltranslationConfig(AppConfig):
 
         from .patch_wagtailadmin import patch_wagtail_models
         patch_wagtail_models()
+
+        from wagtail_modeltranslation.signal_handlers import register_signal_handlers
+        register_signal_handlers()
