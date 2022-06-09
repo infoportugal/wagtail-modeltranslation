@@ -7,7 +7,7 @@ from django.http import HttpResponse, QueryDict
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.utils.html import escape, format_html, format_html_join
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from six import iteritems
 
