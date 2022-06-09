@@ -32,15 +32,12 @@ class PageFactory(object):
             return None
 
         from .models import TestRootPage
-        try:
-            from wagtail.core.models import Site
-        except ImportError:
-            from wagtail.wagtailcore.models import Site
+        from wagtail.core.models import Site
 
         # add a top root node to mimic Wagtail's real behaviour
         all_nodes = {
             'model': TestRootPage,
-            'kwargs': {'title': 'Root', 'slug': 'root', },
+            'kwargs': {'title_de': 'Root', 'slug_de': 'root', },
             'children': {
                 'site_root': nodes,
             },
@@ -63,7 +60,6 @@ class PageFactory(object):
         kwargs = node.get('kwargs', {})
         kwargs['path'] = kwargs.get('path', path)
         kwargs['depth'] = kwargs.get('depth', depth)
-
         if parent:
             node_page = parent.add_child(instance=node['model'](*args, **kwargs))
             node_page.save()
@@ -74,7 +70,7 @@ class PageFactory(object):
         node['instance'] = node_page
 
         for n, child in enumerate(node.get('children', {}).values()):
-            self.create_instance(child, node_page, n+1)
+            self.create_instance(child, node_page, n + 1)
 
         return node_page
 

@@ -52,6 +52,7 @@ Contents
    template tags
    management commands
    caveats
+   upgrade considerations
    recommended reading
    releases/index
    AUTHORS

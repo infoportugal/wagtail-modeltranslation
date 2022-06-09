@@ -1,15 +1,13 @@
-# coding: utf-8
-
 import json
 
 from django.conf import settings
-from django.conf.urls import url
+from django.urls import re_path
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, QueryDict
 from django.shortcuts import redirect, render
 from django.templatetags.static import static
 from django.utils.html import escape, format_html, format_html_join
-from django.utils.translation import ugettext as _
+from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
 from six import iteritems
 
@@ -19,27 +17,12 @@ from wagtail_modeltranslation import settings as wmt_settings
 
 from .patch_wagtailadmin_forms import PatchedCopyForm
 
-try:
-    from wagtail.core import hooks
-    from wagtail.core.models import Page
-    from wagtail.core.rich_text.pages import PageLinkHandler
-    from wagtail.core import __version__ as WAGTAIL_VERSION
-    from wagtail.admin import messages
-except ImportError:
-    from wagtail.wagtailcore import hooks
-    from wagtail.wagtailcore.models import Page
-    from wagtail.wagtailcore.rich_text import PageLinkHandler
-    from wagtail.wagtailcore import __version__ as WAGTAIL_VERSION
-    from wagtail.wagtailadmin import messages
+from wagtail.core import hooks
+from wagtail.core.models import Page
+from wagtail.core.rich_text.pages import PageLinkHandler
+from wagtail.admin import messages
 
-from wagtail import __version__ as wagtail_version
-from distutils.version import LooseVersion
-if LooseVersion(wagtail_version) >= LooseVersion("2.11"):
-    from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
-elif LooseVersion(wagtail_version) >= LooseVersion("2.0"):
-    from wagtail.admin.views.pages import get_valid_next_url_from_request
-else:
-    from wagtail.wagtailadmin.views.pages import get_valid_next_url_from_request
+from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
 
 
 @hooks.register('insert_editor_js')
@@ -164,8 +147,10 @@ def return_translation_target_field_rendered_html(request, page_id):
 @hooks.register('register_admin_urls')
 def copy_streamfields_content():
     return [
-        url(r'pages/(?P<page_id>\d+)/edit/copy_translation_content/$',
-            return_translation_target_field_rendered_html, name=''),
+        re_path(
+            r'pages/(?P<page_id>\d+)/edit/copy_translation_content/$',
+            return_translation_target_field_rendered_html, name=''
+        ),
     ]
 
 
@@ -180,20 +165,13 @@ def streamfields_translation_copy():
     # includes the javascript file in the html file
     js_files = [
         'wagtail_modeltranslation/js/js.cookie.js',
-        'wagtail_modeltranslation/js/version_compare.js',
         'wagtail_modeltranslation/js/copy_stream_fields.js',
     ]
 
     js_includes = format_html_join('\n', '<script src="{0}"></script>', (
         (static(filename),) for filename in js_files)
     )
-
-    js_wagtail_version = """
-<script>
-    var WAGTAIL_VERSION='{wagtail_version}';
-</script>
-    """.format(wagtail_version=WAGTAIL_VERSION)
-    return format_html(js_wagtail_version) + js_includes
+    return js_includes
 
 
 @hooks.register('insert_editor_css')

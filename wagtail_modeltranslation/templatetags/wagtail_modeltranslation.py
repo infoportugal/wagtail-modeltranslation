@@ -1,30 +1,17 @@
-# coding: utf-8
-
 import re
 from urllib.parse import unquote
 
 from django import template
+from django.urls import resolve
 from django.urls.exceptions import Resolver404
 from django.utils.translation import activate, get_language
 from modeltranslation import settings as mt_settings
 from modeltranslation.settings import DEFAULT_LANGUAGE
 from six import iteritems
+from wagtail.core.models import Page
+from wagtail.core.templatetags.wagtailcore_tags import pageurl
 
 from ..contextlib import use_language
-
-try:
-    from django.urls import resolve
-except ImportError:
-    from django.core.urlresolvers import resolve
-
-
-try:
-    from wagtail.core.models import Page
-    from wagtail.core.templatetags.wagtailcore_tags import pageurl
-except ImportError:
-    from wagtail.wagtailcore.models import Page
-    from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
-
 
 register = template.Library()
 
@@ -77,6 +64,7 @@ class GetAvailableLanguagesNode(template.Node):
         """Rendering."""
         context[self.variable] = mt_settings.AVAILABLE_LANGUAGES
         return ''
+
 
 # Alternative to slugurl which uses chosen or default language for language
 @register.simple_tag(takes_context=True)
