@@ -4,8 +4,8 @@ from django.db import migrations, models
 import django.db.models.deletion
 import modelcluster.fields
 import wagtail.contrib.routable_page.models
-import wagtail.core.blocks
-import wagtail.core.fields
+import wagtail.blocks
+import wagtail.fields
 
 
 class Migration(migrations.Migration):
@@ -144,9 +144,9 @@ class Migration(migrations.Migration):
             name='StreamFieldPanelPage',
             fields=[
                 ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('body', wagtail.core.fields.StreamField([('text', wagtail.core.blocks.CharBlock(max_length=10))])),
-                ('body_de', wagtail.core.fields.StreamField([('text', wagtail.core.blocks.CharBlock(max_length=10))], null=True)),
-                ('body_en', wagtail.core.fields.StreamField([('text', wagtail.core.blocks.CharBlock(max_length=10))], null=True)),
+                ('body', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))])),
+                ('body_de', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
+                ('body_en', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
             ],
             options={
                 'abstract': False,
@@ -157,9 +157,9 @@ class Migration(migrations.Migration):
             name='StreamFieldPanelSnippet',
             fields=[
                 ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('body', wagtail.core.fields.StreamField([('text', wagtail.core.blocks.CharBlock(max_length=10))])),
-                ('body_de', wagtail.core.fields.StreamField([('text', wagtail.core.blocks.CharBlock(max_length=10))], null=True)),
-                ('body_en', wagtail.core.fields.StreamField([('text', wagtail.core.blocks.CharBlock(max_length=10))], null=True)),
+                ('body', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))])),
+                ('body_de', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
+                ('body_en', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
             ],
         ),
         migrations.CreateModel(

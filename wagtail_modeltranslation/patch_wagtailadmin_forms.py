@@ -10,7 +10,7 @@ from django.utils.translation import ngettext
 from modeltranslation.utils import build_localized_fieldname
 from wagtail.admin import widgets
 from wagtail.admin.forms.pages import CopyForm
-from wagtail.core.models import Page
+from wagtail.models import Page
 
 from wagtail_modeltranslation import settings as wmt_settings
 

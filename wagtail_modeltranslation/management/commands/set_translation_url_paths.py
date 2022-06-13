@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from modeltranslation import settings as mt_settings
 from modeltranslation.utils import build_localized_fieldname
-from wagtail.core.models import Page
+from wagtail.models import Page
 from wagtail_modeltranslation.contextlib import use_language
 
 

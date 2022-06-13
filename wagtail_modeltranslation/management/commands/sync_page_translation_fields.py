@@ -1,7 +1,7 @@
 from modeltranslation.management.commands.sync_translation_fields import \
     Command as SyncTranslationsFieldsCommand
 from modeltranslation.translator import translator
-from wagtail.core.models import Page
+from wagtail.models import Page
 
 old_get_registered_models = translator.get_registered_models
 

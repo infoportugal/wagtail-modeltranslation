@@ -1,6 +1,6 @@
 from modeltranslation.decorators import register
 from modeltranslation.translator import TranslationOptions
-from wagtail.core.models import Page
+from wagtail.models import Page
 
 from wagtail_modeltranslation import settings
 

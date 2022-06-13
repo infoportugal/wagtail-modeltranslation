@@ -17,9 +17,9 @@ from wagtail_modeltranslation import settings as wmt_settings
 
 from .patch_wagtailadmin_forms import PatchedCopyForm
 
-from wagtail.core import hooks
-from wagtail.core.models import Page
-from wagtail.core.rich_text.pages import PageLinkHandler
+from wagtail import hooks
+from wagtail.models import Page
+from wagtail.rich_text.pages import PageLinkHandler
 from wagtail.admin import messages
 
 from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
