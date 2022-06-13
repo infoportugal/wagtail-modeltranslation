@@ -53,6 +53,7 @@ python = "^3.6"
 django = ">=3.0"
 wagtail = ">=2.13,<3.0"
 django-modeltranslation = ">=0.17"
+bump2version = "^1.0.1"
 
 [tool.poetry.dev-dependencies]
 bumpversion = "*"
