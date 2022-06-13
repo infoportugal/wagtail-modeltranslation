@@ -10,8 +10,8 @@ from django.db.models import Q, Value
 from django.db.models.functions import Concat, Substr
 from django.http import Http404
 from django.urls import reverse
-from django.utils.translation import trans_real
 from django.utils.translation import gettext_lazy as _
+from django.utils.translation import trans_real
 from modeltranslation import settings as mt_settings
 from modeltranslation.translator import NotRegistered, translator
 from modeltranslation.utils import build_localized_fieldname, get_language
@@ -22,11 +22,11 @@ from wagtail.admin.edit_handlers import (
 from wagtail.contrib.routable_page.models import RoutablePageMixin
 from wagtail.core.fields import StreamField, StreamValue
 from wagtail.core.models import Page, Site, SiteRootPath
-from wagtail.core.url_routing import RouteResult
 from wagtail.core.utils import WAGTAIL_APPEND_SLASH
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search.index import SearchField
 from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
+from wagtail.url_routing import RouteResult
 
 from wagtail_modeltranslation.patch_wagtailadmin_forms import \
     patch_admin_page_form
@@ -142,7 +142,7 @@ class WagtailTranslator(object):
             translation_registered_fields = translator.get_options_for_model(model).fields
             panels = list(filter(lambda field: field.field_name not in translation_registered_fields, panels))
             edit_handler = ObjectList(panels)
-            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to(model=model)
+            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model=model)
 
     def _patch_panels(self, panels_list, related_model=None):
         """
@@ -561,4 +561,5 @@ def patch_wagtail_models():
     registered_models.sort(key=compare_class_tree_depth)
 
     for model_class in registered_models:
+        print(f"* Patching: {model_class}")
         WagtailTranslator(model_class)
