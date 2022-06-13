@@ -1,8 +1,0 @@
-include *.txt *.rst
-recursive-include docs *.rst conf.py Makefile make.bat
-recursive-include wagtail_modeltranslation/static *
-recursive-include wagtail_modeltranslation/management *
-recursive-include wagtail_modeltranslation/templatetags *
-recursive-include wagtail_modeltranslation/templates *
-global-exclude *.pyc
-global-exclude *.DS_Store

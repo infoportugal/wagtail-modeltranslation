@@ -1,0 +1,65 @@
+[tool.poetry]
+name = "wagtail-modeltranslation"
+version = "0.11rc3"
+license = "New BSD"
+authors = ["InfoPortugal S.A. <suporte24@infoportugal.pt>"]
+maintainers = ["InfoPortugal S.A. <suporte24@infoportugal.pt>"]
+readme = 'README.rst'
+description = "Translates Wagtail CMS models using a registration approach."
+repository = "https://github.com/infoportugal/wagtail-modeltranslation"
+keywords = ["django", "wagtail", "translation", "i18n"]
+include = [
+  "*.txt",
+  "*.rst",
+  "docs",
+  "*.rst",
+  "conf.py",
+  "wagtail_modeltranslation/static/**",
+  "wagtail_modeltranslation/management/**",
+  "wagtail_modeltranslation/templatetags/**",
+  "wagtail_modeltranslation/templates/**",
+]
+
+    # packages=[
+    #     'wagtail_modeltranslation',
+    #     'wagtail_modeltranslation.management',
+    #     'wagtail_modeltranslation.management.commands',
+    #     'wagtail_modeltranslation.templatetags',
+    #     'wagtail_modeltranslation.makemigrations',
+    #     'wagtail_modeltranslation.makemigrations.management',
+    #     'wagtail_modeltranslation.makemigrations.management.commands',
+    #     'wagtail_modeltranslation.migrate',
+    #     'wagtail_modeltranslation.migrate.management',
+    #     'wagtail_modeltranslation.migrate.management.commands'],
+    # package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
+    #                                            'static/wagtail_modeltranslation/js/*.js',
+    #                                            'templates/*.html']},
+exclude = ["*.pyc", "*.DS_Store"]
+classifiers = [
+  'Programming Language :: Python :: 3',
+  'Programming Language :: Python :: 3.6',
+  'Programming Language :: Python :: 3.7',
+  'Programming Language :: Python :: 3.8',
+  'Programming Language :: Python :: 3.9',
+  'Operating System :: OS Independent',
+  'Environment :: Web Environment',
+  'Intended Audience :: Developers',
+  'Framework :: Django',
+  'License :: OSI Approved :: BSD License'
+]
+
+[tool.poetry.dependencies]
+python = "^3.6"
+django = ">=3.0"
+wagtail = ">=2.13,<3.0"
+django-modeltranslation = ">=0.17"
+
+[tool.poetry.dev-dependencies]
+bumpversion = "*"
+wheel = "*"
+
+# [tool.poetry.plugins.bumpversion]
+# ".rst" = "some_module:SomeClass"
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
