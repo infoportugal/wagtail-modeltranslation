@@ -30,9 +30,9 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python: ["3.7", "3.8", "3.9"]
+        python: ["3.7", "3.8", "3.9", "3.10"]
         django-modeltranslation: ["0.17", "0.18"]
-        wagtail: ["2.13", "2.14", "2.15", "2.16"]
+        wagtail: ["3.0"]
         database: ["sqlite", "postgres", "mysql"]
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
