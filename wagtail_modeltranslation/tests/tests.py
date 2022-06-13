@@ -4,7 +4,7 @@ from django.http import HttpRequest
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.utils import translation
-from wagtail.core.models import Page, Site
+from wagtail.models import Page, Site
 from wagtail.snippets.views.snippets import get_snippet_edit_handler
 from wagtail_modeltranslation.tests import models
 
@@ -101,7 +101,7 @@ class WagtailModeltranslationTest(TestCase):
 
         self.assertEquals(len(child_block), 1)
 
-        from wagtail.core.blocks import CharBlock
+        from wagtail.blocks import CharBlock
         self.assertEquals(child_block[0][0], 'text')
         self.assertIsInstance(child_block[0][1], CharBlock)
 
@@ -224,7 +224,7 @@ class WagtailModeltranslationTest(TestCase):
         self.assertEqual(inline_model_fields, list(related_formset_form.base_fields.keys()))
 
     def test_duplicate_slug(self):
-        from wagtail.core.models import Site
+        from wagtail.models import Site
 
         # Create a test Site with a root page
         root = models.TestRootPage(title='title', depth=1, path='0001', slug_en='slug_en', slug_de='slug_de')
@@ -372,7 +372,7 @@ class WagtailModeltranslationTest(TestCase):
         Assert translation URL Paths are correctly set in page and descendants for a slug change and
         page move operations
         """
-        from wagtail.core.models import Site
+        from wagtail.models import Site
 
         # Create a test Site with a root page
         root = models.TestRootPage.objects.create(title='url paths', depth=1, path='0006', slug='url-path-slug')

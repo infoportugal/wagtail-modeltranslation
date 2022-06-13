@@ -1,6 +1,5 @@
 # coding: utf-8
 import copy
-import logging
 import types
 
 from django.core.cache import cache
@@ -20,9 +19,9 @@ from wagtail.admin.edit_handlers import (
     RichTextFieldPanel, StreamFieldPanel,
     extract_panel_definitions_from_model_class)
 from wagtail.contrib.routable_page.models import RoutablePageMixin
-from wagtail.core.fields import StreamField, StreamValue
-from wagtail.core.models import Page, Site, SiteRootPath
-from wagtail.core.utils import WAGTAIL_APPEND_SLASH
+from wagtail.fields import StreamField, StreamValue
+from wagtail.models import Page, Site, SiteRootPath
+from wagtail.coreutils import WAGTAIL_APPEND_SLASH
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search.index import SearchField
 from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
@@ -35,8 +34,6 @@ from wagtail_modeltranslation.settings import (CUSTOM_COMPOSED_PANELS,
                                                CUSTOM_SIMPLE_PANELS,
                                                TRANSLATE_SLUGS)
 from wagtail_modeltranslation.utils import compare_class_tree_depth
-
-logger = logging.getLogger('wagtail.core')
 
 SIMPLE_PANEL_CLASSES = [FieldPanel, ImageChooserPanel, StreamFieldPanel, RichTextFieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS

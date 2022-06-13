@@ -62,7 +62,7 @@ INSTALLED_APPS = [
     'wagtail.documents',
     'wagtail.admin',
     'wagtail.api.v2',
-    'wagtail.core',
+    'wagtail',
 
     'taggit',
     'rest_framework',

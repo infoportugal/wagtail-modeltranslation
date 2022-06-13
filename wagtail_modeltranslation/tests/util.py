@@ -32,7 +32,7 @@ class PageFactory(object):
             return None
 
         from .models import TestRootPage
-        from wagtail.core.models import Site
+        from wagtail.models import Site
 
         # add a top root node to mimic Wagtail's real behaviour
         all_nodes = {

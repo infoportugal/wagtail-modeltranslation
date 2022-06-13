@@ -8,8 +8,8 @@ from django.utils.translation import activate, get_language
 from modeltranslation import settings as mt_settings
 from modeltranslation.settings import DEFAULT_LANGUAGE
 from six import iteritems
-from wagtail.core.models import Page
-from wagtail.core.templatetags.wagtailcore_tags import pageurl
+from wagtail.models import Page
+from wagtail.templatetags.wagtailcore_tags import pageurl
 
 from ..contextlib import use_language
 

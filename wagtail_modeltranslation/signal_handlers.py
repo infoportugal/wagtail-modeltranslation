@@ -1,8 +1,8 @@
 from django.core.cache import cache
 from django.db.models.signals import post_delete, post_save
 from modeltranslation import settings as mt_settings
-from wagtail.core.models import Site
-from wagtail.core.signals import post_page_move
+from wagtail.models import Site
+from wagtail.signals import post_page_move
 
 
 # Clear the wagtail_site_root_paths_XX from the cache whenever Site records are updated.
