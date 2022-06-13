@@ -1,6 +1,5 @@
-================
 Wagtail Modeltranslation
-================
+========================
 
 This app is built using core features of django-modeltranslation: https://github.com/deschler/django-modeltranslation
 
@@ -36,7 +35,7 @@ Features
 
 
 Caveats
-======
+=======
 
 :code:`wagtail-modeltranslation` patches Wagtail's :code:`Page` model with translation fields
 :code:`title_xx`, :code:`slug_xx`, :code:`seo_title_xx`, :code:`search_description_xx` and :code:`url_path_xx` where "xx" represents the language code for each translated language. This
