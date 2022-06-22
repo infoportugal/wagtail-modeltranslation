@@ -49,9 +49,9 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.7"
-django = ">=3.2"
-wagtail = ">=3.0,<3.1"
+python = "^3.8"
+Django = "^4.0.5"
+wagtail = "^3.0.1"
 django-modeltranslation = ">=0.17"
 bump2version = "^1.0.1"
 
@@ -60,6 +60,7 @@ bumpversion = "*"
 wheel = "*"
 
 # [tool.poetry.plugins.bumpversion]
+autopep8 = "^1.6.0"
 # ".rst" = "some_module:SomeClass"
 [build-system]
 requires = ["poetry_core>=1.0.0"]

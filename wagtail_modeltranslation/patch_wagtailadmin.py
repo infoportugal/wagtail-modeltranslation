@@ -558,5 +558,4 @@ def patch_wagtail_models():
     registered_models.sort(key=compare_class_tree_depth)
 
     for model_class in registered_models:
-        print(f"* Patching: {model_class}")
         WagtailTranslator(model_class)
