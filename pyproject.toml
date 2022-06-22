@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wagtail-modeltranslation"
-version = "0.11rc3"
+version = "0.11.0"
 license = "New BSD"
 authors = ["InfoPortugal S.A. <suporte24@infoportugal.pt>"]
 maintainers = ["InfoPortugal S.A. <suporte24@infoportugal.pt>"]
