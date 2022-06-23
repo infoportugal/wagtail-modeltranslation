@@ -20,20 +20,6 @@ include = [
   "wagtail_modeltranslation/templates/**",
 ]
 
-    # packages=[
-    #     'wagtail_modeltranslation',
-    #     'wagtail_modeltranslation.management',
-    #     'wagtail_modeltranslation.management.commands',
-    #     'wagtail_modeltranslation.templatetags',
-    #     'wagtail_modeltranslation.makemigrations',
-    #     'wagtail_modeltranslation.makemigrations.management',
-    #     'wagtail_modeltranslation.makemigrations.management.commands',
-    #     'wagtail_modeltranslation.migrate',
-    #     'wagtail_modeltranslation.migrate.management',
-    #     'wagtail_modeltranslation.migrate.management.commands'],
-    # package_data={'wagtail_modeltranslation': ['static/wagtail_modeltranslation/css/*.css',
-    #                                            'static/wagtail_modeltranslation/js/*.js',
-    #                                            'templates/*.html']},
 exclude = ["*.pyc", "*.DS_Store"]
 classifiers = [
   'Programming Language :: Python :: 3',
@@ -59,9 +45,8 @@ bump2version = "^1.0.1"
 bumpversion = "*"
 wheel = "*"
 twine = "<4.0"
+autopep8 = "^1.6.0"
 
-# [tool.poetry.plugins.bumpversion]
-# ".rst" = "some_module:SomeClass"
 [build-system]
 requires = ["poetry_core>=1.0.0"]
 build-backend = "poetry.core.masonry.api"
