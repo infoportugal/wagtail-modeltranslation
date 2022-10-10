@@ -64,7 +64,7 @@ supported languages.
         ObjectList(Page.settings_panels, heading='Settings', classname="settings"),
     ])
 
-The panel creation is available for **Page**, **BaseSetting** and **Snippet** models.
+The panel creation is available for **Page**, **BaseSiteSetting** and **Snippet** models.
 
 .. _register-precautions:
 

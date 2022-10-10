@@ -549,7 +549,7 @@ def _patch_stream_field_meaningful_value(field):
 
 
 def patch_wagtail_models():
-    # After all models being registered the Page or BaseSetting subclasses and snippets are patched
+    # After all models being registered the Page or BaseSiteSetting subclasses and snippets are patched
     registered_models = translator.get_registered_models()
 
     # We need to sort the models to ensure that subclasses of a model are registered first,
