@@ -33,10 +33,10 @@ class TestSlugPage1Subclass(TestSlugPage1):
 class PatchTestPage(Page):
     description = models.CharField(max_length=50)
 
-    search_fields = (
+    search_fields = Page.search_fields + [
         index.SearchField('title'),
         index.SearchField('description'),
-    )
+    ]
 
 
 @register_snippet
