@@ -132,7 +132,5 @@ Supported panels
 The creation of panels for the translation fields supports the following panel classes:
 
 - **FieldPanel**
-- **ImageChooserPanel**
-- **StreamFieldPanel**
 - **MultiFieldPanel**
 - **InlinePanel**

@@ -5,7 +5,7 @@ from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.utils import translation
 from wagtail.models import Page, Site
-from wagtail.snippets.views.snippets import get_snippet_edit_handler
+from wagtail.admin.panels import get_edit_handler
 from wagtail_modeltranslation.tests import models
 
 from .util import page_factory
@@ -64,9 +64,9 @@ class WagtailModeltranslationTest(TestCase):
         # Check if there is one panel per language
         self.assertEquals(len(panels), 2)
 
-        from wagtail.images.edit_handlers import ImageChooserPanel
-        self.assertIsInstance(panels[0], ImageChooserPanel)
-        self.assertIsInstance(panels[1], ImageChooserPanel)
+        from wagtail.admin.panels import FieldPanel
+        self.assertIsInstance(panels[0], FieldPanel)
+        self.assertIsInstance(panels[1], FieldPanel)
 
         # Check if both field names were correctly created
         fields = [panel.field_name for panel in panels]
@@ -88,9 +88,9 @@ class WagtailModeltranslationTest(TestCase):
         # Check if there is one panel per language
         self.assertEquals(len(panels), 2)
 
-        from wagtail.admin.edit_handlers import StreamFieldPanel
-        self.assertIsInstance(panels[0], StreamFieldPanel)
-        self.assertIsInstance(panels[1], StreamFieldPanel)
+        from wagtail.admin.panels import FieldPanel
+        self.assertIsInstance(panels[0], FieldPanel)
+        self.assertIsInstance(panels[1], FieldPanel)
 
         # Check if both field names were correctly created
         fields = [panel.field_name for panel in panels]
@@ -173,7 +173,7 @@ class WagtailModeltranslationTest(TestCase):
         self.check_panels_patching(models.PatchTestSnippetNoPanels, ['name_de', 'name_en'])
 
     def check_panels_patching(self, model, model_fields):
-        patched_edit_handler = get_snippet_edit_handler(model)
+        patched_edit_handler = get_edit_handler(model)
 
         form = patched_edit_handler.get_form_class()
 
@@ -211,7 +211,7 @@ class WagtailModeltranslationTest(TestCase):
         In this test we use the InlinePanelSnippet model because it has all the possible "patchable" fields
         so if the created form has all fields the the form was correctly patched
         """
-        snippet_edit_handler = get_snippet_edit_handler(models.InlinePanelSnippet)
+        snippet_edit_handler = get_edit_handler(models.InlinePanelSnippet)
 
         form = snippet_edit_handler.get_form_class()
 
