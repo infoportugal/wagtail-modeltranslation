@@ -34,7 +34,6 @@ class PatchTestPage(Page):
     description = models.CharField(max_length=50)
 
     search_fields = Page.search_fields + [
-        index.SearchField('title'),
         index.SearchField('description'),
     ]
 

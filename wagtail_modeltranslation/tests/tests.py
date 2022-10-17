@@ -176,7 +176,6 @@ class WagtailModeltranslationTest(TestCase):
         patched_edit_handler = get_edit_handler(model)
 
         form = patched_edit_handler.get_form_class()
-
         self.assertEqual(model_fields, list(form.base_fields.keys()))
 
     def test_page_form(self):
@@ -346,12 +345,13 @@ class WagtailModeltranslationTest(TestCase):
                          'When using non-default language, slugurl produces the wrong url.')
 
     def test_searchfield_patching(self):
-        # Check if the search fields have the original field plus the translated ones
-        expected_fields = ['title', 'title_de', 'title_en', 'description', 'description_de', 'description_en']
+        # Check if the search fields have some of the original fields plus the translated ones
+        expected_fields = ['title', 'path', 'title_de', 'title_en', 'description', 'description_de', 'description_en']
 
         model_search_fields = [searchfield.field_name for searchfield in models.PatchTestPage.search_fields]
 
-        self.assertCountEqual(expected_fields, model_search_fields)
+        for field in expected_fields:
+            self.assertIn(field, model_search_fields)
 
     def test_streamfield_fallback(self):
         body_text = '[{"value": "Some text", "type": "text"}]'
