@@ -7,12 +7,14 @@ const topLevel = (tabbedContent.length > 0) ? tabbedContent.first() : $(`.conten
 const languageCodeRegex = new RegExp(' \\[('+wagtailModelTranslations.languages.join('|')+')\\]');
 
 if (topLevel.length === 0) {
+  console.log("HERE 1");
   // obviously, if we don't have an element to attach
   // the picker to, we might as well stop right now.
   return;
 }
 
 if (topLevel.attr(`class`) && topLevel.attr(`class`).indexOf(`search`) > -1) {
+  console.log("HERE 2");
   // if the only forms on the page are search forms,
   // we're not actually dealing with page/snippets
   return;
@@ -36,14 +38,15 @@ function filterForLocale(index, element) {
   // settings.LANGUAGES variable for Django.
   if (wagtailModelTranslations.languages.indexOf(locale) === -1) return;
 
+  // TODO: check how multiple is done
   // Check if it's a LI for inlines
   if ($(element).has('ul.multiple').length) return;
 
   // We do our show/hiding based on list items,
   // otherwise we're just "emptying" a list item
   // while leaving its spacing CSS intact.
-  if (element.nodeName !== "LI") {
-    element = $(element).closest("li")[0];
+  if (element.nodeName !== "SECTION") {
+    element = $(element).closest("section")[0];
   }
 
   // Bootstrap an empty bin if we don't have one.
@@ -74,7 +77,11 @@ function filterForLocale(index, element) {
  * will always stay visible.
  */
 function buildSets(topElement) {
-  $(`li.object:not(.multi-field), div.field`, topElement).each( filterForLocale );
+  // $(`li.object:not(.multi-field), div.field`, topElement).each( filterForLocale );
+  $(`section.w-panel`, topElement).each( filterForLocale );
+  // $(`li.object:not(.multi-field), div.field`, topLevel).each( (index, element) => {
+  //   console.log(element);
+  // } );
   document.dispatchEvent(new CustomEvent('wagtail-modeltranslation:buildSets:done'));
 }
 
@@ -161,6 +168,7 @@ for (var i=1; i<=12; i++) { columnCSS.push(`col${i}`); }
 
 // Build the sets that track which fields
 // belong to which language code.
+console.log(topLevel);
 buildSets(topLevel);
 
 var locales = Object.keys(localisedElements).sort();
