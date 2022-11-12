@@ -180,6 +180,16 @@ def modeltranslation_page_editor_css():
     return format_html('<link rel="stylesheet" href="{}" >'.format(static(filename)))
 
 
+@hooks.register('insert_editor_css')
+def modeltranslation_page_editor_css():
+    """
+    Patch admin styles, in particular page title headings missing in Wagtail 4
+    """
+
+    filename = 'wagtail_modeltranslation/css/admin_patch.css'
+    return format_html('<link rel="stylesheet" href="{}" >'.format(static(filename)))
+
+
 @hooks.register('register_rich_text_link_handler')
 def register_localized_page_link_handler():
     class LocalizedPageLinkHandler(PageLinkHandler):

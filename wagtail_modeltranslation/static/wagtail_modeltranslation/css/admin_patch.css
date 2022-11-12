@@ -1,0 +1,17 @@
+/* Wagtail 4 hides title headers by default, this style restores them */
+
+.w-panel.title:first-child .w-panel__header,
+.w-panel.title:nth-child(2) .w-panel__header {
+    position: static;
+    width: fit-content;
+    height: fit-content;
+    margin-inline-start: -4.5rem;
+    margin-bottom: .75rem;
+}
+
+.w-panel.title:first-child .w-panel__header .w-panel__anchor--prefix,
+.w-panel.title:first-child .w-panel__header .w-panel__toggle,
+.w-panel.title:nth-child(2) .w-panel__header .w-panel__anchor--prefix,
+.w-panel.title:nth-child(2) .w-panel__header .w-panel__toggle {
+    display: inline-grid;
+}
