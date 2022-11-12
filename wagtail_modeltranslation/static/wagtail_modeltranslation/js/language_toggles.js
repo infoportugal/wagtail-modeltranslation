@@ -100,7 +100,7 @@ $('a[id^=id_][id$=-ADD]').click(e => {
  * visibility for each locale's fields.
  */
 function buildLocaleToggler() {
-  var bar = $(`<div class="locale-picker"><h2>${wagtailModelTranslations.viewEditString}</h2></div>`);
+  var bar = $(`<div class="locale-picker w-form-width"><h2>${wagtailModelTranslations.viewEditString}</h2></div>`);
   var ul = $(`<ul class="locales"></ul>`);
   bar.append(ul);
 
