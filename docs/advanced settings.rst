@@ -10,7 +10,7 @@ Besides the django-modeltranslation settings, documented `here <http://django-mo
 
 Default: ``[]`` (empty list)
 
-This setting is used to add custom "simple panel" classes (all panels that contain directly a field value, like FieldPanel or ImageChooserPanel) that need patching but are not included by default, resulting in not being created translated versions of that panel in wagtail admin.
+This setting is used to add custom "simple panel" classes (all panels that contain directly a field value, like FieldPanel) that need patching but are not included by default, resulting in not being created translated versions of that panel in wagtail admin.
 If, for example, you're using wagtail-embedvideos the EmbedVideoChooserPanel is not patched by default so you'd need to include the fully qualified class name like the example below. This setting must be a list of fully qualified class names as strings.
 
 .. code-block:: python

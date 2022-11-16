@@ -1,17 +1,15 @@
 from django.db import models
 from django.http import HttpResponse
 from modelcluster.fields import ParentalKey
-from wagtail.admin.edit_handlers import (FieldPanel, FieldRowPanel,
-                                         InlinePanel, MultiFieldPanel,
-                                         StreamFieldPanel)
-from wagtail.contrib.routable_page.models import RoutablePageMixin, route
+from modelcluster.models import ClusterableModel
 from wagtail import blocks
+from wagtail.admin.panels import (FieldPanel, FieldRowPanel, InlinePanel,
+                                  MultiFieldPanel)
+from wagtail.contrib.routable_page.models import RoutablePageMixin, route
 from wagtail.fields import StreamField
 from wagtail.models import Page
-from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
-from modelcluster.models import ClusterableModel
 
 
 # Wagtail Models
@@ -35,10 +33,9 @@ class TestSlugPage1Subclass(TestSlugPage1):
 class PatchTestPage(Page):
     description = models.CharField(max_length=50)
 
-    search_fields = (
-        index.SearchField('title'),
+    search_fields = Page.search_fields + [
         index.SearchField('description'),
-    )
+    ]
 
 
 @register_snippet
@@ -73,7 +70,7 @@ class ImageChooserPanelSnippet(models.Model):
     )
 
     panels = [
-        ImageChooserPanel('image'),
+        FieldPanel('image'),
     ]
 
 
@@ -90,12 +87,16 @@ class FieldRowPanelSnippet(models.Model):
 
 @register_snippet
 class StreamFieldPanelSnippet(models.Model):
-    body = StreamField([
-        ('text', blocks.CharBlock(max_length=10))
-    ])
+    body = StreamField(
+        [
+            ('text', blocks.CharBlock(max_length=10))
+        ],
+        blank=False,
+        use_json_field=False
+    )
 
     panels = [
-        StreamFieldPanel('body')
+        FieldPanel('body')
     ]
 
 
@@ -141,7 +142,7 @@ class BaseInlineModel(MultiFieldPanelBase):
 
     panels = [
         FieldPanel('field_name'),
-        ImageChooserPanel('image_chooser'),
+        FieldPanel('image_chooser'),
         FieldRowPanel([
             FieldPanel('fieldrow_name'),
         ]),
@@ -181,7 +182,7 @@ class ImageChooserPanelPage(Page):
     )
 
     content_panels = [
-        ImageChooserPanel('image'),
+        FieldPanel('image'),
     ]
 
 
@@ -196,12 +197,16 @@ class FieldRowPanelPage(Page):
 
 
 class StreamFieldPanelPage(Page):
-    body = StreamField([
-        ('text', blocks.CharBlock(max_length=10))
-    ], blank=False)  # since wagtail 1.12 StreamField's blank defaults to False
+    body = StreamField(
+        [
+            ('text', blocks.CharBlock(max_length=10))
+        ],
+        blank=False,
+        use_json_field=False
+    )
 
     content_panels = [
-        StreamFieldPanel('body')
+        FieldPanel('body')
     ]
 
 

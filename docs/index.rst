@@ -34,7 +34,7 @@ Features
 - Translation fields are stored in the same table (no expensive joins)
 - Supports inherited models (abstract and multi-table inheritance)
 - Handle more than just text fields
-- Wagtail admin integration (for Page, BaseSetting and Snippet models)
+- Wagtail admin integration (for Page, BaseSiteSetting and Snippet models)
 - Flexible fallbacks, auto-population and more!
 - Default Page model fields has translatable fields by default
 
