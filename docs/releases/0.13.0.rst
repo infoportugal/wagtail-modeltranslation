@@ -1,5 +1,5 @@
 =============================================
-wagtail-modeltranslation 0.12.0 release notes
+wagtail-modeltranslation 0.13.0 release notes
 =============================================
 
 Changelist:
