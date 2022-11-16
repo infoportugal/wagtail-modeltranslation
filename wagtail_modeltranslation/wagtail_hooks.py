@@ -181,7 +181,7 @@ def modeltranslation_page_editor_css():
 
 
 @hooks.register('insert_editor_css')
-def modeltranslation_page_editor_css():
+def modeltranslation_page_editor_titles_css():
     """
     Patch admin styles, in particular page title headings missing in Wagtail 4
     """
