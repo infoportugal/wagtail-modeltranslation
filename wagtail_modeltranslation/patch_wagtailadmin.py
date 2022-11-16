@@ -24,7 +24,6 @@ from wagtail.models import Page, Site, SiteRootPath
 from wagtail.coreutils import WAGTAIL_APPEND_SLASH
 from wagtail.images.edit_handlers import ImageChooserPanel
 from wagtail.search.index import SearchField
-from wagtail.snippets.views.snippets import SNIPPET_EDIT_HANDLERS
 from wagtail.url_routing import RouteResult
 
 from wagtail_modeltranslation.patch_wagtailadmin_forms import \
@@ -139,7 +138,7 @@ class WagtailTranslator(object):
             translation_registered_fields = translator.get_options_for_model(model).fields
             panels = list(filter(lambda field: field.field_name not in translation_registered_fields, panels))
             edit_handler = ObjectList(panels)
-            SNIPPET_EDIT_HANDLERS[model] = edit_handler.bind_to_model(model=model)
+            model.edit_handler = edit_handler.bind_to_model(model=model)
 
     def _patch_panels(self, panels_list, related_model=None):
         """

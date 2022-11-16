@@ -36,16 +36,6 @@ function filterForLocale(index, element) {
   // settings.LANGUAGES variable for Django.
   if (wagtailModelTranslations.languages.indexOf(locale) === -1) return;
 
-  // Check if it's a LI for inlines
-  if ($(element).has('ul.multiple').length) return;
-
-  // We do our show/hiding based on list items,
-  // otherwise we're just "emptying" a list item
-  // while leaving its spacing CSS intact.
-  if (element.nodeName !== "LI") {
-    element = $(element).closest("li")[0];
-  }
-
   // Bootstrap an empty bin if we don't have one.
   if (!localisedElements[locale]) {
     localisedElements[locale] = [];
@@ -74,7 +64,7 @@ function filterForLocale(index, element) {
  * will always stay visible.
  */
 function buildSets(topElement) {
-  $(`li.object:not(.multi-field), div.field`, topElement).each( filterForLocale );
+  $(`section.w-panel:not(#panel-child-content-panel-section), div.w-panel__wrapper`, topElement).each( filterForLocale );
   document.dispatchEvent(new CustomEvent('wagtail-modeltranslation:buildSets:done'));
 }
 
@@ -110,7 +100,7 @@ $('a[id^=id_][id$=-ADD]').click(e => {
  * visibility for each locale's fields.
  */
 function buildLocaleToggler() {
-  var bar = $(`<div class="locale-picker"><h2>${wagtailModelTranslations.viewEditString}</h2></div>`);
+  var bar = $(`<div class="locale-picker w-form-width"><h2>${wagtailModelTranslations.viewEditString}</h2></div>`);
   var ul = $(`<ul class="locales"></ul>`);
   bar.append(ul);
 
