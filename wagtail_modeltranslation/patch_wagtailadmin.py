@@ -227,6 +227,11 @@ class WagtailTranslator(object):
         except NotRegistered:
             pass
         else:
+            if not hasattr(related_model, 'panels'):
+                panels = extract_panel_definitions_from_model_class(related_model)
+                translation_registered_fields = translator.get_options_for_model(related_model).fields
+                panels = list(filter(lambda field: field.field_name not in translation_registered_fields, panels))
+                related_model.panels = panels
             related_model.panels = self._patch_panels(getattr(related_model, 'panels', []), related_model)
 
         # The original panel is returned as only the related_model panels need to be
