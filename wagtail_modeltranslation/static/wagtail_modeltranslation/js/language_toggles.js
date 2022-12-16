@@ -82,7 +82,7 @@ function getSelectedLocales() {
 /**
  * Adds event listeners on click for inlines.
 */
-$('a[id^=id_][id$=-ADD]').click(e => {
+$('a[id^=id_][id$=-ADD], button[id^=id_][id$=-ADD]').click(e => {
   e.preventDefault();
   // get the ul where all inlines will be added
   ulForms = $(e.currentTarget).parent().siblings('ul.multiple')[0];
@@ -105,7 +105,7 @@ function buildLocaleToggler() {
   bar.append(ul);
 
   var toggles = {};
-  locales.forEach( locale => {
+  wagtailModelTranslations.languages.forEach( locale => {
     var li = $(`<li class="locale"><button type="button" class="locale-toggle">${locale}</button></li>`);
     ul.append(li);
 
