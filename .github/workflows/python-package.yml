@@ -38,7 +38,7 @@ jobs:
       matrix:
         python: ["3.7", "3.8", "3.9", "3.10"]
         django-modeltranslation: ["0.17", "0.18"]
-        wagtail: ["4.0", "4.1"]
+        wagtail: ["4.0", "4.1", "5.0"]
         database: ["sqlite", "postgres", "mysql"]
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
