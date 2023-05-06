@@ -92,7 +92,7 @@ class StreamFieldPanelSnippet(models.Model):
             ('text', blocks.CharBlock(max_length=10))
         ],
         blank=False,
-        use_json_field=False
+        use_json_field=True
     )
 
     panels = [
@@ -202,7 +202,7 @@ class StreamFieldPanelPage(Page):
             ('text', blocks.CharBlock(max_length=10))
         ],
         blank=False,
-        use_json_field=False
+        use_json_field=True
     )
 
     content_panels = [

@@ -16,7 +16,6 @@ from modeltranslation.translator import NotRegistered, translator
 from modeltranslation.utils import build_localized_fieldname, get_language
 from wagtail.admin.panels import (FieldPanel, FieldRowPanel, InlinePanel,
                                   MultiFieldPanel, ObjectList,
-                                  RichTextFieldPanel,
                                   extract_panel_definitions_from_model_class)
 from wagtail.contrib.routable_page.models import RoutablePageMixin
 from wagtail.coreutils import WAGTAIL_APPEND_SLASH
@@ -33,7 +32,7 @@ from wagtail_modeltranslation.settings import (CUSTOM_COMPOSED_PANELS,
                                                TRANSLATE_SLUGS)
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
-SIMPLE_PANEL_CLASSES = [FieldPanel, RichTextFieldPanel] + CUSTOM_SIMPLE_PANELS
+SIMPLE_PANEL_CLASSES = [FieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS
 INLINE_PANEL_CLASSES = [InlinePanel] + CUSTOM_INLINE_PANELS
 
