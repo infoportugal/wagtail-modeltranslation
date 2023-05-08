@@ -51,7 +51,7 @@ class WagtailModeltranslationTest(TestCase):
         self.assertEquals(len(panels), 2)
 
         # Validate if the created panels are instances of FieldPanel
-        from wagtail.admin.edit_handlers import FieldPanel
+        from wagtail.admin.panels import FieldPanel
 
         self.assertIsInstance(panels[0], FieldPanel)
         self.assertIsInstance(panels[1], FieldPanel)
@@ -76,7 +76,7 @@ class WagtailModeltranslationTest(TestCase):
         # Check if the fieldrowpanel still exists
         self.assertEqual(len(panels), 1)
 
-        from wagtail.admin.edit_handlers import FieldRowPanel
+        from wagtail.admin.panels import FieldRowPanel
         self.assertIsInstance(panels[0], FieldRowPanel)
 
         # Check if the children were correctly patched using the fieldpanel test
@@ -120,7 +120,7 @@ class WagtailModeltranslationTest(TestCase):
         # children panels
         self.assertEquals(len(panels), 3)
 
-        from wagtail.admin.edit_handlers import MultiFieldPanel
+        from wagtail.admin.panels import MultiFieldPanel
         self.assertIsInstance(panels[0], MultiFieldPanel)
         self.assertIsInstance(panels[1], MultiFieldPanel)
         self.assertIsInstance(panels[2], MultiFieldPanel)
