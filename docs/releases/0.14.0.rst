@@ -1,0 +1,8 @@
+=============================================
+wagtail-modeltranslation 0.14.0 release notes
+=============================================
+
+Changelist:
+ - dropped support for wagtail < 5.0
+ - added support for wagtail >= 5.0
+ - added tests for python 3.11
