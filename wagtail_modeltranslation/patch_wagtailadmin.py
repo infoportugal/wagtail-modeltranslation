@@ -398,9 +398,10 @@ def _localized_site_get_site_root_paths():
     result = cache.get(cache_key)
 
     if result is None:
+        sites = Site.objects.select_related('root_page', 'root_page__locale')
         result = [
             (site.id, site.root_page.url_path, site.root_url, site.root_page.locale.language_code)
-            for site in Site.objects.select_related('root_page').order_by('-root_page__url_path')
+            for site in sites.order_by('-root_page__url_path')
         ]
         cache.set(cache_key, result, 3600)
 
