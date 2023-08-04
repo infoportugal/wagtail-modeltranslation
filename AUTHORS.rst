@@ -22,7 +22,9 @@ Contributors
 * Raphael Grill
 * Tom Dyson
 * Tim Tan
+* `Joren Hammudoglu`_
 
 
 .. _Django-modeltranslation: https://github.com/deschler/django-modeltranslation
 .. _Django-linguo: https://github.com/zmathew/django-linguo
+.. _Joren Hammudoglu: https://github.com/jorenham
