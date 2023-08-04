@@ -17,12 +17,18 @@ from wagtail_modeltranslation import settings as wmt_settings
 
 from .patch_wagtailadmin_forms import PatchedCopyForm
 
-from wagtail import hooks
+from wagtail import hooks, VERSION as _WAGTAIL_VERSION
 from wagtail.models import Page
 from wagtail.rich_text.pages import PageLinkHandler
 from wagtail.admin import messages
 
 from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
+
+if _WAGTAIL_VERSION >= (5, 1):
+    # https://docs.wagtail.org/en/stable/releases/5.1.html#insert-editor-css-hook-is-deprecated
+    _HOOK_INSERT_CSS = 'insert_global_admin_css'
+else:
+    _HOOK_INSERT_CSS = 'insert_editor_css'
 
 
 @hooks.register('insert_editor_js')
@@ -174,20 +180,20 @@ def streamfields_translation_copy():
     return js_includes
 
 
-@hooks.register('insert_editor_css')
+@hooks.register(_HOOK_INSERT_CSS)
 def modeltranslation_page_editor_css():
     filename = 'wagtail_modeltranslation/css/page_editor_modeltranslation.css'
-    return format_html('<link rel="stylesheet" href="{}" >'.format(static(filename)))
+    return format_html('<link rel="stylesheet" href="{}">', static(filename))
 
 
-@hooks.register('insert_editor_css')
+@hooks.register(_HOOK_INSERT_CSS)
 def modeltranslation_page_editor_titles_css():
     """
     Patch admin styles, in particular page title headings missing in Wagtail 4
     """
 
     filename = 'wagtail_modeltranslation/css/admin_patch.css'
-    return format_html('<link rel="stylesheet" href="{}" >'.format(static(filename)))
+    return format_html('<link rel="stylesheet" href="{}">', static(filename))
 
 
 @hooks.register('register_rich_text_link_handler')
