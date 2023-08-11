@@ -26,15 +26,7 @@ from wagtail.admin.views.pages.utils import get_valid_next_url_from_request
 
 
 @hooks.register('insert_editor_js')
-def translated_slugs():
-    js_files = [
-        'wagtail_modeltranslation/js/wagtail_translated_slugs.js',
-    ]
-
-    js_includes = format_html_join('\n', '<script src="{0}"></script>', (
-        (static(filename),) for filename in js_files)
-    )
-
+def translation_settings():
     lang_codes = []
     for lang in settings.LANGUAGES:
         lang_codes.append("'%s'" % lang[0])
@@ -64,7 +56,7 @@ def translated_slugs():
         locale_picker_restore='true' if wmt_settings.LOCALE_PICKER_RESTORE else 'false',
     )
 
-    return js_languages + js_includes
+    return js_languages
 
 
 if wmt_settings.LOCALE_PICKER:
