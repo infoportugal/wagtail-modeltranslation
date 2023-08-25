@@ -44,7 +44,7 @@ django-modeltranslation = ">=0.17"
 bump2version = "^1.0.1"
 bumpversion = "*"
 wheel = "*"
-twine = "<4.0"
+twine = "*"
 autopep8 = "^1.6.0"
 
 [tool.poetry.group.dev.dependencies]
