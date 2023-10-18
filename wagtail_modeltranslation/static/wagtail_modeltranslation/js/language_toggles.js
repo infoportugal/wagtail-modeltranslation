@@ -2,7 +2,7 @@
 jQuery( () => {
 ///////////////
 
-const tabbedContent = $(`form .tab-content`);
+const tabbedContent = $(`form .tab-content, form .nice-padding`);
 const topLevel = (tabbedContent.length > 0) ? tabbedContent.first() : $(`.content > form`);
 const languageCodeRegex = new RegExp(' \\[('+wagtailModelTranslations.languages.join('|')+')\\]');
 
