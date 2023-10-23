@@ -1,7 +1,7 @@
 /* Creates the copy buttons in the header of each stream field */
 $(document).ready(function(){
 	//All the stream fields with all his content
-	var allStreamFields = $('li.stream-field');
+	var allStreamFields = $('section.w-panel--nested');
 
 	// Setup regex to find field name and fild lang
 	var langOpts = wagtailModelTranslations.languages.join('|').replace(/-/g, '_');
@@ -17,19 +17,18 @@ $(document).ready(function(){
 		// Extract fieldName and fieldLang
 		var inputId = extractInputId(currentStreamField);
 		// extract field name and fild lang from regex, continue if not match
-		var fieldInfo = Array.from(inputId.matchAll(re)).flat();
-		if (fieldInfo.length === 0) continue;
-		var fieldName = fieldInfo[1];
-		var fieldLang = fieldInfo[2];
+		if (inputId.length === 0) continue;
+		var fieldName = inputId[0];
+		var fieldLang = inputId[1];
 
 		//The cycle to create the buttons for copy each language field
 		var copyContentString = 'Copy content from';
-		header.innerHTML += '<div class="translation-field-copy-wrapper">'+copyContentString+': </div>';
+		$(header).append('<div class="translation-field-copy-wrapper">'+copyContentString+': </div>');
 		for (var j = 0; j < wagtailModelTranslations.languages.length; j++) {
 			currentLangCode = wagtailModelTranslations.languages[j].replace('-', '_');
 			if (fieldLang != currentLangCode) {
-				var currentFieldID = fieldName + '_' + fieldLang;
-				var targetFieldID = fieldName + '_' + currentLangCode;
+				var currentFieldID = (fieldName + '_' + fieldLang).toLowerCase().replace(' ', '_');
+				var targetFieldID = (fieldName + '_' + currentLangCode).toLowerCase().replace(' ', '_');
 				$(header).children('.translation-field-copy-wrapper')[0].innerHTML += '<button class="button translation-field-copy" current-lang-code="'+ currentFieldID +'" data-lang-code="'+ targetFieldID +'">'+wagtailModelTranslations.languages[j]+'</button>';
 			};
 		};
@@ -41,26 +40,29 @@ $(document).ready(function(){
 		var lang = $(this).attr('data-lang-code');
 		var currentLang = $(this).attr('current-lang-code');
 		requestCopyField(lang, currentLang);
-	});
-});
+			});
+		});
 
 /* Get header */
 function getStreamFieldHeader(currentStreamField) {
-	return $(currentStreamField).children('.title-wrapper')[0];
+	return $(currentStreamField).children('.w-panel__header')[0];
 }
 
 function extractInputId(currentStreamField) {
 	//Search for the input field so that we can get is id to know the field's name.
-	var streamFieldDiv = $(currentStreamField).find('.field-content')[0];
-	var inputId = $(streamFieldDiv).find('input')[0].id.split('-')[0];
+	var streamFieldDiv = $(currentStreamField).find('.w-panel__heading')[0];
+	var element = $(streamFieldDiv).find('[data-panel-heading-text]')[0];
+	var textContent = $(element).text().trim();
+	// Use regex to match the desired pattern and extract "Body" and "en"
+	var match = textContent.match(/(.+)\s*\[([a-z]{2})\]/i);
 
-	if (!inputId) {
-		var streamFieldInput = $(currentStreamField).find('.field-content input')[0];
-		streamFieldInput.id = streamFieldInput.name;
-		var inputId = streamFieldInput.name.split('-')[0];
+	// If a match is found, extract the desired parts
+	if (match) {
+		var resultArray = [match[1].trim(), match[2]];
+	} else {
+		var resultArray = [];  // or handle the no-match case as needed
 	}
-
-	return inputId;
+	return resultArray;
 }
 
 /* Copy the content of originID field to the targetID field */
@@ -88,7 +90,7 @@ function requestCopyField(originID, targetID) {
 	})
 	.done(function(data) {
 		/* Put the html data in the targetID field */
-		var wrapperDiv = $("#"+targetID+"-count").parents('.input')[0];
+		var wrapperDiv = $("[name='"+targetID+"-count']").parents('.w-field__input')[0];
 		$(wrapperDiv).html(data);
 	})
 	.fail(function(error) {
