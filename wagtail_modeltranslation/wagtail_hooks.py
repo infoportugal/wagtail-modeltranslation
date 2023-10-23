@@ -103,7 +103,7 @@ def return_translation_target_field_rendered_html(request, page_id):
 
     page = Page.objects.get(pk=page_id)
 
-    if request.is_ajax():
+    if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         origin_field_name = request.POST.get('origin_field_name')
         target_field_name = request.POST.get('target_field_name')
         origin_field_serialized = json.loads(
