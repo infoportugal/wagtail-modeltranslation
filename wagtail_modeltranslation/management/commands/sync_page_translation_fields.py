@@ -1,5 +1,6 @@
-from modeltranslation.management.commands.sync_translation_fields import \
-    Command as SyncTranslationsFieldsCommand
+from modeltranslation.management.commands.sync_translation_fields import (
+    Command as SyncTranslationsFieldsCommand,
+)
 from modeltranslation.translator import translator
 from wagtail.models import Page
 
@@ -13,9 +14,11 @@ def get_page_model(self, abstract=True):
 
 
 class Command(SyncTranslationsFieldsCommand):
-    help = ("Detect new translatable fields or new available languages and"
-            " sync Wagtail's Page database structure. Does not remove "
-            " columns of removed languages or undeclared fields.")
+    help = (
+        "Detect new translatable fields or new available languages and"
+        " sync Wagtail's Page database structure. Does not remove "
+        " columns of removed languages or undeclared fields."
+    )
 
     def handle(self, *args, **options):
         translator.get_registered_models = get_page_model.__get__(translator)

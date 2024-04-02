@@ -1,1 +1,1 @@
-default_app_config = 'wagtail_modeltranslation.makemigrations.apps.MakemigrationsConfig'
+default_app_config = "wagtail_modeltranslation.makemigrations.apps.MakemigrationsConfig"

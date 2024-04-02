@@ -10,6 +10,7 @@ class use_language:
         with use_language('en'):
             en_url = obj.get_absolute_url()
     """
+
     def __init__(self, lang):
         self.language = lang
         self.current_language = get_language()

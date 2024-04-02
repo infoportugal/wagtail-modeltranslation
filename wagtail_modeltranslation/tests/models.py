@@ -89,14 +89,18 @@ class FieldRowPanelSnippet(models.Model):
 
 @register_snippet
 class StreamFieldPanelSnippet(models.Model):
-    body = StreamField([("text", blocks.CharBlock(max_length=10))], blank=False, use_json_field=True)
+    body = StreamField(
+        [("text", blocks.CharBlock(max_length=10))], blank=False, use_json_field=True
+    )
 
     panels = [FieldPanel("body")]
 
 
 class MultiFieldPanelBase(models.Model):
     name = models.CharField(max_length=10)
-    image = models.ForeignKey("wagtailimages.Image", on_delete=models.CASCADE, related_name="+")
+    image = models.ForeignKey(
+        "wagtailimages.Image", on_delete=models.CASCADE, related_name="+"
+    )
     other_name = models.CharField(max_length=10)
     panels = [
         MultiFieldPanel(FieldPanelSnippet.panels),
@@ -116,7 +120,9 @@ class MultiFieldPanelSnippet(MultiFieldPanelBase):
 class BaseInlineModel(MultiFieldPanelBase):
     field_name = models.CharField(max_length=10)
 
-    image_chooser = models.ForeignKey("wagtailimages.Image", on_delete=models.CASCADE, related_name="+")
+    image_chooser = models.ForeignKey(
+        "wagtailimages.Image", on_delete=models.CASCADE, related_name="+"
+    )
 
     fieldrow_name = models.CharField(max_length=10)
 
@@ -179,7 +185,9 @@ class FieldRowPanelPage(Page):
 
 
 class StreamFieldPanelPage(Page):
-    body = StreamField([("text", blocks.CharBlock(max_length=10))], blank=False, use_json_field=True)
+    body = StreamField(
+        [("text", blocks.CharBlock(max_length=10))], blank=False, use_json_field=True
+    )
 
     content_panels = [FieldPanel("body")]
 

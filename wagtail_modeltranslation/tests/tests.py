@@ -101,7 +101,9 @@ class WagtailModeltranslationTest(TestCase):
         self.assertListEqual(["body_de", "body_en"], fields)
 
         # Fetch one of the streamfield panels to see if the block was correctly created
-        child_block = list(models.StreamFieldPanelPage.body_en.field.stream_block.child_blocks.items())
+        child_block = list(
+            models.StreamFieldPanelPage.body_en.field.stream_block.child_blocks.items()
+        )
 
         self.assertEquals(len(child_block), 1)
 
@@ -118,7 +120,9 @@ class WagtailModeltranslationTest(TestCase):
 
         # Translated StreamField is optional
         self.assertTrue(models.StreamFieldPanelPage.body_en.field.blank)
-        self.assertFalse(models.StreamFieldPanelPage.body_en.field.stream_block.required)
+        self.assertFalse(
+            models.StreamFieldPanelPage.body_en.field.stream_block.required
+        )
 
     def check_multipanel_patching(self, panels):
         # There are three multifield panels, one for each of the available
@@ -148,14 +152,22 @@ class WagtailModeltranslationTest(TestCase):
         # next is a fieldrowpanel and finally there are 3 multifieldpanels
         self.check_fieldpanel_patching(panels=panels[0:2], name="field_name")
         self.check_imagechooserpanel_patching(panels=panels[2:4], name="image_chooser")
-        self.check_fieldrowpanel_patching(panels=panels[4:5], child_name="fieldrow_name")
+        self.check_fieldrowpanel_patching(
+            panels=panels[4:5], child_name="fieldrow_name"
+        )
         self.check_multipanel_patching(panels=panels[5:8])
 
     def test_page_patching(self):
         self.check_fieldpanel_patching(panels=models.FieldPanelPage.content_panels)
-        self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelPage.content_panels)
-        self.check_fieldrowpanel_patching(panels=models.FieldRowPanelPage.content_panels)
-        self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelPage.content_panels)
+        self.check_imagechooserpanel_patching(
+            panels=models.ImageChooserPanelPage.content_panels
+        )
+        self.check_fieldrowpanel_patching(
+            panels=models.FieldRowPanelPage.content_panels
+        )
+        self.check_streamfieldpanel_patching(
+            panels=models.StreamFieldPanelPage.content_panels
+        )
         self.check_multipanel_patching(panels=models.MultiFieldPanelPage.content_panels)
 
         # In spite of the model being the InlinePanelPage the panels are patch on the related model
@@ -166,9 +178,13 @@ class WagtailModeltranslationTest(TestCase):
         self.check_fieldpanel_patching(panels=models.FieldPanelSnippet.panels)
         self.check_panels_patching(models.FieldPanelSnippet, ["name_de", "name_en"])
 
-        self.check_imagechooserpanel_patching(panels=models.ImageChooserPanelSnippet.panels)
+        self.check_imagechooserpanel_patching(
+            panels=models.ImageChooserPanelSnippet.panels
+        )
         self.check_fieldrowpanel_patching(panels=models.FieldRowPanelSnippet.panels)
-        self.check_streamfieldpanel_patching(panels=models.StreamFieldPanelSnippet.panels)
+        self.check_streamfieldpanel_patching(
+            panels=models.StreamFieldPanelSnippet.panels
+        )
         self.check_multipanel_patching(panels=models.MultiFieldPanelSnippet.panels)
 
         # In spite of the model being the InlinePanelSnippet the panels are patch on the related model
@@ -176,7 +192,9 @@ class WagtailModeltranslationTest(TestCase):
         self.check_inlinepanel_patching(panels=models.SnippetInlineModel.panels)
 
         # Case we don't define panels on snippet
-        self.check_panels_patching(models.PatchTestSnippetNoPanels, ["name_de", "name_en"])
+        self.check_panels_patching(
+            models.PatchTestSnippetNoPanels, ["name_de", "name_en"]
+        )
 
     def check_panels_patching(self, model, model_fields):
         patched_edit_handler = get_edit_handler(model)
@@ -229,7 +247,9 @@ class WagtailModeltranslationTest(TestCase):
         ]
 
         related_formset_form = form.formsets["related_page_model"].form
-        self.assertEqual(inline_model_fields, list(related_formset_form.base_fields.keys()))
+        self.assertEqual(
+            inline_model_fields, list(related_formset_form.base_fields.keys())
+        )
 
     def test_snippet_form(self):
         """
@@ -257,13 +277,17 @@ class WagtailModeltranslationTest(TestCase):
 
         related_formset_form = form.formsets["related_snippet_model"].form
 
-        self.assertEqual(inline_model_fields, list(related_formset_form.base_fields.keys()))
+        self.assertEqual(
+            inline_model_fields, list(related_formset_form.base_fields.keys())
+        )
 
     def test_duplicate_slug(self):
         from wagtail.models import Site
 
         # Create a test Site with a root page
-        root = models.TestRootPage(title="title", depth=1, path="0001", slug_en="slug_en", slug_de="slug_de")
+        root = models.TestRootPage(
+            title="title", depth=1, path="0001", slug_en="slug_en", slug_de="slug_de"
+        )
         root.save()
 
         site = Site(root_page=root)
@@ -271,12 +295,22 @@ class WagtailModeltranslationTest(TestCase):
 
         # Add children to the root
         root.add_child(
-            instance=models.TestSlugPage1(title="child1", slug_de="child", slug_en="child-en", depth=2, path="00010001")
+            instance=models.TestSlugPage1(
+                title="child1",
+                slug_de="child",
+                slug_en="child-en",
+                depth=2,
+                path="00010001",
+            )
         )
 
         child2 = root.add_child(
             instance=models.TestSlugPage2(
-                title="child2", slug_de="child-2", slug_en="child2-en", depth=2, path="00010002"
+                title="child2",
+                slug_de="child-2",
+                slug_en="child2-en",
+                depth=2,
+                path="00010002",
             )
         )
 
@@ -309,7 +343,11 @@ class WagtailModeltranslationTest(TestCase):
             "children": {
                 "child": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title": "child slugurl", "slug": "child-slugurl", "slug_en": "child-slugurl-en"},
+                    "kwargs": {
+                        "title": "child slugurl",
+                        "slug": "child-slugurl",
+                        "slug_en": "child-slugurl-en",
+                    },
                     "children": {},
                 },
             },
@@ -322,19 +360,29 @@ class WagtailModeltranslationTest(TestCase):
 
         self.assertEqual(slugurl_trans(context, "root-slugurl"), "/de/")
         self.assertEqual(slugurl_trans(context, "child-slugurl"), "/de/child-slugurl/")
-        self.assertEqual(slugurl_trans(context, "child-slugurl-en", "en"), "/de/child-slugurl/")
+        self.assertEqual(
+            slugurl_trans(context, "child-slugurl-en", "en"), "/de/child-slugurl/"
+        )
 
         translation.activate("en")
 
         self.assertEqual(slugurl_trans(context, "root-slugurl"), "/en/")
-        self.assertEqual(slugurl_trans(context, "child-slugurl"), "/en/child-slugurl-en/")
-        self.assertEqual(slugurl_trans(context, "child-slugurl-en", "en"), "/en/child-slugurl-en/")
+        self.assertEqual(
+            slugurl_trans(context, "child-slugurl"), "/en/child-slugurl-en/"
+        )
+        self.assertEqual(
+            slugurl_trans(context, "child-slugurl-en", "en"), "/en/child-slugurl-en/"
+        )
 
     @override_settings(LANGUAGE_CODE="de")
     def test_relative_url(self):
         # Create a test Site with a root page
         root = models.TestRootPage(
-            title_de="title slugurl", depth=1, path="0004", slug_en="title_slugurl_en", slug_de="title_slugurl_de"
+            title_de="title slugurl",
+            depth=1,
+            path="0004",
+            slug_en="title_slugurl_en",
+            slug_de="title_slugurl_de",
         )
         root.save()
         site = Site(root_page=root)
@@ -354,14 +402,18 @@ class WagtailModeltranslationTest(TestCase):
 
         url_1_de = child.relative_url(site)
         self.assertEqual(
-            url_1_de, "/de/child-slugurl-de/", "When using the default language, slugurl produces the wrong url."
+            url_1_de,
+            "/de/child-slugurl-de/",
+            "When using the default language, slugurl produces the wrong url.",
         )
 
         translation.activate("en")
 
         url_1_en = child.relative_url(site)
         self.assertEqual(
-            url_1_en, "/en/child-slugurl-en/", "When using non-default language, slugurl produces the wrong url."
+            url_1_en,
+            "/en/child-slugurl-en/",
+            "When using non-default language, slugurl produces the wrong url.",
         )
 
         # Add children using non-default language
@@ -379,21 +431,35 @@ class WagtailModeltranslationTest(TestCase):
 
         url_2_en = child2.relative_url(site)
         self.assertEqual(
-            url_2_en, "/en/child2-slugurl-en/", "When using non-default language, slugurl produces the wrong url."
+            url_2_en,
+            "/en/child2-slugurl-en/",
+            "When using non-default language, slugurl produces the wrong url.",
         )
 
         translation.activate("de")
 
         url_2_de = child2.relative_url(site)
         self.assertEqual(
-            url_2_de, "/de/child2-slugurl-de/", "When using non-default language, slugurl produces the wrong url."
+            url_2_de,
+            "/de/child2-slugurl-de/",
+            "When using non-default language, slugurl produces the wrong url.",
         )
 
     def test_searchfield_patching(self):
         # Check if the search fields have some of the original fields plus the translated ones
-        expected_fields = ["title", "path", "title_de", "title_en", "description", "description_de", "description_en"]
+        expected_fields = [
+            "title",
+            "path",
+            "title_de",
+            "title_en",
+            "description",
+            "description_de",
+            "description_en",
+        ]
 
-        model_search_fields = [searchfield.field_name for searchfield in models.PatchTestPage.search_fields]
+        model_search_fields = [
+            searchfield.field_name for searchfield in models.PatchTestPage.search_fields
+        ]
 
         for field in expected_fields:
             self.assertIn(field, model_search_fields)
@@ -401,7 +467,11 @@ class WagtailModeltranslationTest(TestCase):
     def test_streamfield_fallback(self):
         body_text = '[{"value": "Some text", "type": "text"}]'
         page = models.StreamFieldPanelPage(
-            title="Streamfield Fallback", slug="streamfield_fallback", depth=1, path="0005", body=body_text
+            title="Streamfield Fallback",
+            slug="streamfield_fallback",
+            depth=1,
+            path="0005",
+            body=body_text,
         )
         page.save()
 
@@ -424,14 +494,21 @@ class WagtailModeltranslationTest(TestCase):
         from wagtail.models import Site
 
         # Create a test Site with a root page
-        root = models.TestRootPage.objects.create(title="url paths", depth=1, path="0006", slug="url-path-slug")
+        root = models.TestRootPage.objects.create(
+            title="url paths", depth=1, path="0006", slug="url-path-slug"
+        )
 
         Site.objects.create(root_page=root)
 
         # Add children to the root
         child = root.add_child(
             instance=models.TestSlugPage1(
-                title_de="child", title_en="child", slug_de="child", slug_en="child", depth=2, path="00060001"
+                title_de="child",
+                title_en="child",
+                slug_de="child",
+                slug_en="child",
+                depth=2,
+                path="00060001",
             )
         )
         child.save()
@@ -485,7 +562,12 @@ class WagtailModeltranslationTest(TestCase):
         # Add 2nd child to the root
         child2 = root.add_child(
             instance=models.TestSlugPage1(
-                title_de="child2", title_en="child2", slug_de="child2", slug_en="child2", depth=2, path="00060002"
+                title_de="child2",
+                title_en="child2",
+                slug_de="child2",
+                slug_en="child2",
+                depth=2,
+                path="00060002",
             )
         )
         child2.save()
@@ -568,11 +650,18 @@ class WagtailModeltranslationTest(TestCase):
         ).rewrite(False).update(slug_en=None, url_path_en=None)
 
         # re-fetch to pick up latest from DB
-        grandchild1 = models.TestSlugPage1.objects.get(slug_de="grandchild1-untranslated")
-        self.assertEqual(grandchild1.url_path_de, "/root-untranslated/child-untranslated/grandchild1-untranslated/")
+        grandchild1 = models.TestSlugPage1.objects.get(
+            slug_de="grandchild1-untranslated"
+        )
+        self.assertEqual(
+            grandchild1.url_path_de,
+            "/root-untranslated/child-untranslated/grandchild1-untranslated/",
+        )
         self.assertEqual(grandchild1.slug_en, None)
         self.assertEqual(grandchild1.url_path_en, None)
-        grandgrandchild = models.TestSlugPage1.objects.get(slug_de="grandgrandchild-untranslated")
+        grandgrandchild = models.TestSlugPage1.objects.get(
+            slug_de="grandgrandchild-untranslated"
+        )
         self.assertEqual(
             grandgrandchild.url_path_de,
             "/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/",
@@ -589,11 +678,21 @@ class WagtailModeltranslationTest(TestCase):
         self.assertEqual(child.url_path_de, "/root-untranslated/child-untranslated/")
         self.assertEqual(child.url_path_en, "/root-untranslated/child-translated/")
 
-        grandchild1 = models.TestSlugPage1.objects.get(slug_de="grandchild1-untranslated")
-        self.assertEqual(grandchild1.url_path_de, "/root-untranslated/child-untranslated/grandchild1-untranslated/")
-        self.assertEqual(grandchild1.url_path_en, "/root-untranslated/child-translated/grandchild1-untranslated/")
+        grandchild1 = models.TestSlugPage1.objects.get(
+            slug_de="grandchild1-untranslated"
+        )
+        self.assertEqual(
+            grandchild1.url_path_de,
+            "/root-untranslated/child-untranslated/grandchild1-untranslated/",
+        )
+        self.assertEqual(
+            grandchild1.url_path_en,
+            "/root-untranslated/child-translated/grandchild1-untranslated/",
+        )
 
-        grandgrandchild = models.TestSlugPage1.objects.get(slug_de="grandgrandchild-untranslated")
+        grandgrandchild = models.TestSlugPage1.objects.get(
+            slug_de="grandgrandchild-untranslated"
+        )
         self.assertEqual(
             grandgrandchild.url_path_de,
             "/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/",
@@ -650,7 +749,11 @@ class WagtailModeltranslationTest(TestCase):
             "children": {
                 "child1": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title_de": "child1 routing", "slug_de": "routing-de-01", "slug_en": "routing-en-01"},
+                    "kwargs": {
+                        "title_de": "child1 routing",
+                        "slug_de": "routing-de-01",
+                        "slug_en": "routing-en-01",
+                    },
                     "children": {
                         "grandchild1": {
                             "model": models.TestSlugPage1,
@@ -664,11 +767,17 @@ class WagtailModeltranslationTest(TestCase):
                 },
                 "child2": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title_de": "child2 routing", "slug_de": "routing-de-02"},
+                    "kwargs": {
+                        "title_de": "child2 routing",
+                        "slug_de": "routing-de-02",
+                    },
                     "children": {
                         "grandchild1": {
                             "model": models.TestSlugPage1,
-                            "kwargs": {"title_de": "grandchild1 routing", "slug_de": "routing-de-0201"},
+                            "kwargs": {
+                                "title_de": "grandchild1 routing",
+                                "slug_de": "routing-de-0201",
+                            },
                         },
                     },
                 },
@@ -696,12 +805,22 @@ class WagtailModeltranslationTest(TestCase):
         page_factory.create_page_tree(site_pages)
 
         root_page = site_pages["instance"]
-        page_0101 = site_pages["children"]["child1"]["children"]["grandchild1"]["instance"]
-        page_0201 = site_pages["children"]["child2"]["children"]["grandchild1"]["instance"]
-        page_0301 = site_pages["children"]["routable_page"]["children"]["grandchild1"]["instance"]
+        page_0101 = site_pages["children"]["child1"]["children"]["grandchild1"][
+            "instance"
+        ]
+        page_0201 = site_pages["children"]["child2"]["children"]["grandchild1"][
+            "instance"
+        ]
+        page_0301 = site_pages["children"]["routable_page"]["children"]["grandchild1"][
+            "instance"
+        ]
 
-        self.check_route_request(root_page, ["routing-de-01", "routing-de-0101"], page_0101)
-        self.check_route_request(root_page, ["routing-de-02", "routing-de-0201"], page_0201)
+        self.check_route_request(
+            root_page, ["routing-de-01", "routing-de-0101"], page_0101
+        )
+        self.check_route_request(
+            root_page, ["routing-de-02", "routing-de-0201"], page_0201
+        )
 
         # routable page test
         routable_page = site_pages["children"]["routable_page"]["instance"]
@@ -709,20 +828,28 @@ class WagtailModeltranslationTest(TestCase):
         self.assertEqual(view, routable_page.archive_by_year)
         self.assertEqual(args, ("2014",))
         self.assertEqual(kwargs, {})
-        self.check_route_request(root_page, ["routing-de-03", "routing-de-0301"], page_0301)
+        self.check_route_request(
+            root_page, ["routing-de-03", "routing-de-0301"], page_0301
+        )
 
         translation.activate("en")
 
         # assert translated slugs fetch the correct page
-        self.check_route_request(root_page, ["routing-en-01", "routing-en-0101"], page_0101)
+        self.check_route_request(
+            root_page, ["routing-en-01", "routing-en-0101"], page_0101
+        )
         # in the absence of translated slugs assert the default ones work
-        self.check_route_request(root_page, ["routing-de-02", "routing-de-0201"], page_0201)
+        self.check_route_request(
+            root_page, ["routing-de-02", "routing-de-0201"], page_0201
+        )
 
         view, args, kwargs = routable_page.resolve_subpage("/archive/year/2014/")
         self.assertEqual(view, routable_page.archive_by_year)
         self.assertEqual(args, ("2014",))
         self.assertEqual(kwargs, {})
-        self.check_route_request(root_page, ["routing-en-03", "routing-en-0301"], page_0301)
+        self.check_route_request(
+            root_page, ["routing-en-03", "routing-en-0301"], page_0301
+        )
 
     def test_get_url_parts(self):
         site_pages = {
@@ -733,7 +860,11 @@ class WagtailModeltranslationTest(TestCase):
             "children": {
                 "child1": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title": "child1 URL parts", "slug_de": "url-parts-de-01", "slug_en": "url-parts-en-01"},
+                    "kwargs": {
+                        "title": "child1 URL parts",
+                        "slug_de": "url-parts-de-01",
+                        "slug_en": "url-parts-en-01",
+                    },
                 },
                 "child2": {
                     "model": models.TestSlugPage1,
@@ -767,7 +898,11 @@ class WagtailModeltranslationTest(TestCase):
             "children": {
                 "child1": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title": "child1 URL", "slug_de": "url-de-01", "slug_en": "url-en-01"},
+                    "kwargs": {
+                        "title": "child1 URL",
+                        "slug_de": "url-de-01",
+                        "slug_en": "url-en-01",
+                    },
                 },
                 "child2": {
                     "model": models.TestSlugPage2,
@@ -799,7 +934,11 @@ class WagtailModeltranslationTest(TestCase):
             "children": {
                 "child1": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title": "child1 URL", "slug_de": "url-de-01", "slug_en": "url-en-01"},
+                    "kwargs": {
+                        "title": "child1 URL",
+                        "slug_de": "url-de-01",
+                        "slug_en": "url-en-01",
+                    },
                 },
                 "child2": {
                     "model": models.TestSlugPage2,
@@ -823,7 +962,9 @@ class WagtailModeltranslationTest(TestCase):
         wagtail_page_03 = site_pages["children"]["child3"]["instance"]
         self.assertEqual(wagtail_page_01.url, "/de/url-de-01/")
         self.assertEqual(wagtail_page_01.url_path, "/root-de/url-de-01/")
-        self.assertEqual(wagtail_page_02.get_url(request=request), "/de/url-de-02/")  # with request
+        self.assertEqual(
+            wagtail_page_02.get_url(request=request), "/de/url-de-02/"
+        )  # with request
 
         translation.activate("en")
 
@@ -876,11 +1017,17 @@ class WagtailModeltranslationTest(TestCase):
                 },
                 "child2": {
                     "model": models.TestSlugPage1,
-                    "kwargs": {"title": "child2 translated", "slug_en": "child2-translated-en"},
+                    "kwargs": {
+                        "title": "child2 translated",
+                        "slug_en": "child2-translated-en",
+                    },
                     "children": {
                         "grandchild1": {
                             "model": models.TestSlugPage1,
-                            "kwargs": {"title": "grandchild1 translated", "slug_en": "grandchild1-translated-en"},
+                            "kwargs": {
+                                "title": "grandchild1 translated",
+                                "slug_en": "grandchild1-translated-en",
+                            },
                             "children": {
                                 "grandgrandchild": {
                                     "model": models.TestSlugPage1,
@@ -904,26 +1051,42 @@ class WagtailModeltranslationTest(TestCase):
         ).rewrite(False).update(slug_en=None, url_path_en=None)
 
         # re-fetch to pick up latest from DB
-        grandchild1 = models.TestSlugPage1.objects.get(slug_de="grandchild1-untranslated")
+        grandchild1 = models.TestSlugPage1.objects.get(
+            slug_de="grandchild1-untranslated"
+        )
         self.assertEqual(grandchild1.url_path_en, None)
-        grandgrandchild = models.TestSlugPage1.objects.get(slug_de="grandgrandchild-untranslated")
+        grandgrandchild = models.TestSlugPage1.objects.get(
+            slug_de="grandgrandchild-untranslated"
+        )
         self.assertEqual(grandgrandchild.url_path_en, None)
 
         # change grandchild2 url_path to corrupt it in order to simulate Wagtail's 0.7 corruption bug:
         # http://docs.wagtail.io/en/latest/releases/0.8.html#corrupted-url-paths-may-need-fixing
-        models.TestSlugPage2.objects.filter(slug_de__in=["grandchild2-untranslated"]).rewrite(False).update(
-            url_path="corrupted", url_path_de="corrupted"
-        )
+        models.TestSlugPage2.objects.filter(
+            slug_de__in=["grandchild2-untranslated"]
+        ).rewrite(False).update(url_path="corrupted", url_path_de="corrupted")
 
-        grandchild2 = models.TestSlugPage2.objects.get(slug_de="grandchild2-untranslated")
+        grandchild2 = models.TestSlugPage2.objects.get(
+            slug_de="grandchild2-untranslated"
+        )
         self.assertEqual(grandchild2.__dict__["url_path"], "corrupted")
 
         call_command("set_translation_url_paths", verbosity=0)
 
-        grandchild1 = models.TestSlugPage1.objects.get(slug_de="grandchild1-untranslated")
-        self.assertEqual(grandchild1.url_path_de, "/root-untranslated/child-untranslated/grandchild1-untranslated/")
-        self.assertEqual(grandchild1.url_path_en, "/root-untranslated/child-untranslated/grandchild1-untranslated/")
-        grandgrandchild = models.TestSlugPage1.objects.get(slug_de="grandgrandchild-untranslated")
+        grandchild1 = models.TestSlugPage1.objects.get(
+            slug_de="grandchild1-untranslated"
+        )
+        self.assertEqual(
+            grandchild1.url_path_de,
+            "/root-untranslated/child-untranslated/grandchild1-untranslated/",
+        )
+        self.assertEqual(
+            grandchild1.url_path_en,
+            "/root-untranslated/child-untranslated/grandchild1-untranslated/",
+        )
+        grandgrandchild = models.TestSlugPage1.objects.get(
+            slug_de="grandgrandchild-untranslated"
+        )
         self.assertEqual(
             grandgrandchild.url_path_de,
             "/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/",
@@ -932,14 +1095,25 @@ class WagtailModeltranslationTest(TestCase):
             grandgrandchild.url_path_en,
             "/root-untranslated/child-untranslated/grandchild1-untranslated/grandgrandchild-untranslated/",
         )
-        grandchild2 = models.TestSlugPage2.objects.get(slug_de="grandchild2-untranslated")
-        self.assertEqual(
-            grandchild2.__dict__["url_path"], "/root-untranslated/child-untranslated/grandchild2-untranslated/"
+        grandchild2 = models.TestSlugPage2.objects.get(
+            slug_de="grandchild2-untranslated"
         )
-        self.assertEqual(grandchild2.url_path_de, "/root-untranslated/child-untranslated/grandchild2-untranslated/")
-        self.assertEqual(grandchild2.url_path_en, "/root-untranslated/child-untranslated/grandchild2-untranslated/")
+        self.assertEqual(
+            grandchild2.__dict__["url_path"],
+            "/root-untranslated/child-untranslated/grandchild2-untranslated/",
+        )
+        self.assertEqual(
+            grandchild2.url_path_de,
+            "/root-untranslated/child-untranslated/grandchild2-untranslated/",
+        )
+        self.assertEqual(
+            grandchild2.url_path_en,
+            "/root-untranslated/child-untranslated/grandchild2-untranslated/",
+        )
 
-        grandgrandchild_translated = models.TestSlugPage1.objects.get(slug_de="grandgrandchild1-translated")
+        grandgrandchild_translated = models.TestSlugPage1.objects.get(
+            slug_de="grandgrandchild1-translated"
+        )
         self.assertEqual(
             grandgrandchild_translated.url_path_de,
             "/root-untranslated/child2-translated/grandchild1-translated/grandgrandchild1-translated/",
@@ -951,7 +1125,12 @@ class WagtailModeltranslationTest(TestCase):
 
     def test_apply_if_live(self):
         root = models.TitleFieldPanelPageTest(
-            title="title", depth=1, path="0001", slug_en="slug_en", slug_de="slug_de", name="test"
+            title="title",
+            depth=1,
+            path="0001",
+            slug_en="slug_en",
+            slug_de="slug_de",
+            name="test",
         )
         root.save()
 

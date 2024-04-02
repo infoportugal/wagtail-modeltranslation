@@ -7,22 +7,32 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('wagtailcore', '0091_remove_revision_submitted_for_moderation'),
-        ('tests', '0001_initial'),
+        ("wagtailcore", "0091_remove_revision_submitted_for_moderation"),
+        ("tests", "0001_initial"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='TitleFieldPanelPageTest',
+            name="TitleFieldPanelPageTest",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('name', models.CharField(max_length=50)),
-                ('name_de', models.CharField(max_length=50, null=True)),
-                ('name_en', models.CharField(max_length=50, null=True)),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("name_de", models.CharField(max_length=50, null=True)),
+                ("name_en", models.CharField(max_length=50, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('wagtailcore.page',),
+            bases=("wagtailcore.page",),
         ),
     ]
