@@ -8,12 +8,12 @@ from wagtail_modeltranslation import settings
 @register(Page)
 class PageTR(TranslationOptions):
     fields = (
-        'title',
-        'seo_title',
-        'search_description',
+        "title",
+        "seo_title",
+        "search_description",
     )
     if settings.TRANSLATE_SLUGS:
         fields += (
-            'slug',
-            'url_path',
+            "slug",
+            "url_path",
         )

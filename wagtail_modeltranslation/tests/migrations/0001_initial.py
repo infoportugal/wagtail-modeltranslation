@@ -13,281 +13,679 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('wagtailimages', '0023_add_choose_permissions'),
-        ('wagtailcore', '0062_comment_models_and_pagesubscription'),
+        ("wagtailimages", "0023_add_choose_permissions"),
+        ("wagtailcore", "0062_comment_models_and_pagesubscription"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='BaseInlineModel',
+            name="BaseInlineModel",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=10)),
-                ('name_de', models.CharField(max_length=10, null=True)),
-                ('name_en', models.CharField(max_length=10, null=True)),
-                ('other_name', models.CharField(max_length=10)),
-                ('other_name_de', models.CharField(max_length=10, null=True)),
-                ('other_name_en', models.CharField(max_length=10, null=True)),
-                ('field_name', models.CharField(max_length=10)),
-                ('field_name_de', models.CharField(max_length=10, null=True)),
-                ('field_name_en', models.CharField(max_length=10, null=True)),
-                ('fieldrow_name', models.CharField(max_length=10)),
-                ('fieldrow_name_de', models.CharField(max_length=10, null=True)),
-                ('fieldrow_name_en', models.CharField(max_length=10, null=True)),
-                ('image', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_chooser', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_chooser_de', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_chooser_en', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_de', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_en', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=10)),
+                ("name_de", models.CharField(max_length=10, null=True)),
+                ("name_en", models.CharField(max_length=10, null=True)),
+                ("other_name", models.CharField(max_length=10)),
+                ("other_name_de", models.CharField(max_length=10, null=True)),
+                ("other_name_en", models.CharField(max_length=10, null=True)),
+                ("field_name", models.CharField(max_length=10)),
+                ("field_name_de", models.CharField(max_length=10, null=True)),
+                ("field_name_en", models.CharField(max_length=10, null=True)),
+                ("fieldrow_name", models.CharField(max_length=10)),
+                ("fieldrow_name_de", models.CharField(max_length=10, null=True)),
+                ("fieldrow_name_en", models.CharField(max_length=10, null=True)),
+                (
+                    "image",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_chooser",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_chooser_de",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_chooser_en",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_de",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_en",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='FieldPanelPage',
+            name="FieldPanelPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('name', models.CharField(max_length=50)),
-                ('name_de', models.CharField(max_length=50, null=True)),
-                ('name_en', models.CharField(max_length=50, null=True)),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("name_de", models.CharField(max_length=50, null=True)),
+                ("name_en", models.CharField(max_length=50, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('wagtailcore.page',),
+            bases=("wagtailcore.page",),
         ),
         migrations.CreateModel(
-            name='FieldPanelSnippet',
+            name="FieldPanelSnippet",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=10)),
-                ('name_de', models.CharField(max_length=10, null=True)),
-                ('name_en', models.CharField(max_length=10, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=10)),
+                ("name_de", models.CharField(max_length=10, null=True)),
+                ("name_en", models.CharField(max_length=10, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='FieldRowPanelPage',
+            name="FieldRowPanelPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('other_name', models.CharField(max_length=10)),
-                ('other_name_de', models.CharField(max_length=10, null=True)),
-                ('other_name_en', models.CharField(max_length=10, null=True)),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                ("other_name", models.CharField(max_length=10)),
+                ("other_name_de", models.CharField(max_length=10, null=True)),
+                ("other_name_en", models.CharField(max_length=10, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('wagtailcore.page',),
+            bases=("wagtailcore.page",),
         ),
         migrations.CreateModel(
-            name='FieldRowPanelSnippet',
+            name="FieldRowPanelSnippet",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('other_name', models.CharField(max_length=10)),
-                ('other_name_de', models.CharField(max_length=10, null=True)),
-                ('other_name_en', models.CharField(max_length=10, null=True)),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("other_name", models.CharField(max_length=10)),
+                ("other_name_de", models.CharField(max_length=10, null=True)),
+                ("other_name_en", models.CharField(max_length=10, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='InlinePanelPage',
+            name="InlinePanelPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('wagtailcore.page',),
+            bases=("wagtailcore.page",),
         ),
         migrations.CreateModel(
-            name='InlinePanelSnippet',
+            name="InlinePanelSnippet",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
-            },
-        ),
-        migrations.CreateModel(
-            name='PatchTestPage',
-            fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('description', models.CharField(max_length=50)),
-                ('description_de', models.CharField(max_length=50, null=True)),
-                ('description_en', models.CharField(max_length=50, null=True)),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('wagtailcore.page',),
-        ),
-        migrations.CreateModel(
-            name='PatchTestSnippetNoPanels',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=10)),
-                ('name_de', models.CharField(max_length=10, null=True)),
-                ('name_en', models.CharField(max_length=10, null=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='RoutablePageTest',
-            fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=(wagtail.contrib.routable_page.models.RoutablePageMixin, 'wagtailcore.page'),
-        ),
-        migrations.CreateModel(
-            name='StreamFieldPanelPage',
-            fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('body', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))])),
-                ('body_de', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
-                ('body_en', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('wagtailcore.page',),
-        ),
-        migrations.CreateModel(
-            name='StreamFieldPanelSnippet',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('body', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))])),
-                ('body_de', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
-                ('body_en', wagtail.fields.StreamField([('text', wagtail.blocks.CharBlock(max_length=10))], null=True)),
-            ],
-        ),
-        migrations.CreateModel(
-            name='TestRootPage',
-            fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('wagtailcore.page',),
-        ),
-        migrations.CreateModel(
-            name='TestSlugPage1',
-            fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('wagtailcore.page',),
-        ),
-        migrations.CreateModel(
-            name='TestSlugPage2',
-            fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('wagtailcore.page',),
-        ),
-        migrations.CreateModel(
-            name='PatchTestSnippet',
-            fields=[
-                ('patchtestsnippetnopanels_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='tests.patchtestsnippetnopanels')),
-            ],
-            bases=('tests.patchtestsnippetnopanels',),
-        ),
-        migrations.CreateModel(
-            name='TestSlugPage1Subclass',
-            fields=[
-                ('testslugpage1_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='tests.testslugpage1')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('tests.testslugpage1',),
-        ),
-        migrations.CreateModel(
-            name='MultiFieldPanelSnippet',
-            fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=10)),
-                ('name_de', models.CharField(max_length=10, null=True)),
-                ('name_en', models.CharField(max_length=10, null=True)),
-                ('other_name', models.CharField(max_length=10)),
-                ('other_name_de', models.CharField(max_length=10, null=True)),
-                ('other_name_en', models.CharField(max_length=10, null=True)),
-                ('image', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_de', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-                ('image_en', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, related_name='+', to='wagtailimages.image')),
-            ],
-            options={
-                'abstract': False,
+                "abstract": False,
             },
         ),
         migrations.CreateModel(
-            name='MultiFieldPanelPage',
+            name="PatchTestPage",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('name', models.CharField(max_length=50)),
-                ('name_de', models.CharField(max_length=50, null=True)),
-                ('name_en', models.CharField(max_length=50, null=True)),
-                ('other_name', models.CharField(max_length=10)),
-                ('other_name_de', models.CharField(max_length=10, null=True)),
-                ('other_name_en', models.CharField(max_length=10, null=True)),
-                ('image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='wagtailimages.image')),
-                ('image_de', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='wagtailimages.image')),
-                ('image_en', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='wagtailimages.image')),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                ("description", models.CharField(max_length=50)),
+                ("description_de", models.CharField(max_length=50, null=True)),
+                ("description_en", models.CharField(max_length=50, null=True)),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('wagtailcore.page',),
+            bases=("wagtailcore.page",),
         ),
         migrations.CreateModel(
-            name='ImageChooserPanelSnippet',
+            name="PatchTestSnippetNoPanels",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='wagtailimages.image')),
-                ('image_de', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='wagtailimages.image')),
-                ('image_en', models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='wagtailimages.image')),
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=10)),
+                ("name_de", models.CharField(max_length=10, null=True)),
+                ("name_en", models.CharField(max_length=10, null=True)),
             ],
         ),
         migrations.CreateModel(
-            name='ImageChooserPanelPage',
+            name="RoutablePageTest",
             fields=[
-                ('page_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='wagtailcore.page')),
-                ('image', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='wagtailimages.image')),
-                ('image_de', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='wagtailimages.image')),
-                ('image_en', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='wagtailimages.image')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('wagtailcore.page',),
-        ),
-        migrations.CreateModel(
-            name='SnippetInlineModel',
-            fields=[
-                ('baseinlinemodel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='tests.baseinlinemodel')),
-                ('page', modelcluster.fields.ParentalKey(on_delete=django.db.models.deletion.CASCADE, related_name='related_snippet_model', to='tests.inlinepanelsnippet')),
-            ],
-            options={
-                'abstract': False,
-            },
-            bases=('tests.baseinlinemodel',),
-        ),
-        migrations.CreateModel(
-            name='PageInlineModel',
-            fields=[
-                ('baseinlinemodel_ptr', models.OneToOneField(auto_created=True, on_delete=django.db.models.deletion.CASCADE, parent_link=True, primary_key=True, serialize=False, to='tests.baseinlinemodel')),
-                ('page', modelcluster.fields.ParentalKey(on_delete=django.db.models.deletion.CASCADE, related_name='related_page_model', to='tests.inlinepanelpage')),
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
             ],
             options={
-                'abstract': False,
+                "abstract": False,
             },
-            bases=('tests.baseinlinemodel',),
+            bases=(
+                wagtail.contrib.routable_page.models.RoutablePageMixin,
+                "wagtailcore.page",
+            ),
+        ),
+        migrations.CreateModel(
+            name="StreamFieldPanelPage",
+            fields=[
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                (
+                    "body",
+                    wagtail.fields.StreamField(
+                        [("text", wagtail.blocks.CharBlock(max_length=10))]
+                    ),
+                ),
+                (
+                    "body_de",
+                    wagtail.fields.StreamField(
+                        [("text", wagtail.blocks.CharBlock(max_length=10))], null=True
+                    ),
+                ),
+                (
+                    "body_en",
+                    wagtail.fields.StreamField(
+                        [("text", wagtail.blocks.CharBlock(max_length=10))], null=True
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("wagtailcore.page",),
+        ),
+        migrations.CreateModel(
+            name="StreamFieldPanelSnippet",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "body",
+                    wagtail.fields.StreamField(
+                        [("text", wagtail.blocks.CharBlock(max_length=10))]
+                    ),
+                ),
+                (
+                    "body_de",
+                    wagtail.fields.StreamField(
+                        [("text", wagtail.blocks.CharBlock(max_length=10))], null=True
+                    ),
+                ),
+                (
+                    "body_en",
+                    wagtail.fields.StreamField(
+                        [("text", wagtail.blocks.CharBlock(max_length=10))], null=True
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="TestRootPage",
+            fields=[
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("wagtailcore.page",),
+        ),
+        migrations.CreateModel(
+            name="TestSlugPage1",
+            fields=[
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("wagtailcore.page",),
+        ),
+        migrations.CreateModel(
+            name="TestSlugPage2",
+            fields=[
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("wagtailcore.page",),
+        ),
+        migrations.CreateModel(
+            name="PatchTestSnippet",
+            fields=[
+                (
+                    "patchtestsnippetnopanels_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="tests.patchtestsnippetnopanels",
+                    ),
+                ),
+            ],
+            bases=("tests.patchtestsnippetnopanels",),
+        ),
+        migrations.CreateModel(
+            name="TestSlugPage1Subclass",
+            fields=[
+                (
+                    "testslugpage1_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="tests.testslugpage1",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("tests.testslugpage1",),
+        ),
+        migrations.CreateModel(
+            name="MultiFieldPanelSnippet",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=10)),
+                ("name_de", models.CharField(max_length=10, null=True)),
+                ("name_en", models.CharField(max_length=10, null=True)),
+                ("other_name", models.CharField(max_length=10)),
+                ("other_name_de", models.CharField(max_length=10, null=True)),
+                ("other_name_en", models.CharField(max_length=10, null=True)),
+                (
+                    "image",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_de",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_en",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="+",
+                        to="wagtailimages.image",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+        ),
+        migrations.CreateModel(
+            name="MultiFieldPanelPage",
+            fields=[
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("name_de", models.CharField(max_length=50, null=True)),
+                ("name_en", models.CharField(max_length=50, null=True)),
+                ("other_name", models.CharField(max_length=10)),
+                ("other_name_de", models.CharField(max_length=10, null=True)),
+                ("other_name_en", models.CharField(max_length=10, null=True)),
+                (
+                    "image",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_de",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_en",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="wagtailimages.image",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("wagtailcore.page",),
+        ),
+        migrations.CreateModel(
+            name="ImageChooserPanelSnippet",
+            fields=[
+                (
+                    "id",
+                    models.AutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "image",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_de",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_en",
+                    models.ForeignKey(
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="wagtailimages.image",
+                    ),
+                ),
+            ],
+        ),
+        migrations.CreateModel(
+            name="ImageChooserPanelPage",
+            fields=[
+                (
+                    "page_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="wagtailcore.page",
+                    ),
+                ),
+                (
+                    "image",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_de",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="wagtailimages.image",
+                    ),
+                ),
+                (
+                    "image_en",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        to="wagtailimages.image",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("wagtailcore.page",),
+        ),
+        migrations.CreateModel(
+            name="SnippetInlineModel",
+            fields=[
+                (
+                    "baseinlinemodel_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="tests.baseinlinemodel",
+                    ),
+                ),
+                (
+                    "page",
+                    modelcluster.fields.ParentalKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="related_snippet_model",
+                        to="tests.inlinepanelsnippet",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("tests.baseinlinemodel",),
+        ),
+        migrations.CreateModel(
+            name="PageInlineModel",
+            fields=[
+                (
+                    "baseinlinemodel_ptr",
+                    models.OneToOneField(
+                        auto_created=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        parent_link=True,
+                        primary_key=True,
+                        serialize=False,
+                        to="tests.baseinlinemodel",
+                    ),
+                ),
+                (
+                    "page",
+                    modelcluster.fields.ParentalKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="related_page_model",
+                        to="tests.inlinepanelpage",
+                    ),
+                ),
+            ],
+            options={
+                "abstract": False,
+            },
+            bases=("tests.baseinlinemodel",),
         ),
     ]

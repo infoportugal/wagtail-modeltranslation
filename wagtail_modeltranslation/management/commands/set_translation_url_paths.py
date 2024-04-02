@@ -8,9 +8,9 @@ from wagtail_modeltranslation.contextlib import use_language
 class Command(BaseCommand):
     def __init__(self):
         super(Command, self).__init__()
-        update_fields = ['url_path']
+        update_fields = ["url_path"]
         for language in mt_settings.AVAILABLE_LANGUAGES:
-            localized_url_path = build_localized_fieldname('url_path', language)
+            localized_url_path = build_localized_fieldname("url_path", language)
             update_fields.append(localized_url_path)
         self.update_fields = update_fields
 

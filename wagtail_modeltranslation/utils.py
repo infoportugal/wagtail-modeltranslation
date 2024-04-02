@@ -14,7 +14,7 @@ def import_from_string(name):
     """
     Returns a module from a string path
     """
-    components = name.split('.')
+    components = name.split(".")
     mod = __import__(components[0])
     for comp in components[1:]:
         mod = getattr(mod, comp)

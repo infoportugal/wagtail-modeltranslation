@@ -21,24 +21,24 @@ jobs:
         python: [3.9]
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
+      - name: Set up Python ${{ matrix.python }}
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python }}
-      - name: Install flake8
+      - name: Install black
         run: |
           python -m pip install --upgrade pip
-          pip install flake8
-      - name: Lint with flake8
+          pip install black
+      - name: Lint with black
         run: |
-          flake8 --ignore=E501 wagtail_modeltranslation
+          black wagtail_modeltranslation
   Test:
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python: ["3.8", "3.9", "3.10", "3.11"]
         django-modeltranslation: ["0.17", "0.18"]
-        wagtail: ["4.0", "4.1", "5.0", "5.1"]
+        wagtail: ["5.0", "5.1", "5.2"]
         database: ["sqlite", "postgres", "mysql"]
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -52,7 +52,7 @@ jobs:
       POSTGRES_PASSWORD: "wagtail_modeltranslation"
     services:
       mariadb:
-        image: mariadb
+        image: mariadb:10
         ports:
           - 3306:3306
         env:
