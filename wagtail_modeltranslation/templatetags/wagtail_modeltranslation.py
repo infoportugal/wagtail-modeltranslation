@@ -18,40 +18,43 @@ register = template.Library()
 
 # TODO: check templatetag usage
 
+
 # CHANGE LANGUAGE
 @register.simple_tag(takes_context=True)
 def change_lang(context, lang=None, page=None, *args, **kwargs):
     current_language = get_language()
 
-    if 'request' in context and lang and current_language and page:
-        request = context['request']
+    if "request" in context and lang and current_language and page:
+        request = context["request"]
         try:
-            match = resolve(unquote(request.path, errors='strict'))
+            match = resolve(unquote(request.path, errors="strict"))
         except Resolver404:
             # could be that we are on a non-existent path
-            return ''
-        non_prefixed_path = re.sub(current_language + '/', '', request.path, count=1)
+            return ""
+        non_prefixed_path = re.sub(current_language + "/", "", request.path, count=1)
 
         # means that is an wagtail page object
-        if match.url_name == 'wagtail_serve':
+        if match.url_name == "wagtail_serve":
             activate(lang)
             translated_url = page.get_url()
             activate(current_language)
 
             return translated_url
-        elif match.url_name == 'wagtailsearch_search':
-            path_components = [component for component in non_prefixed_path.split('/') if component]
+        elif match.url_name == "wagtailsearch_search":
+            path_components = [
+                component for component in non_prefixed_path.split("/") if component
+            ]
 
-            translated_url = '/' + lang + '/' + path_components[0] + '/'
+            translated_url = "/" + lang + "/" + path_components[0] + "/"
             if request.GET:
-                translated_url += '?'
+                translated_url += "?"
                 for count, (key, value) in enumerate(iteritems(request.GET)):
                     if count != 0:
                         translated_url += "&"
-                    translated_url += key + '=' + value
+                    translated_url += key + "=" + value
             return translated_url
 
-    return ''
+    return ""
 
 
 class GetAvailableLanguagesNode(template.Node):
@@ -63,7 +66,7 @@ class GetAvailableLanguagesNode(template.Node):
     def render(self, context):
         """Rendering."""
         context[self.variable] = mt_settings.AVAILABLE_LANGUAGES
-        return ''
+        return ""
 
 
 # Alternative to slugurl which uses chosen or default language for language
@@ -86,7 +89,7 @@ def slugurl_trans(context, slug, language=None):
         return pageurl(context, page)
 
 
-@register.tag('get_available_languages_wmt')
+@register.tag("get_available_languages_wmt")
 def do_get_available_languages(unused_parser, token):
     """
     Store a list of available languages in the context.
@@ -103,8 +106,8 @@ def do_get_available_languages(unused_parser, token):
     put it into the named variable.
     """
     args = token.contents.split()
-    if len(args) != 3 or args[1] != 'as':
+    if len(args) != 3 or args[1] != "as":
         raise template.TemplateSyntaxError(
-            "'get_available_languages_wmt' requires 'as variable' "
-            "(got %r)" % args)
+            "'get_available_languages_wmt' requires 'as variable' " "(got %r)" % args
+        )
     return GetAvailableLanguagesNode(args[2])

@@ -1,27 +1,31 @@
-from modeltranslation.translator import (TranslationOptions, register,
-                                         translator)
-from wagtail_modeltranslation.tests.models import (BaseInlineModel,
-                                                   FieldPanelPage,
-                                                   FieldPanelSnippet,
-                                                   FieldRowPanelPage,
-                                                   FieldRowPanelSnippet,
-                                                   ImageChooserPanelPage,
-                                                   ImageChooserPanelSnippet,
-                                                   InlinePanelPage,
-                                                   InlinePanelSnippet,
-                                                   MultiFieldPanelPage,
-                                                   MultiFieldPanelSnippet,
-                                                   PageInlineModel,
-                                                   PatchTestPage,
-                                                   PatchTestSnippet,
-                                                   PatchTestSnippetNoPanels,
-                                                   RoutablePageTest,
-                                                   SnippetInlineModel,
-                                                   StreamFieldPanelPage,
-                                                   StreamFieldPanelSnippet,
-                                                   TestRootPage, TestSlugPage1,
-                                                   TestSlugPage1Subclass,
-                                                   TestSlugPage2)
+from modeltranslation.translator import TranslationOptions, register, translator
+
+from wagtail_modeltranslation.tests.models import (
+    BaseInlineModel,
+    FieldPanelPage,
+    FieldPanelSnippet,
+    FieldRowPanelPage,
+    FieldRowPanelSnippet,
+    ImageChooserPanelPage,
+    ImageChooserPanelSnippet,
+    InlinePanelPage,
+    InlinePanelSnippet,
+    MultiFieldPanelPage,
+    MultiFieldPanelSnippet,
+    PageInlineModel,
+    PatchTestPage,
+    PatchTestSnippet,
+    PatchTestSnippetNoPanels,
+    RoutablePageTest,
+    SnippetInlineModel,
+    StreamFieldPanelPage,
+    StreamFieldPanelSnippet,
+    TestRootPage,
+    TestSlugPage1,
+    TestSlugPage1Subclass,
+    TestSlugPage2,
+    TitleFieldPanelPageTest,
+)
 
 
 # Wagtail Models
@@ -47,12 +51,12 @@ class TestSlugPage1SubclassTranslationOptions(TranslationOptions):
 
 @register(PatchTestPage)
 class PatchTestPageTranslationOptions(TranslationOptions):
-    fields = ('description',)
+    fields = ("description",)
 
 
 @register(PatchTestSnippetNoPanels)
 class PatchTestSnippetNoPanelsTranslationOptions(TranslationOptions):
-    fields = ('name',)
+    fields = ("name",)
 
 
 @register(PatchTestSnippet)
@@ -62,8 +66,9 @@ class PatchTestSnippetTranslationOptions(TranslationOptions):
 
 # Panel Patching Models
 
+
 class FieldPanelTranslationOptions(TranslationOptions):
-    fields = ('name',)
+    fields = ("name",)
 
 
 translator.register(FieldPanelPage, FieldPanelTranslationOptions)
@@ -71,7 +76,7 @@ translator.register(FieldPanelSnippet, FieldPanelTranslationOptions)
 
 
 class ImageChooserPanelTranslationOptions(TranslationOptions):
-    fields = ('image',)
+    fields = ("image",)
 
 
 translator.register(ImageChooserPanelPage, ImageChooserPanelTranslationOptions)
@@ -79,7 +84,7 @@ translator.register(ImageChooserPanelSnippet, ImageChooserPanelTranslationOption
 
 
 class FieldRowPanelTranslationOptions(TranslationOptions):
-    fields = ('other_name',)
+    fields = ("other_name",)
 
 
 translator.register(FieldRowPanelPage, FieldRowPanelTranslationOptions)
@@ -87,7 +92,7 @@ translator.register(FieldRowPanelSnippet, FieldRowPanelTranslationOptions)
 
 
 class StreamFieldPanelTranslationOptions(TranslationOptions):
-    fields = ('body',)
+    fields = ("body",)
 
 
 translator.register(StreamFieldPanelPage, StreamFieldPanelTranslationOptions)
@@ -95,7 +100,11 @@ translator.register(StreamFieldPanelSnippet, StreamFieldPanelTranslationOptions)
 
 
 class MultiFieldPanelTranslationOptions(TranslationOptions):
-    fields = ('name', 'image', 'other_name',)
+    fields = (
+        "name",
+        "image",
+        "other_name",
+    )
 
 
 translator.register(MultiFieldPanelPage, MultiFieldPanelTranslationOptions)
@@ -103,7 +112,14 @@ translator.register(MultiFieldPanelSnippet, MultiFieldPanelTranslationOptions)
 
 
 class InlinePanelTranslationOptions(TranslationOptions):
-    fields = ('name', 'image', 'other_name', 'field_name', 'image_chooser', 'fieldrow_name',)
+    fields = (
+        "name",
+        "image",
+        "other_name",
+        "field_name",
+        "image_chooser",
+        "fieldrow_name",
+    )
 
 
 translator.register(BaseInlineModel, InlinePanelTranslationOptions)
@@ -128,3 +144,8 @@ translator.register(InlinePanelSnippet, InlinePanelModelTranslationOptions)
 @register(RoutablePageTest)
 class RoutablePageTestTranslationOptions(TranslationOptions):
     fields = ()
+
+
+@register(TitleFieldPanelPageTest)
+class TitleFieldPanelPageTestTranslationOptions(TranslationOptions):
+    fields = ("name",)

@@ -36,16 +36,24 @@ class PageFactory(object):
 
         # add a top root node to mimic Wagtail's real behaviour
         all_nodes = {
-            'model': TestRootPage,
-            'kwargs': {'title_de': 'Root', 'slug_de': 'root', },
-            'children': {
-                'site_root': nodes,
+            "model": TestRootPage,
+            "kwargs": {
+                "title_de": "Root",
+                "slug_de": "root",
+            },
+            "children": {
+                "site_root": nodes,
             },
         }
         self.create_instance(all_nodes)
 
-        site_root_node = nodes['instance']
-        site = Site.objects.create(root_page=site_root_node, hostname='localhost', port=80, is_default_site=True)
+        site_root_node = nodes["instance"]
+        site = Site.objects.create(
+            root_page=site_root_node,
+            hostname="localhost",
+            port=80,
+            is_default_site=True,
+        )
         return site
 
     def create_instance(self, node, parent=None, order=None):
@@ -56,20 +64,20 @@ class PageFactory(object):
             path = "%04d" % (self.path,)
             depth = 1
 
-        args = node.get('args', [])
-        kwargs = node.get('kwargs', {})
-        kwargs['path'] = kwargs.get('path', path)
-        kwargs['depth'] = kwargs.get('depth', depth)
+        args = node.get("args", [])
+        kwargs = node.get("kwargs", {})
+        kwargs["path"] = kwargs.get("path", path)
+        kwargs["depth"] = kwargs.get("depth", depth)
         if parent:
-            node_page = parent.add_child(instance=node['model'](*args, **kwargs))
+            node_page = parent.add_child(instance=node["model"](*args, **kwargs))
             node_page.save()
         else:
-            node_page = node['model'].objects.create(*args, **kwargs)
+            node_page = node["model"].objects.create(*args, **kwargs)
 
         node_page.save_revision().publish()
-        node['instance'] = node_page
+        node["instance"] = node_page
 
-        for n, child in enumerate(node.get('children', {}).values()):
+        for n, child in enumerate(node.get("children", {}).values()):
             self.create_instance(child, node_page, n + 1)
 
         return node_page
