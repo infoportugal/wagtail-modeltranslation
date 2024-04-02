@@ -95,3 +95,5 @@ SECRET_KEY = 'not important'
 ALLOWED_HOSTS = ['localhost']
 
 WAGTAILADMIN_BASE_URL = 'http://localhost'
+
+STATIC_URL = 'static/'
