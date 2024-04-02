@@ -49,20 +49,14 @@ function getStreamFieldHeader(currentStreamField) {
 }
 
 function extractInputId(currentStreamField) {
-	//Search for the input field so that we can get is id to know the field's name.
-	var streamFieldDiv = $(currentStreamField).find('.w-panel__heading')[0];
-	var element = $(streamFieldDiv).find('[data-panel-heading-text]')[0];
-	var textContent = $(element).text().trim();
-	// Use regex to match the desired pattern and extract "Body" and "en"
-	var match = textContent.match(/(.+)\s*\[([a-z]{2})\]/i);
-
-	// If a match is found, extract the desired parts
-	if (match) {
-		var resultArray = [match[1].trim(), match[2]];
-	} else {
-		var resultArray = [];  // or handle the no-match case as needed
-	}
-	return resultArray;
+	// Search in the ID atribute, something like `panel-child-conteudo-stream1_pt-section` where `stream1` is the field name and `pt` is the language
+	var panelId = $(currentStreamField).attr('id');
+	if (!panelId.startsWith("panel-child-conteudo-")) {
+    return [];
+  }
+	var parts = panelId.split('-'); // Splitting the string by the delimiter '-'
+	var result = parts[3]; // Getting the forth part which is "stream1_pt" in the example
+	return result.split("_");
 }
 
 /* Copy the content of originID field to the targetID field */
