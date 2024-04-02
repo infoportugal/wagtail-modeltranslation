@@ -7,7 +7,6 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ("wagtailcore", "0091_remove_revision_submitted_for_moderation"),
         ("tests", "0001_initial"),
     ]
 
