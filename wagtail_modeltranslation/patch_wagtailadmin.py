@@ -194,25 +194,27 @@ class WagtailTranslator(object):
                 new_stream_block.meta.required = False
                 localized_field.stream_block = new_stream_block
 
-            if panel_class == TitleFieldPanel and TRANSLATE_SLUGS:
+            if panel_class == TitleFieldPanel:
                 if TRANSLATE_SLUGS:
                     # When a title field is changed its corresponding localized slug may need to
                     # be updated.
                     localized_panel = panel_class(
                         localized_field_name,
                         targets=[build_localized_fieldname(target, language)
-                                 for target in original_panel.targets])
+                                 for target in original_panel.targets],
+                        apply_if_live=original_panel.apply_if_live)
                 elif language == mt_settings.DEFAULT_LANGUAGE:
                     # Slugs are not translated, so when a title field in the default language is
                     # updated we must update the slug it is linked to.
                     localized_panel = panel_class(
                         localized_field_name,
-                        targets=original_panel.targets)
+                        targets=original_panel.targets,
+                        apply_if_live=original_panel.apply_if_live)
                 else:
                     # Slugs are not translated and this title field is in a non-default language.
                     # There is no slug to link the title to, so the TitleFieldPanel becomes a
                     # plain FieldPanel.
-                    localized_panel = FieldPanel(localized_field_name)
+                    localized_panel = FieldPanel(localized_field_name, classname="title")
             else:
                 localized_panel = panel_class(localized_field_name)
 
