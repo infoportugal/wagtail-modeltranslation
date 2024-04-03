@@ -685,13 +685,13 @@ trio = ["async_generator", "trio"]
 
 [[package]]
 name = "keyring"
-version = "25.0.0"
+version = "25.1.0"
 description = "Store and access your passwords safely."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "keyring-25.0.0-py3-none-any.whl", hash = "sha256:9a15cd280338920388e8c1787cb8792b9755dabb3e7c61af5ac1f8cd437cefde"},
-    {file = "keyring-25.0.0.tar.gz", hash = "sha256:fc024ed53c7ea090e30723e6bd82f58a39dc25d9a6797d866203ecd0ee6306cb"},
+    {file = "keyring-25.1.0-py3-none-any.whl", hash = "sha256:26fc12e6a329d61d24aa47b22a7c5c3f35753df7d8f2860973cf94f4e1fb3427"},
+    {file = "keyring-25.1.0.tar.gz", hash = "sha256:7230ea690525133f6ad536a9b5def74a4bd52642abe594761028fc044d7c7893"},
 ]
 
 [package.dependencies]
@@ -707,7 +707,7 @@ SecretStorage = {version = ">=3.2", markers = "sys_platform == \"linux\""}
 [package.extras]
 completion = ["shtab (>=1.1.0)"]
 docs = ["furo", "jaraco.packaging (>=9.3)", "jaraco.tidelift (>=1.4)", "rst.linker (>=1.9)", "sphinx (>=3.5)", "sphinx-lint"]
-testing = ["pytest (>=6)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
+testing = ["pytest (>=6,!=8.1.1)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)", "pytest-mypy", "pytest-ruff (>=0.2.1)"]
 
 [[package]]
 name = "l18n"
@@ -1305,13 +1305,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "wagtail"
-version = "6.0"
+version = "6.0.1"
 description = "A Django content management system."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "wagtail-6.0-py3-none-any.whl", hash = "sha256:2df0447c0d3bfc43576aa529cbea78e0dff93f6d25a9097068d24fb8c4fa8ee8"},
-    {file = "wagtail-6.0.tar.gz", hash = "sha256:de03b6bad5527f8423ccb23b2e92ca9ac61bb1f3dc3f2dc97c850db74a251c39"},
+    {file = "wagtail-6.0.1-py3-none-any.whl", hash = "sha256:035475e7e2c752b971336bfea8cfe8ff2c582b1e65abf2a3efb164db2f26004e"},
+    {file = "wagtail-6.0.1.tar.gz", hash = "sha256:43cf65ba8430b41e533167ee75b27660a7a86eb06dd8bd79e8d64fb4af057a8b"},
 ]
 
 [package.dependencies]
@@ -1407,4 +1407,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "098fae6b0ad9b2bfd92e684627f0e703a64da4a0b348c628c5d1b5edbd6387af"
+content-hash = "d20be60e58436e512971ebf4674c1f517af9234eebb64645e2c89b4df6106e2c"
