@@ -49,7 +49,7 @@ class WagtailModeltranslationTest(TestCase):
 
     def check_fieldpanel_patching(self, panels, name="name"):
         # Check if there is one panel per language
-        self.assertEquals(len(panels), 2)
+        self.assertEqual(len(panels), 2)
 
         # Validate if the created panels are instances of FieldPanel
         from wagtail.admin.panels import FieldPanel
@@ -63,7 +63,7 @@ class WagtailModeltranslationTest(TestCase):
 
     def check_imagechooserpanel_patching(self, panels, name="image"):
         # Check if there is one panel per language
-        self.assertEquals(len(panels), 2)
+        self.assertEqual(len(panels), 2)
 
         from wagtail.admin.panels import FieldPanel
 
@@ -89,7 +89,7 @@ class WagtailModeltranslationTest(TestCase):
 
     def check_streamfieldpanel_patching(self, panels):
         # Check if there is one panel per language
-        self.assertEquals(len(panels), 2)
+        self.assertEqual(len(panels), 2)
 
         from wagtail.admin.panels import FieldPanel
 
@@ -105,11 +105,11 @@ class WagtailModeltranslationTest(TestCase):
             models.StreamFieldPanelPage.body_en.field.stream_block.child_blocks.items()
         )
 
-        self.assertEquals(len(child_block), 1)
+        self.assertEqual(len(child_block), 1)
 
         from wagtail.blocks import CharBlock
 
-        self.assertEquals(child_block[0][0], "text")
+        self.assertEqual(child_block[0][0], "text")
         self.assertIsInstance(child_block[0][1], CharBlock)
 
         # Original and Default language StreamFields are required
@@ -127,7 +127,7 @@ class WagtailModeltranslationTest(TestCase):
     def check_multipanel_patching(self, panels):
         # There are three multifield panels, one for each of the available
         # children panels
-        self.assertEquals(len(panels), 3)
+        self.assertEqual(len(panels), 3)
 
         from wagtail.admin.panels import MultiFieldPanel
 
