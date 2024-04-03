@@ -1,2 +1,2 @@
-__version__ = "0.14.2"
+__version__ = "0.15.0"
 default_app_config = "wagtail_modeltranslation.apps.WagtailModeltranslationConfig"
