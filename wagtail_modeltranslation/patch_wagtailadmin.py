@@ -154,6 +154,11 @@ class WagtailTranslator(object):
                 tab.children = self._patch_panels(tab.children)
         elif hasattr(model, "panels"):
             model.panels = self._patch_panels(model.panels)
+        elif hasattr(model, "snippet_viewset"):
+            edit_handler = model.snippet_viewset.get_edit_handler()
+            for tab in edit_handler.children:
+                tab.children = self._patch_panels(tab.children)
+            model.snippet_viewset.edit_handler = edit_handler.bind_to_model(model)
         else:
             panels = extract_panel_definitions_from_model_class(model)
             translation_registered_fields = translator.get_options_for_model(
