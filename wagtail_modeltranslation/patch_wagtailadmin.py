@@ -147,7 +147,6 @@ class WagtailTranslator(object):
     def _patch_other_models(self, model):
         # PATCH FIELDS
         self._patch_fields(model)
-
         if hasattr(model, "edit_handler"):
             edit_handler = model.edit_handler
             for tab in edit_handler.children:
@@ -156,22 +155,29 @@ class WagtailTranslator(object):
             model.panels = self._patch_panels(model.panels)
         elif hasattr(model, "snippet_viewset"):
             edit_handler = model.snippet_viewset.get_edit_handler()
-            for tab in edit_handler.children:
-                tab.children = self._patch_panels(tab.children)
-            model.snippet_viewset.edit_handler = edit_handler.bind_to_model(model)
+            if isinstance(edit_handler, ObjectList):
+                edit_handler.children = self._patch_ObjectList(edit_handler.children, model)
+                model.edit_handler = edit_handler.children.bind_to_model(model=model)
+            else:
+                for tab in edit_handler.children:
+                    tab.children = self._patch_panels(tab.children)
+                model.snippet_viewset.edit_handler = edit_handler.bind_to_model(model)
         else:
             panels = extract_panel_definitions_from_model_class(model)
-            translation_registered_fields = translator.get_options_for_model(
-                model
-            ).fields
-            panels = list(
-                filter(
-                    lambda field: field.field_name not in translation_registered_fields,
-                    panels,
-                )
+            edit_handler = self._patch_ObjectList(panels, model)
+            model.edit_handler = edit_handler.bind_to_model(model=model)
+
+    def _patch_ObjectList(self, obj_list, model):
+        translation_registered_fields = translator.get_options_for_model(
+            model
+        ).fields
+        panels = list(
+            filter(
+                lambda field: field.field_name not in translation_registered_fields,
+                obj_list,
             )
-            panel = ObjectList(panels)
-            model.edit_handler = panel.bind_to_model(model=model)
+        )
+        return ObjectList(panels)
 
     def _patch_panels(self, panels_list, related_model=None):
         """
@@ -207,8 +213,8 @@ class WagtailTranslator(object):
         if original_panel.field_name not in translation_registered_fields:
             return [original_panel]
 
+        original_field = model._meta.get_field(original_panel.field_name)
         for language in mt_settings.AVAILABLE_LANGUAGES:
-            original_field = model._meta.get_field(original_panel.field_name)
             localized_field_name = build_localized_fieldname(
                 original_panel.field_name, language
             )
