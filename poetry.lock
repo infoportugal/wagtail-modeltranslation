@@ -1305,13 +1305,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "wagtail"
-version = "6.0.1"
+version = "6.0.5"
 description = "A Django content management system."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "wagtail-6.0.1-py3-none-any.whl", hash = "sha256:035475e7e2c752b971336bfea8cfe8ff2c582b1e65abf2a3efb164db2f26004e"},
-    {file = "wagtail-6.0.1.tar.gz", hash = "sha256:43cf65ba8430b41e533167ee75b27660a7a86eb06dd8bd79e8d64fb4af057a8b"},
+    {file = "wagtail-6.0.5-py3-none-any.whl", hash = "sha256:c66a66202291e7ed2c1bd48e7a78913663a3cd158e91ff08af75d503c0ce604a"},
+    {file = "wagtail-6.0.5.tar.gz", hash = "sha256:adde9c0cb85400664c74fdbee4052db6f747412c589f06c4a317e8bc103fa0ec"},
 ]
 
 [package.dependencies]
@@ -1335,7 +1335,7 @@ telepath = ">=0.3.1,<1"
 Willow = {version = ">=1.6.2,<2", extras = ["heif"]}
 
 [package.extras]
-docs = ["Sphinx (>=1.5.2)", "myst-parser (==2.0.0)", "pyenchant (>=3.1.1,<4)", "sphinx-autobuild (>=0.6.0)", "sphinx-copybutton (>=0.5,<1.0)", "sphinx-wagtail-theme (==6.2.0)", "sphinxcontrib-spelling (>=7,<8)"]
+docs = ["Sphinx (>=1.5.2)", "myst-parser (==2.0.0)", "pyenchant (>=3.1.1,<4)", "sphinx-autobuild (>=0.6.0)", "sphinx-copybutton (>=0.5,<1.0)", "sphinx-wagtail-theme (==6.3.0)", "sphinxcontrib-spelling (>=7,<8)"]
 testing = ["Jinja2 (>=3.0,<3.2)", "azure-mgmt-cdn (>=12.0,<13.0)", "azure-mgmt-frontdoor (>=1.0,<1.1)", "boto3 (>=1.28,<2)", "coverage (>=3.7.0)", "curlylint (==0.13.1)", "django-pattern-library (>=0.7)", "djhtml (==3.0.6)", "doc8 (==0.8.1)", "factory-boy (>=3.2)", "freezegun (>=0.3.8)", "polib (>=1.1,<2.0)", "python-dateutil (>=2.7)", "pytz (>=2014.7)", "ruff (==0.1.5)", "semgrep (==1.40.0)", "tblib (>=2.0,<3.0)"]
 
 [[package]]
@@ -1407,4 +1407,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.8"
-content-hash = "d20be60e58436e512971ebf4674c1f517af9234eebb64645e2c89b4df6106e2c"
+content-hash = "47afb4e1e74c6c92b9a190eec15f2afbf9b7ea21d0406475e4797bee511b2ba5"
