@@ -475,21 +475,15 @@ def _localized_update_descendant_url_paths(
     localized_url_path = "url_path"
     if language:
         localized_url_path = build_localized_fieldname("url_path", language)
-
-    (
-        Page.objects.rewrite(False)
-        .filter(path__startswith=page.path)
-        .exclude(**{localized_url_path: None})  # url_path_xx may not be set yet
-        .exclude(pk=page.pk)
-        .update(
-            **{
-                localized_url_path: Concat(
-                    Value(new_url_path),
-                    Substr(localized_url_path, len(old_url_path) + 1),
-                )
-            }
-        )
-    )
+    old_url_path_len = len(old_url_path)
+    descendants = Page.objects.rewrite(False).filter(path__startswith=page.path).exclude(
+        **{localized_url_path: None}).exclude(pk=page.pk)
+    for descendant in descendants:
+        old_descendant_url_path = getattr(descendant, localized_url_path)
+        if old_descendant_url_path.startswith(old_url_path):
+            new_descendant_url_path = new_url_path + old_descendant_url_path[old_url_path_len:]
+            setattr(descendant, localized_url_path, new_descendant_url_path)
+            descendant.save()
 
 
 def _localized_site_get_site_root_paths():
