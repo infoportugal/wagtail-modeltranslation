@@ -70,7 +70,7 @@ class WagtailTranslator(object):
         WagtailTranslator._patched_models.append(model)
 
     def _patch_fields(self, model):
-        translation_registered_fields = translator.get_options_for_model(model).fields
+        translation_registered_fields = translator.get_options_for_model(model).all_fields
 
         model_fields = model._meta.get_fields()
         for field in model_fields:
@@ -108,7 +108,7 @@ class WagtailTranslator(object):
 
         # SEARCH FIELDS PATCHING
 
-        translation_registered_fields = translator.get_options_for_model(model).fields
+        translation_registered_fields = translator.get_options_for_model(model).all_fields
 
         for field in model.search_fields:
             # Check if the field is a SearchField and if it is one of the fields registered for translation
@@ -170,7 +170,7 @@ class WagtailTranslator(object):
     def _patch_ObjectList(self, obj_list, model):
         translation_registered_fields = translator.get_options_for_model(
             model
-        ).fields
+        ).all_fields
         panels = list(
             filter(
                 lambda field: field.field_name not in translation_registered_fields,
@@ -206,7 +206,7 @@ class WagtailTranslator(object):
     def _patch_simple_panel(self, model, original_panel):
         panel_class = original_panel.__class__
         translated_panels = []
-        translation_registered_fields = translator.get_options_for_model(model).fields
+        translation_registered_fields = translator.get_options_for_model(model).all_fields
 
         # If the panel field is not registered for translation
         # the original one is returned
@@ -307,7 +307,7 @@ class WagtailTranslator(object):
                 panels = extract_panel_definitions_from_model_class(related_model)
                 translation_registered_fields = translator.get_options_for_model(
                     related_model
-                ).fields
+                ).all_fields
                 panels = list(
                     filter(
                         lambda field: field.field_name
