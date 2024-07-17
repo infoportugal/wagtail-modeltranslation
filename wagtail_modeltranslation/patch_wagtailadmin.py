@@ -478,12 +478,16 @@ def _localized_update_descendant_url_paths(
     old_url_path_len = len(old_url_path)
     descendants = Page.objects.rewrite(False).filter(path__startswith=page.path).exclude(
         **{localized_url_path: None}).exclude(pk=page.pk)
+    update_descendants = []
     for descendant in descendants:
         old_descendant_url_path = getattr(descendant, localized_url_path)
         if old_descendant_url_path.startswith(old_url_path):
             new_descendant_url_path = new_url_path + old_descendant_url_path[old_url_path_len:]
             setattr(descendant, localized_url_path, new_descendant_url_path)
-            descendant.save()
+            update_descendants.append(descendant)
+
+    # Update all descendants in a single query
+    Page.objects.bulk_update(update_descendants, [localized_url_path])
 
 
 def _localized_site_get_site_root_paths():
