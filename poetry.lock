@@ -1304,13 +1304,13 @@ zstd = ["zstandard (>=0.18.0)"]
 
 [[package]]
 name = "wagtail"
-version = "6.0.5"
+version = "6.0.6"
 description = "A Django content management system."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "wagtail-6.0.5-py3-none-any.whl", hash = "sha256:c66a66202291e7ed2c1bd48e7a78913663a3cd158e91ff08af75d503c0ce604a"},
-    {file = "wagtail-6.0.5.tar.gz", hash = "sha256:adde9c0cb85400664c74fdbee4052db6f747412c589f06c4a317e8bc103fa0ec"},
+    {file = "wagtail-6.0.6-py3-none-any.whl", hash = "sha256:9765fd986b39985cfc8227d0973ada6574c78341d52883b096ee2d89662fad36"},
+    {file = "wagtail-6.0.6.tar.gz", hash = "sha256:c00a05eb4cee1e4bbfe7550e30ec121ecdb5143e328d75aaa586b93dff5d1b95"},
 ]
 
 [package.dependencies]
