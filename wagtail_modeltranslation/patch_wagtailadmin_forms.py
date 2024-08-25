@@ -113,13 +113,13 @@ class PatchedCopyForm(CopyForm):
 
         # check if user is allowed to create a page at given location.
         if not parent_page.permissions_for_user(self.user).can_add_subpage():
-            raise ValidationError(
-                {
-                    "new_parent_page": _(
-                        'You do not have permission to copy to page "%(page_title)s"'
-                    )
-                    % {"page_title": parent_page.get_admin_display_title()}
-                }
+            self._errors["new_parent_page"] = self.error_class(
+                [
+                    _('You do not have permission to copy to page "%(page_title)s"')
+                    % {
+                        "page_title": parent_page.specific_deferred.get_admin_display_title()
+                    }
+                ]
             )
 
         # Count the pages with the same slug within the context of our copy's parent page
@@ -132,25 +132,21 @@ class PatchedCopyForm(CopyForm):
             activate(code)
             children_slugs = [child.slug for child in parent_page.get_children()]
             if slug and slug in children_slugs:
-                slug_errors[locale_slug] = _(
-                    'This slug is already in use within the context of its parent page "%s"'
-                    % parent_page
+                self._errors[locale_slug] = self.error_class(
+                    [
+                        _('This slug is already in use within the context of its parent page "%(parent_page_title)s"')
+                        % {"parent_page_title": parent_page}
+                    ]
                 )
         # back to current lang
         activate(current_lang)
-        if slug_errors:
-            raise ValidationError(slug_errors)
 
         # Don't allow recursive copies into self
         if cleaned_data.get("copy_subpages") and (
             self.page == parent_page or parent_page.is_descendant_of(self.page)
         ):
-            raise ValidationError(
-                {
-                    "new_parent_page": _(
-                        "You cannot copy a page into itself when copying subpages"
-                    )
-                }
+            self._errors["new_parent_page"] = self.error_class(
+                [_("You cannot copy a page into itself when copying subpages")]
             )
 
         return cleaned_data
