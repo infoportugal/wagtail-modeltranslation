@@ -46,6 +46,7 @@ class PatchedCopyForm(CopyForm):
                     label=locale_label,
                     required=not localized_field.blank,
                     allow_unicode=allow_unicode,
+                    widget=widgets.SlugInput,
                 )
         else:
             self.fields["new_slug"] = forms.SlugField(
