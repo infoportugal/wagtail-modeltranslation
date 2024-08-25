@@ -34,6 +34,7 @@ class PatchedCopyForm(CopyForm):
                 required=not localized_field.blank,
             )
 
+        allow_unicode = getattr(settings, "WAGTAIL_ALLOW_UNICODE_SLUGS", True)
         if wmt_settings.TRANSLATE_SLUGS:
             for code, name in settings.LANGUAGES:
                 localized_fieldname = build_localized_fieldname("slug", code)
@@ -44,6 +45,7 @@ class PatchedCopyForm(CopyForm):
                     initial=getattr(self.page, localized_fieldname),
                     label=locale_label,
                     required=not localized_field.blank,
+                    allow_unicode=allow_unicode,
                 )
         else:
             self.fields["new_slug"] = forms.SlugField(
