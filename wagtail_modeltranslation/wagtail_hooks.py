@@ -15,9 +15,11 @@ from modeltranslation.utils import build_localized_fieldname
 from modeltranslation import settings as mt_settings
 from wagtail_modeltranslation import settings as wmt_settings
 
+from .patch_wagtailadmin_actions import PatchedCreatePageAliasAction
 from .patch_wagtailadmin_forms import PatchedCopyForm
 
 from wagtail import hooks, VERSION as _WAGTAIL_VERSION
+from wagtail.actions.copy_page import CopyPageAction
 from wagtail.models import Page
 from wagtail.rich_text.pages import PageLinkHandler
 from wagtail.admin import messages
@@ -262,13 +264,28 @@ def before_copy_page(request, page):
                 update_attrs[title] = form.cleaned_data["new_{}".format(title)]
 
             # Copy the page
-            new_page = page.copy(
-                recursive=form.cleaned_data.get("copy_subpages"),
-                to=parent_page,
-                update_attrs=update_attrs,
-                keep_live=(can_publish and form.cleaned_data.get("publish_copies")),
-                user=request.user,
-            )
+            # Note that only users who can publish in the new parent page can create an alias.
+            # This is because alias pages must always match their original page's state.
+            if can_publish and form.cleaned_data.get("alias"):
+                action = PatchedCreatePageAliasAction(
+                    page.specific,
+                    recursive=form.cleaned_data.get("copy_subpages"),
+                    parent=parent_page,
+                    update_attrs=update_attrs,
+                    user=request.user,
+                )
+                new_page = action.execute(skip_permission_checks=True)
+            else:
+                keep_live = can_publish and form.cleaned_data.get("publish_copies")
+                action = CopyPageAction(
+                    page=page,
+                    recursive=form.cleaned_data.get("copy_subpages"),
+                    to=parent_page,
+                    update_attrs=update_attrs,
+                    keep_live=keep_live,
+                    user=request.user,
+                )
+                new_page = action.execute()
 
             # Give a success message back to the user
             if form.cleaned_data.get("copy_subpages"):
