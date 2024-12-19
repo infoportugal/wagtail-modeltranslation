@@ -23,10 +23,10 @@ include = [
 exclude = ["*.pyc", "*.DS_Store"]
 classifiers = [
   'Programming Language :: Python :: 3',
-  'Programming Language :: Python :: 3.8',
   'Programming Language :: Python :: 3.9',
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
+  'Programming Language :: Python :: 3.12',
   'Operating System :: OS Independent',
   'Environment :: Web Environment',
   'Intended Audience :: Developers',
@@ -35,7 +35,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 Django = ">=4.2"
 wagtail = ">=5.2,<=7.0"
 django-modeltranslation = ">=0.19"
