@@ -49,9 +49,9 @@ function getStreamFieldHeader(currentStreamField) {
 }
 
 function extractInputId(currentStreamField) {
-	// Search in the ID atribute, something like `panel-child-conteudo-stream1_pt-section` where `stream1` is the field name and `pt` is the language
+	// Search in the ID atribute, something like `panel-child-content-stream1_pt-section` where `stream1` is the field name and `pt` is the language
 	var panelId = $(currentStreamField).attr('id');
-	if (!panelId.startsWith("panel-child-conteudo-")) {
+	if (!panelId.startsWith("panel-child-content-")) {
     return [];
   }
 	var parts = panelId.split('-'); // Splitting the string by the delimiter '-'
