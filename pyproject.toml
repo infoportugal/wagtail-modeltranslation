@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "wagtail-modeltranslation"
-version = "0.15.2"
+version = "0.15.3"
 license = "New BSD"
 authors = ["InfoPortugal S.A. <suporte24@infoportugal.pt>"]
 maintainers = ["InfoPortugal S.A. <suporte24@infoportugal.pt>"]
@@ -35,20 +35,19 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"
-Django = ">=4.2"
-wagtail = ">=5.2,<=7.0"
+python = "^3.9"  # https://endoflife.date/python
+Django = ">=4.2"  # https://endoflife.date/django
+wagtail = ">=6.3,<8"  # https://endoflife.date/wagtail
 django-modeltranslation = ">=0.19"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 bump2version = "^1.0.1"
 bumpversion = "*"
 wheel = "*"
 twine = "*"
 autopep8 = "^1.6.0"
-
-[tool.poetry.group.dev.dependencies]
 flake8 = "^5.0.4"
+
 
 [build-system]
 requires = ["poetry_core>=1.0.0"]
