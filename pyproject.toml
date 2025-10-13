@@ -37,7 +37,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 Django = ">=4.2"
-wagtail = ">=5.2,<=7.0"
+wagtail = ">=5.2,<8.0"
 django-modeltranslation = ">=0.19"
 
 [tool.poetry.dev-dependencies]
