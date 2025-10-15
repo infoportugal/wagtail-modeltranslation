@@ -7,7 +7,6 @@ from django.urls.exceptions import Resolver404
 from django.utils.translation import activate, get_language
 from modeltranslation import settings as mt_settings
 from modeltranslation.settings import DEFAULT_LANGUAGE
-from six import iteritems
 from wagtail.models import Page
 from wagtail.templatetags.wagtailcore_tags import pageurl
 
@@ -48,7 +47,7 @@ def change_lang(context, lang=None, page=None, *args, **kwargs):
             translated_url = "/" + lang + "/" + path_components[0] + "/"
             if request.GET:
                 translated_url += "?"
-                for count, (key, value) in enumerate(iteritems(request.GET)):
+                for count, (key, value) in enumerate(request.GET.items()):
                     if count != 0:
                         translated_url += "&"
                     translated_url += key + "=" + value

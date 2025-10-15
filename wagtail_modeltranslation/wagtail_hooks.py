@@ -9,7 +9,6 @@ from django.templatetags.static import static
 from django.utils.html import escape, format_html, format_html_join
 from django.utils.translation import gettext as _
 from django.views.decorators.csrf import csrf_exempt
-from six import iteritems
 
 from modeltranslation.utils import build_localized_fieldname
 from modeltranslation import settings as mt_settings
@@ -117,7 +116,7 @@ def return_translation_target_field_rendered_html(request, page_id):
         target_field_patched = []
         for item in origin_field_serialized:
             patched_item = {"name": None, "value": None}
-            for att in iteritems(item):
+            for att in item.items():
                 target_value = att[1]
                 if att[0] == "name":
                     target_value = att[1].replace(origin_field_name, target_field_name)
