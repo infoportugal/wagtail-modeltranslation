@@ -6,6 +6,7 @@ from django.core.cache import cache
 from django.core.exceptions import ValidationError
 from django.db import transaction
 from django.db.models import Q, Value
+from django.db.models.fields.reverse_related import ManyToOneRel
 from django.db.models.functions import Concat, Substr
 from django.http import Http404
 from django.urls import reverse
@@ -20,12 +21,13 @@ from wagtail.admin.panels import (
     InlinePanel,
     MultiFieldPanel,
     ObjectList,
+    TitleFieldPanel,
     extract_panel_definitions_from_model_class,
 )
 from wagtail.contrib.routable_page.models import RoutablePageMixin
 from wagtail.coreutils import WAGTAIL_APPEND_SLASH
 from wagtail.fields import StreamField, StreamValue
-from wagtail.models import Page, Site, SiteRootPath
+from wagtail.models import Page, Site, SiteRootPath, PanelPlaceholder
 from wagtail.search.index import SearchField
 from wagtail.url_routing import RouteResult
 
@@ -38,16 +40,8 @@ from wagtail_modeltranslation.settings import (
 )
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
-try:
-    # Wagtail 5.0.2 onwards.
-    from wagtail.admin.panels import TitleFieldPanel
 
-    SIMPLE_PANEL_CLASSES = [FieldPanel, TitleFieldPanel]
-except ImportError:
-    TitleFieldPanel = None
-    SIMPLE_PANEL_CLASSES = [FieldPanel]
-
-SIMPLE_PANEL_CLASSES += CUSTOM_SIMPLE_PANELS
+SIMPLE_PANEL_CLASSES = [FieldPanel, TitleFieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS
 INLINE_PANEL_CLASSES = [InlinePanel] + CUSTOM_INLINE_PANELS
 
@@ -184,10 +178,27 @@ class WagtailTranslator(object):
         Patching of the admin panels. If we're patching an InlinePanel panels we must provide
          the related model for that class, otherwise its used the model passed on init.
         """
+        initiated_panels_list = []
         patched_panels = []
         current_patching_model = related_model or self.patched_model
 
+        # Implement panel initialization like in model_utils.py
+        # See: wagtail/admin/panels/model_utils.py -> expand_panel_list function
         for panel in panels_list:
+            if isinstance(panel, PanelPlaceholder):
+                # Create an instance of the panel according to the specs of the placeholder
+                real_panel = panel.construct()
+                initiated_panels_list.append(real_panel)
+            elif isinstance(panel, str):
+                field = current_patching_model._meta.get_field(panel)
+                if isinstance(field, ManyToOneRel):
+                    initiated_panels_list.append(InlinePanel(panel))
+                else:
+                    initiated_panels_list.append(FieldPanel(panel))
+            else:
+                initiated_panels_list.append(panel)
+
+        for panel in initiated_panels_list:
             if panel.__class__ in SIMPLE_PANEL_CLASSES:
                 patched_panels += self._patch_simple_panel(
                     current_patching_model, panel
