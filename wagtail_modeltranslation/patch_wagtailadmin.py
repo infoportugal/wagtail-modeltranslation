@@ -188,7 +188,10 @@ class WagtailTranslator(object):
             if isinstance(panel, PanelPlaceholder):
                 # Create an instance of the panel according to the specs of the placeholder
                 real_panel = panel.construct()
-                initiated_panels_list.append(real_panel)
+                # `real_panel` will be none for the `CommentPanelPlaceholder` subclass if
+                # `WAGTAILADMIN_COMMENTS_ENABLED = False` is set in the settings
+                if real_panel is not None:
+                    initiated_panels_list.append(real_panel)
             elif isinstance(panel, str):
                 field = current_patching_model._meta.get_field(panel)
                 if isinstance(field, ManyToOneRel):
