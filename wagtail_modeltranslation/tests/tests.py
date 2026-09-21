@@ -21,6 +21,17 @@ class WagtailModeltranslationTest(TestCase):
         super(WagtailModeltranslationTest, cls).setUpClass()
         Page.objects.all().delete()
 
+    def assertBlockHTML(self, stream_value, block_name, content, msg=None):
+        # Wagtail >=7.4 renders blocks as `<div class="w-block-<name> block-<name>">`,
+        # older versions as `<div class="block-<name>">`.
+        self.assertRegex(
+            str(stream_value),
+            r'^<div class="(w-block-{0} )?block-{0}">{1}</div>$'.format(
+                block_name, content
+            ),
+            msg,
+        )
+
     def test_page_fields(self):
         fields = dir(models.PatchTestPage())
 
@@ -475,13 +486,14 @@ class WagtailModeltranslationTest(TestCase):
         )
         page.save()
 
-        self.assertEqual(str(page.body), '<div class="block-text">Some text</div>')
+        self.assertBlockHTML(page.body, "text", "Some text")
 
         translation.activate("en")
 
-        self.assertEqual(
-            str(page.body),
-            '<div class="block-text">Some text</div>',
+        self.assertBlockHTML(
+            page.body,
+            "text",
+            "Some text",
             "page.body did not fallback to original language.",
         )
 
@@ -723,10 +735,10 @@ class WagtailModeltranslationTest(TestCase):
 
         self.assertEqual(page_db.title_de, "Fetch DE")
         self.assertEqual(page_db.slug_de, "fetch_de")
-        self.assertEqual(str(page_db.body_de), '<div class="block-text">fetch de</div>')
+        self.assertBlockHTML(page_db.body_de, "text", "fetch de")
         self.assertEqual(page_db.title_en, "Fetch EN")
         self.assertEqual(page_db.slug_en, "fetch_en")
-        self.assertEqual(str(page_db.body_en), '<div class="block-text">fetch en</div>')
+        self.assertBlockHTML(page_db.body_en, "text", "fetch en")
 
     def check_route_request(self, root_page, components, expected_page):
         # site = Site.objects.get(is_default_site=True)

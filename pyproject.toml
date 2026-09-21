@@ -38,7 +38,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"  # https://endoflife.date/python
 Django = ">=4.2"  # https://endoflife.date/django
-wagtail = ">=6.4,<8"  # https://endoflife.date/wagtail
+wagtail = ">=6.4,<9"  # https://endoflife.date/wagtail
 django-modeltranslation = ">=0.19"
 
 [tool.poetry.group.dev.dependencies]

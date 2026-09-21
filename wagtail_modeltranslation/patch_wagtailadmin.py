@@ -702,6 +702,17 @@ def _patch_stream_field_meaningful_value(field):
 
 
 def patch_wagtail_models():
+    # Wagtail >= 8 assigns these in `WagtailAdminAppConfig.ready()`, which has not
+    # run yet if 'wagtail.admin' is listed after us in INSTALLED_APPS.
+    if not hasattr(Page, "get_edit_handler"):
+        from wagtail.admin.panels.page_utils import _get_page_edit_handler
+
+        Page.get_edit_handler = _get_page_edit_handler
+    if not hasattr(Page, "base_form_class"):
+        from wagtail.admin.forms.pages import WagtailAdminPageForm
+
+        Page.base_form_class = WagtailAdminPageForm
+
     # After all models being registered the Page or BaseSiteSetting subclasses and snippets are patched
     registered_models = translator.get_registered_models()
 

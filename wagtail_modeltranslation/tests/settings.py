@@ -67,6 +67,9 @@ INSTALLED_APPS = [
     "wagtail_modeltranslation.migrate",
     "wagtail_modeltranslation.tests",
 ]
+if test_db == "postgres":
+    # Required by wagtail >= 8 for the search index's SearchVectorField/GinIndex
+    INSTALLED_APPS.append("django.contrib.postgres")
 
 LANGUAGES = (("de", "Deutsch"), ("en", "English"))
 LANGUAGE_CODE = "de"

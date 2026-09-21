@@ -41,9 +41,18 @@ jobs:
     strategy:
       matrix:
         python: ["3.9", "3.10", "3.11", "3.12", "3.13"]
-        django-modeltranslation: ["0.19"]
-        wagtail: ["6.4", "7.0"]
+        django-modeltranslation: ["0.19", "0.20"]
+        wagtail: ["6.4", "7.0", "8.0"]
         database: ["sqlite", "postgres", "mysql"]
+        exclude:
+          # Wagtail 8 and django-modeltranslation 0.20 require Python >= 3.10
+          - python: "3.9"
+            wagtail: "8.0"
+          - python: "3.9"
+            django-modeltranslation: "0.20"
+          # Wagtail 8 installs Django 6, which needs django-modeltranslation >= 0.20
+          - django-modeltranslation: "0.19"
+            wagtail: "8.0"
     env:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       DB: ${{ matrix.database }}
@@ -87,6 +96,10 @@ jobs:
           fi
           if [[ $DB == postgres ]]; then
             pip install -q psycopg2-binary
+          fi
+          if [[ ${{ matrix.wagtail }} == 7.0 ]]; then
+            # Wagtail 7.0 does not cap Django, but does not work with Django 6
+            pip install -q "Django<6"
           fi
           pip install $(./get-modeltranslation-version.py ${{ matrix.django-modeltranslation }})
           pip install $(./get-wagtail-version.py ${{ matrix.wagtail }})
