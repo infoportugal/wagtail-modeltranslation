@@ -77,7 +77,25 @@ MODELTRANSLATION_DEFAULT_LANGUAGE = "de"
 
 USE_I18N = True
 USE_TZ = False
-MIDDLEWARE_CLASSES = ()
+MIDDLEWARE = [
+    "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "django.contrib.messages.middleware.MessageMiddleware",
+]
+
+TEMPLATES = [
+    {
+        "BACKEND": "django.template.backends.django.DjangoTemplates",
+        "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.template.context_processors.request",
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+            ]
+        },
+    }
+]
 
 MODELTRANSLATION_AUTO_POPULATE = False
 MODELTRANSLATION_FALLBACK_LANGUAGES = {"default": (MODELTRANSLATION_DEFAULT_LANGUAGE,)}

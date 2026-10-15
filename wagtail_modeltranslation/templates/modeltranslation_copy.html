@@ -1,5 +1,5 @@
 {% extends "wagtailadmin/base.html" %}
-{% load i18n %}
+{% load i18n wagtailadmin_tags %}
 {% block titletag %}{% blocktrans with title=page.get_admin_display_title %}Copy {{ title }}{% endblocktrans %}{% endblock %}
 {% block content %}
     {% trans "Copy" as copy_str %}
@@ -25,6 +25,6 @@
 
 {% block extra_js %}
     {{ block.super }}
-    {% include "wagtailadmin/pages/_editor_js.html" %}
+    {% hook_output 'insert_editor_js' %}
     {{ form.media.js }}
 {% endblock %}

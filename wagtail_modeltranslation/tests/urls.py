@@ -3,10 +3,12 @@ from django.conf.urls.i18n import i18n_patterns
 from django.views.i18n import set_language
 
 from wagtail import urls as wagtail_urls
+from wagtail.admin import urls as wagtailadmin_urls
 
 urlpatterns = [
     re_path(r"^set_language/$", set_language, {}, name="set_language"),
     re_path(r"^i18n/", include("django.conf.urls.i18n")),
+    re_path(r"^admin/", include(wagtailadmin_urls)),
 ]
 
 urlpatterns += i18n_patterns(

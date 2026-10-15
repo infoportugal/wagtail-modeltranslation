@@ -1,8 +1,10 @@
+from django.contrib.auth import get_user_model
 from django.core.exceptions import ValidationError
 from django.core.management import call_command
 from django.http import HttpRequest
 from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
+from django.urls import reverse
 from django.utils import translation
 from wagtail.admin.panels import get_edit_handler
 from wagtail.models import Page, Site
@@ -1149,3 +1151,42 @@ class WagtailModeltranslationTest(TestCase):
         title_field = root.content_panels[0]
 
         self.assertEqual(title_field.apply_if_live, True)
+
+    @override_settings(LANGUAGE_CODE="de")
+    def test_copy_page_view(self):
+        site_pages = {
+            "model": models.TestRootPage,
+            "kwargs": {"title": "root copy"},
+            "children": {
+                "child1": {
+                    "model": models.TestSlugPage1,
+                    "kwargs": {
+                        "title": "child1 copy",
+                        "slug_de": "copy-de-01",
+                        "slug_en": "copy-en-01",
+                    },
+                },
+            },
+        }
+        page_factory.create_page_tree(site_pages)
+        page = site_pages["children"]["child1"]["instance"]
+
+        user = get_user_model().objects.create_superuser(
+            username="admin", email="admin@example.com", password="password"
+        )
+        self.client.force_login(user)
+
+        response = self.client.get(reverse("wagtailadmin_pages:copy", args=(page.id,)))
+
+        # The `before_copy_page` hook renders our own copy form, which must also load the
+        # editor JS (Wagtail 8 removed the template it used to include for that).
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "modeltranslation_copy.html")
+        for field_name in (
+            "new_title_de",
+            "new_title_en",
+            "new_slug_de",
+            "new_slug_en",
+        ):
+            self.assertContains(response, 'name="{}"'.format(field_name))
+        self.assertContains(response, "wagtailModelTranslations")
