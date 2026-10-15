@@ -56,7 +56,8 @@ function extractInputId(currentStreamField) {
   }
 	var parts = panelId.split('-'); // Splitting the string by the delimiter '-'
 	var result = parts[3]; // Getting the forth part which is "stream1_pt" in the example
-	return result.split("_");
+	var splitAt = result.lastIndexOf('_');
+	return [result.substring(0, splitAt), result.substring(splitAt + 1)];
 }
 
 /* Copy the content of originID field to the targetID field */
