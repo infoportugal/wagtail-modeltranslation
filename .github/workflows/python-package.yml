@@ -22,7 +22,7 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
     strategy:
       matrix:
-        python: [3.9]
+        python: ["3.13"]
     steps:
       - uses: actions/checkout@v4
       - name: Set up Python ${{ matrix.python }}
@@ -32,10 +32,11 @@ jobs:
       - name: Install black
         run: |
           pip install --upgrade pip
-          pip install black
+          # Pinned: black changes its style every year, which would fail CI on unchanged code
+          pip install "black==26.10.1"
       - name: Lint with black
         run: |
-          black wagtail_modeltranslation
+          black --check --diff wagtail_modeltranslation
   Test:
     runs-on: ubuntu-latest
     strategy:
