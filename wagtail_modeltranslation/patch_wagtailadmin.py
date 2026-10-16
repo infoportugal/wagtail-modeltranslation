@@ -40,7 +40,6 @@ from wagtail_modeltranslation.settings import (
 )
 from wagtail_modeltranslation.utils import compare_class_tree_depth
 
-
 SIMPLE_PANEL_CLASSES = [FieldPanel, TitleFieldPanel] + CUSTOM_SIMPLE_PANELS
 COMPOSED_PANEL_CLASSES = [MultiFieldPanel, FieldRowPanel] + CUSTOM_COMPOSED_PANELS
 INLINE_PANEL_CLASSES = [InlinePanel] + CUSTOM_INLINE_PANELS
@@ -64,7 +63,9 @@ class WagtailTranslator(object):
         WagtailTranslator._patched_models.append(model)
 
     def _patch_fields(self, model):
-        translation_registered_fields = translator.get_options_for_model(model).all_fields
+        translation_registered_fields = translator.get_options_for_model(
+            model
+        ).all_fields
 
         model_fields = model._meta.get_fields()
         for field in model_fields:
@@ -102,7 +103,9 @@ class WagtailTranslator(object):
 
         # SEARCH FIELDS PATCHING
 
-        translation_registered_fields = translator.get_options_for_model(model).all_fields
+        translation_registered_fields = translator.get_options_for_model(
+            model
+        ).all_fields
 
         for field in model.search_fields:
             # Check if the field is a SearchField and if it is one of the fields registered for translation
@@ -150,7 +153,9 @@ class WagtailTranslator(object):
         elif hasattr(model, "snippet_viewset"):
             edit_handler = model.snippet_viewset.get_edit_handler()
             if isinstance(edit_handler, ObjectList):
-                edit_handler.children = self._patch_ObjectList(edit_handler.children, model)
+                edit_handler.children = self._patch_ObjectList(
+                    edit_handler.children, model
+                )
                 model.edit_handler = edit_handler.children.bind_to_model(model=model)
             else:
                 for tab in edit_handler.children:
@@ -220,7 +225,9 @@ class WagtailTranslator(object):
     def _patch_simple_panel(self, model, original_panel):
         panel_class = original_panel.__class__
         translated_panels = []
-        translation_registered_fields = translator.get_options_for_model(model).all_fields
+        translation_registered_fields = translator.get_options_for_model(
+            model
+        ).all_fields
 
         # If the panel field is not registered for translation
         # the original one is returned
@@ -490,13 +497,19 @@ def _localized_update_descendant_url_paths(
     if language:
         localized_url_path = build_localized_fieldname("url_path", language)
     old_url_path_len = len(old_url_path)
-    descendants = Page.objects.rewrite(False).filter(path__startswith=page.path).exclude(
-        **{localized_url_path: None}).exclude(pk=page.pk)
+    descendants = (
+        Page.objects.rewrite(False)
+        .filter(path__startswith=page.path)
+        .exclude(**{localized_url_path: None})
+        .exclude(pk=page.pk)
+    )
     update_descendants = []
     for descendant in descendants:
         old_descendant_url_path = getattr(descendant, localized_url_path)
         if old_descendant_url_path.startswith(old_url_path):
-            new_descendant_url_path = new_url_path + old_descendant_url_path[old_url_path_len:]
+            new_descendant_url_path = (
+                new_url_path + old_descendant_url_path[old_url_path_len:]
+            )
             setattr(descendant, localized_url_path, new_descendant_url_path)
             update_descendants.append(descendant)
 

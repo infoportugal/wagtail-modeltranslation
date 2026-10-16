@@ -749,7 +749,7 @@ class WagtailModeltranslationTest(TestCase):
         # request.META['SERVER_PORT'] = site.port
 
         request.path = "/" + "/".join(components) + "/"
-        (found_page, args, kwargs) = root_page.route(request, components)
+        found_page, args, kwargs = root_page.route(request, components)
         self.assertEqual(found_page, expected_page)
 
     @override_settings(LANGUAGE_CODE="de")
