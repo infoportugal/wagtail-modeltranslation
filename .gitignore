@@ -50,3 +50,6 @@ _build
 
 # mac
 .DS_Store
+
+# poetry: a library does not pin its dependencies; CI resolves them fresh
+poetry.lock
