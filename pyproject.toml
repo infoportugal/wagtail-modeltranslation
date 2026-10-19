@@ -23,7 +23,6 @@ include = [
 exclude = ["*.pyc", "*.DS_Store"]
 classifiers = [
   'Programming Language :: Python :: 3',
-  'Programming Language :: Python :: 3.9',
   'Programming Language :: Python :: 3.10',
   'Programming Language :: Python :: 3.11',
   'Programming Language :: Python :: 3.12',
@@ -36,7 +35,7 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.9"  # https://endoflife.date/python
+python = "^3.10"  # https://endoflife.date/python
 Django = ">=4.2"  # https://endoflife.date/django
 wagtail = ">=6.4,<9"  # https://endoflife.date/wagtail
 django-modeltranslation = ">=0.19"
