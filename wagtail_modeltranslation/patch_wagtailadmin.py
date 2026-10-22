@@ -460,7 +460,9 @@ def _validate_slugs(page):
 
         siblings_slugs = [sibling.slug for sibling in siblings]
 
-        if page.slug in siblings_slugs:
+        # Without a fallback an untranslated slug is empty, and siblings that are
+        # not translated either can't be duplicates of it
+        if page.slug and page.slug in siblings_slugs:
             errors[build_localized_fieldname("slug", language)] = _(
                 "This slug is already in use"
             )

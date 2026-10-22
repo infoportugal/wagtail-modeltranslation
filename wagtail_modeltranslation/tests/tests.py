@@ -6,6 +6,7 @@ from django.test import TestCase, override_settings
 from django.test.client import RequestFactory
 from django.urls import reverse
 from django.utils import translation
+from modeltranslation.utils import fallbacks
 from wagtail.admin.panels import get_edit_handler
 from wagtail.models import Page, Site
 
@@ -338,6 +339,33 @@ class WagtailModeltranslationTest(TestCase):
         # Make the translated slug equal to test if the duplicate is detected
         child2.slug_en = "child-en"
         self.assertRaises(ValidationError, child2.clean)
+
+    def test_duplicate_slug_ignores_untranslated_slugs(self):
+        root = models.TestRootPage(
+            title="title", depth=1, path="0001", slug_en="slug_en", slug_de="slug_de"
+        )
+        root.save()
+        Site(root_page=root).save()
+
+        root.add_child(
+            instance=models.TestSlugPage1(
+                title="child1", slug_de="child", slug_en="", depth=2, path="00010001"
+            )
+        )
+        child2 = root.add_child(
+            instance=models.TestSlugPage2(
+                title="child2", slug_de="child-2", slug_en="", depth=2, path="00010002"
+            )
+        )
+
+        # Without fallbacks neither page has an English slug, which is not a duplicate
+        with fallbacks(False):
+            child2.clean()
+
+        # A slug that is actually repeated is still detected
+        child2.slug_de = "child"
+        with fallbacks(False):
+            self.assertRaises(ValidationError, child2.clean)
 
     @override_settings(LANGUAGE_CODE="de")
     def test_slugurl_trans(self):
