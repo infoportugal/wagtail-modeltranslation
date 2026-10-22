@@ -33,7 +33,7 @@ function filterForLocale(index, element) {
   // using the global "wagtailModelTranslations.languages"
   // variable, which is an
   // array of all language codes specified in the
-  // settings.LANGUAGES variable for Django.
+  // MODELTRANSLATION_LANGUAGES setting (or LANGUAGES if unset).
   if (wagtailModelTranslations.languages.indexOf(locale) === -1) return;
 
   // Bootstrap an empty bin if we don't have one.
