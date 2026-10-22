@@ -1,6 +1,5 @@
 import json
 
-from django.conf import settings
 from django.urls import re_path
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, QueryDict
@@ -33,8 +32,8 @@ else:
 @hooks.register("insert_editor_js")
 def translation_settings():
     lang_codes = []
-    for lang in settings.LANGUAGES:
-        lang_codes.append("'%s'" % lang[0])
+    for code in mt_settings.AVAILABLE_LANGUAGES:
+        lang_codes.append("'%s'" % code)
 
     if wmt_settings.LOCALE_PICKER_DEFAULT is not None:
         locale_picker_default = ", ".join(
@@ -251,7 +250,7 @@ def before_copy_page(request, page):
             ).can_publish_subpage()
 
             update_attrs = {}
-            for code, name in settings.LANGUAGES:
+            for code in mt_settings.AVAILABLE_LANGUAGES:
                 if wmt_settings.TRANSLATE_SLUGS:
                     slug = build_localized_fieldname("slug", code)
                 else:

@@ -1190,3 +1190,83 @@ class WagtailModeltranslationTest(TestCase):
         ):
             self.assertContains(response, 'name="{}"'.format(field_name))
         self.assertContains(response, "wagtailModelTranslations")
+
+    def _create_page_to_copy(self):
+        site_pages = {
+            "model": models.TestRootPage,
+            "kwargs": {"title": "root copy"},
+            "children": {
+                "child1": {
+                    "model": models.TestSlugPage1,
+                    "kwargs": {
+                        "title": "child1 copy",
+                        "slug_de": "copy-de-01",
+                        "slug_en": "copy-en-01",
+                    },
+                },
+            },
+        }
+        page_factory.create_page_tree(site_pages)
+
+        user = get_user_model().objects.create_superuser(
+            username="admin", email="admin@example.com", password="password"
+        )
+        self.client.force_login(user)
+
+        return site_pages["instance"], site_pages["children"]["child1"]["instance"]
+
+    # MODELTRANSLATION_LANGUAGES is read once at import, so these tests change
+    # LANGUAGES instead to make the two settings differ.
+
+    @override_settings(
+        LANGUAGES=(("de", "Deutsch"), ("en", "English"), ("pt", "Português"))
+    )
+    def test_copy_page_view_ignores_languages_without_translated_fields(self):
+        root, page = self._create_page_to_copy()
+        url = reverse("wagtailadmin_pages:copy", args=(page.id,))
+
+        response = self.client.get(url)
+
+        # "pt" is only an admin language here, Page has no title_pt / slug_pt
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, 'name="new_title_pt"')
+        self.assertContains(response, "languages: ['de', 'en']")
+
+        response = self.client.post(
+            url,
+            {
+                "new_title_de": "kopie",
+                "new_title_en": "copy",
+                "new_slug_de": "kopie-de",
+                "new_slug_en": "copy-en",
+                "new_parent_page": root.id,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Page.objects.filter(slug_de="kopie-de").exists())
+
+    @override_settings(LANGUAGES=(("de", "Deutsch"),))
+    def test_copy_page_view_includes_every_translated_language(self):
+        root, page = self._create_page_to_copy()
+        url = reverse("wagtailadmin_pages:copy", args=(page.id,))
+
+        response = self.client.get(url)
+
+        # "en" fields exist even though "en" is not in LANGUAGES
+        self.assertContains(response, 'name="new_title_en"')
+        self.assertContains(response, "languages: ['de', 'en']")
+
+        response = self.client.post(
+            url,
+            {
+                "new_title_de": "kopie",
+                "new_title_en": "copy",
+                "new_slug_de": "kopie-de",
+                "new_slug_en": "copy-en",
+                "new_parent_page": root.id,
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(Page.objects.get(slug_de="kopie-de").slug_en, "copy-en")

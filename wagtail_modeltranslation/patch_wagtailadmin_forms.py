@@ -1,12 +1,12 @@
 # coding: utf-8
 
 from django import forms
-from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.utils import translation
 from django.utils.translation import activate, get_language
 from django.utils.translation import gettext as _
 from django.utils.translation import ngettext
+from modeltranslation import settings as mt_settings
 from modeltranslation.utils import build_localized_fieldname
 from wagtail.admin import widgets
 from wagtail.admin.forms.pages import CopyForm
@@ -23,7 +23,7 @@ class PatchedCopyForm(CopyForm):
         can_publish = kwargs.pop("can_publish")
         super(CopyForm, self).__init__(*args, **kwargs)
 
-        for code, name in settings.LANGUAGES:
+        for code in mt_settings.AVAILABLE_LANGUAGES:
             localized_fieldname = build_localized_fieldname("title", code)
             localized_field = Page._meta.get_field(localized_fieldname)
             locale_title = "new_{}".format(localized_fieldname)
@@ -35,7 +35,7 @@ class PatchedCopyForm(CopyForm):
             )
 
         if wmt_settings.TRANSLATE_SLUGS:
-            for code, name in settings.LANGUAGES:
+            for code in mt_settings.AVAILABLE_LANGUAGES:
                 localized_fieldname = build_localized_fieldname("slug", code)
                 localized_field = Page._meta.get_field(localized_fieldname)
                 locale_title = "new_{}".format(localized_fieldname)
@@ -116,7 +116,7 @@ class PatchedCopyForm(CopyForm):
         # Count the pages with the same slug within the context of our copy's parent page
         current_lang = get_language()
         slug_errors = {}
-        for code, name in settings.LANGUAGES:
+        for code in mt_settings.AVAILABLE_LANGUAGES:
             locale_slug = "new_{}".format(build_localized_fieldname("slug", code))
             slug = cleaned_data.get(locale_slug)
             # we need to iterate over the children to get slugs because manager do not take in account the fallbacks
@@ -164,7 +164,7 @@ def patch_admin_page_form(current_page_form):
             if self.instance.pk:
                 siblings = siblings.not_page(self.instance)
 
-            for code, name in settings.LANGUAGES:
+            for code in mt_settings.AVAILABLE_LANGUAGES:
                 field_name = build_localized_fieldname("slug", code)
                 slug_value = self.cleaned_data.get(field_name, None)
                 if slug_value is None:
